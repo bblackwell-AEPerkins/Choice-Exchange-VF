@@ -6,7 +6,7 @@ const footerLinks = {
   solutions: {
     title: "Solutions",
     links: [
-      { name: "For Individuals", path: "/member" },
+      { name: "For Individuals", path: "/dashboard" },
       { name: "For Employers", path: "/employer" },
       { name: "Provider Network", path: "/providers" },
       { name: "Compare Plans", path: "/#plans" },
@@ -63,7 +63,7 @@ export const Footer = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10" asChild>
-                <Link to="/member">
+                <Link to="/dashboard">
                   Explore Plans
                 </Link>
               </Button>

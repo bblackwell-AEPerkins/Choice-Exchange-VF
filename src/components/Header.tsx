@@ -14,7 +14,7 @@ import {
 const navItems = [
   { 
     title: "For Individuals", 
-    href: "/member",
+    href: "/dashboard",
     icon: Users,
     description: "Find personalized healthcare plans"
   },
@@ -93,7 +93,7 @@ export const Header = () => {
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <Button variant="ghost" asChild>
-              <Link to="/member">Sign In</Link>
+              <Link to="/dashboard">Sign In</Link>
             </Button>
             <Button className="gradient-primary border-0" asChild>
               <Link to="/employer">Get Started</Link>
@@ -129,7 +129,7 @@ export const Header = () => {
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/member" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                  <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                 </Button>
                 <Button className="w-full gradient-primary border-0" asChild>
                   <Link to="/employer" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>

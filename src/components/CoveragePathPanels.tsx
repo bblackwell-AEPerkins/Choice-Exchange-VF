@@ -1,15 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Shield, Check, Smile, Eye, AlertTriangle, Building2, Heart } from "lucide-react";
-
-const supplementalTiles = [
-  { icon: Smile, label: "Dental", color: "from-emerald-500/20 to-emerald-600/10" },
-  { icon: Eye, label: "Vision", color: "from-blue-500/20 to-blue-600/10" },
-  { icon: AlertTriangle, label: "Accident", color: "from-amber-500/20 to-amber-600/10" },
-  { icon: Building2, label: "Hospital Indemnity", color: "from-purple-500/20 to-purple-600/10" },
-  { icon: Heart, label: "Life", color: "from-rose-500/20 to-rose-600/10" },
-];
+import { Shield, Check, Plus, ArrowRight } from "lucide-react";
 
 const ichraFeatures = [
   "Medical coverage",
@@ -17,173 +9,134 @@ const ichraFeatures = [
   "Employer-funded",
 ];
 
+const supplementalBenefits = [
+  "Dental",
+  "Vision", 
+  "Accident",
+  "Hospital Indemnity",
+  "Life",
+];
+
 export const CoveragePathPanels = () => {
-  const [hoveredPanel, setHoveredPanel] = useState<"left" | "right" | null>(null);
   const [compareExpanded, setCompareExpanded] = useState(false);
-  const [visibleTiles, setVisibleTiles] = useState<number[]>([]);
-  const [ichraVisible, setIchraVisible] = useState(false);
-
-  // ICHRA panel fade-in
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIchraVisible(true);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Supplemental tiles stagger animation
-  useEffect(() => {
-    const timers: NodeJS.Timeout[] = [];
-    supplementalTiles.forEach((_, index) => {
-      const timer = setTimeout(() => {
-        setVisibleTiles(prev => [...prev, index]);
-      }, 150 + (index * 120));
-      timers.push(timer);
-    });
-    return () => timers.forEach(clearTimeout);
-  }, []);
 
   return (
-    <section className="py-20 bg-muted/30">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-            Choose Your <span className="text-gradient-primary">Coverage Path</span>
+    <section className="py-24 relative overflow-hidden">
+      {/* Subtle background accent */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/30 to-transparent" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <p className="text-primary font-medium mb-3 tracking-wide uppercase text-sm">Coverage Options</p>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-4">
+            Choose Your Path
           </h2>
-          <p className="text-lg text-muted-foreground mb-4">
-            Start with ICHRA or build supplemental benefits
+          <p className="text-muted-foreground max-w-lg mx-auto">
+            Two ways to build comprehensive coverage for you and your family
           </p>
-          <button
-            onClick={() => setCompareExpanded(!compareExpanded)}
-            className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-4 transition-colors"
-          >
-            Compare Coverage Paths
-          </button>
         </div>
 
-        {/* Split Panels */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        {/* Panels Grid */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           
-          {/* Left Panel - ICHRA */}
-          <div
-            className={`flex-1 flex flex-col transition-all duration-300 ${
-              compareExpanded ? 'lg:min-h-[420px]' : 'lg:min-h-[360px]'
-            } ${
-              hoveredPanel === "right" ? "opacity-85" : "opacity-100"
-            }`}
-            onMouseEnter={() => setHoveredPanel("left")}
-            onMouseLeave={() => setHoveredPanel(null)}
-          >
-            <div 
-              className={`flex-1 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-8 flex flex-col transition-all duration-300 ${
-                ichraVisible ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <h3 className="text-2xl md:text-3xl font-display font-bold mb-2">
-                Enroll in ICHRA
-              </h3>
-              
-              {/* Supporting copy - only shown when compare is expanded */}
-              <div className={`overflow-hidden transition-all duration-300 ${
-                compareExpanded ? "max-h-20 opacity-100 mb-4" : "max-h-0 opacity-0"
-              }`}>
-                <p className="text-muted-foreground text-sm">
-                  Employer-funded medical coverage via reimbursement
-                </p>
+          {/* ICHRA Panel */}
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative bg-card border border-border rounded-2xl p-8 h-full flex flex-col transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                <Shield className="w-7 h-7 text-primary" />
               </div>
 
-              {/* Plan Card */}
-              <div className="flex-1 flex items-center justify-center py-6">
-                <div className="w-full max-w-sm bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6 shadow-lg">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-primary" />
+              {/* Title & Description */}
+              <h3 className="text-2xl font-display font-bold mb-2">ICHRA Enrollment</h3>
+              <p className="text-muted-foreground mb-6">
+                Employer-funded medical coverage through tax-advantaged reimbursement
+              </p>
+
+              {/* Features */}
+              <div className="space-y-3 mb-8 flex-1">
+                {ichraFeatures.map((feature) => (
+                  <div key={feature} className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-accent" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">ICHRA Plan</p>
-                      <p className="text-sm text-muted-foreground">Core Medical Coverage</p>
-                    </div>
+                    <span className="text-foreground">{feature}</span>
                   </div>
-                  
-                  <div className="space-y-3">
-                    {ichraFeatures.map((feature, index) => (
-                      <div 
-                        key={feature}
-                        className={`flex items-center gap-3 transition-all duration-300 ${
-                          ichraVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                        }`}
-                        style={{ transitionDelay: `${150 + index * 50}ms` }}
-                      >
-                        <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-primary" />
-                        </div>
-                        <span className="text-foreground">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* CTA */}
-              <Button size="lg" className="gradient-primary border-0 w-full mt-auto" asChild>
+              <Button size="lg" className="w-full gradient-primary border-0 group/btn" asChild>
                 <Link to="/dashboard">
-                  Enroll in ICHRA
+                  Enroll Now
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>
               </Button>
             </div>
           </div>
 
-          {/* Right Panel - Supplemental */}
-          <div
-            className={`flex-1 flex flex-col transition-all duration-300 ${
-              compareExpanded ? 'lg:min-h-[420px]' : 'lg:min-h-[360px]'
-            } ${
-              hoveredPanel === "left" ? "opacity-85" : "opacity-100"
-            }`}
-            onMouseEnter={() => setHoveredPanel("right")}
-            onMouseLeave={() => setHoveredPanel(null)}
-          >
-            <div className="flex-1 bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-8 flex flex-col">
-              <h3 className="text-2xl md:text-3xl font-display font-bold mb-2">
-                Build Supplemental Benefits
-              </h3>
-              
-              {/* Supporting copy - only shown when compare is expanded */}
-              <div className={`overflow-hidden transition-all duration-300 ${
-                compareExpanded ? "max-h-20 opacity-100 mb-4" : "max-h-0 opacity-0"
-              }`}>
-                <p className="text-muted-foreground text-sm">
-                  Layer additional coverage around your core plan
-                </p>
+          {/* Supplemental Panel */}
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative bg-card border border-border rounded-2xl p-8 h-full flex flex-col transition-all duration-300 hover:border-accent/30 hover:shadow-xl">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
+                <Plus className="w-7 h-7 text-accent" />
               </div>
 
-              {/* Stacking Tiles */}
-              <div className="flex-1 flex items-end justify-center py-6">
-                <div className="w-full max-w-sm flex flex-col-reverse gap-2">
-                  {supplementalTiles.map((tile, index) => (
-                    <div
-                      key={tile.label}
-                      className={`bg-gradient-to-r ${tile.color} border border-border/30 rounded-lg px-4 py-3 flex items-center gap-3 transition-all duration-300 ease-out ${
-                        visibleTiles.includes(index) 
-                          ? "opacity-100 translate-x-0" 
-                          : "opacity-0 translate-x-full"
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-background/50 flex items-center justify-center flex-shrink-0">
-                        <tile.icon className="w-4 h-4 text-foreground" />
-                      </div>
-                      <span className="font-medium text-foreground">{tile.label}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* Title & Description */}
+              <h3 className="text-2xl font-display font-bold mb-2">Supplemental Benefits</h3>
+              <p className="text-muted-foreground mb-6">
+                Layer additional coverage to create your complete protection package
+              </p>
+
+              {/* Benefits Tags */}
+              <div className="flex flex-wrap gap-2 mb-8 flex-1">
+                {supplementalBenefits.map((benefit) => (
+                  <span 
+                    key={benefit}
+                    className="px-3 py-1.5 bg-muted rounded-full text-sm font-medium text-foreground border border-border/50"
+                  >
+                    {benefit}
+                  </span>
+                ))}
               </div>
 
               {/* CTA */}
-              <Button size="lg" variant="outline" className="w-full mt-auto" asChild>
+              <Button size="lg" variant="outline" className="w-full group/btn" asChild>
                 <Link to="/dashboard">
-                  Add Supplemental Benefits
+                  Add Benefits
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>
               </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Compare Link */}
+        <div className="text-center mt-10">
+          <button
+            onClick={() => setCompareExpanded(!compareExpanded)}
+            className="text-muted-foreground hover:text-primary text-sm font-medium transition-colors inline-flex items-center gap-2"
+          >
+            <span className="underline underline-offset-4">Compare coverage paths</span>
+          </button>
+          
+          {/* Comparison Info */}
+          <div className={`overflow-hidden transition-all duration-500 ${
+            compareExpanded ? "max-h-40 opacity-100 mt-8" : "max-h-0 opacity-0"
+          }`}>
+            <div className="max-w-2xl mx-auto grid md:grid-cols-2 gap-4 text-sm">
+              <div className="bg-card border border-border rounded-lg p-4 text-left">
+                <p className="font-semibold text-foreground mb-1">ICHRA</p>
+                <p className="text-muted-foreground">Your employer contributes tax-free dollars for you to purchase individual health insurance.</p>
+              </div>
+              <div className="bg-card border border-border rounded-lg p-4 text-left">
+                <p className="font-semibold text-foreground mb-1">Supplemental</p>
+                <p className="text-muted-foreground">Add voluntary benefits like dental, vision, and life insurance to round out your coverage.</p>
+              </div>
             </div>
           </div>
         </div>

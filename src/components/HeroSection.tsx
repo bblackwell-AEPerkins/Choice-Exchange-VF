@@ -58,22 +58,22 @@ export const HeroSection = () => {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight mb-6 animate-fade-in-up">
-            Healthcare That Works
+            Taking Back Control
             <br />
-            <span className="text-gradient-primary">For You</span>
+            <span className="text-gradient-primary">Of Your Healthcare</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            Choice Exchange brings together ICHRA, group plans, and personalized healthcare into one transparent marketplace. 
-            Compare providers, understand pricing, and choose what's right for you.
+            You deserve healthcare that works for you—not the other way around. 
+            Build your own plan, compare providers transparently, and make empowered choices for you and your family.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <Button size="lg" className="gradient-primary border-0 text-lg px-8 py-6 glow-primary" asChild>
               <Link to="/dashboard">
-                Find Your Plan
+                Build Your Plan
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>

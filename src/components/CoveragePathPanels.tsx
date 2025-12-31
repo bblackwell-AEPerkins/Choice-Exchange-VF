@@ -81,33 +81,62 @@ export const CoveragePathPanels = () => {
           <div className="group relative">
             <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-accent/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative bg-card border border-border rounded-2xl p-8 h-full flex flex-col transition-all duration-300 hover:border-accent/30 hover:shadow-xl">
-              {/* Icon */}
-              <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mb-6">
-                <Plus className="w-7 h-7 text-accent" />
+              {/* Icon & Title */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <Plus className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-display font-bold">Supplemental Benefits</h3>
+                  <p className="text-muted-foreground text-sm">Build your coverage stack</p>
+                </div>
               </div>
 
-              {/* Title & Description */}
-              <h3 className="text-2xl font-display font-bold mb-2">Supplemental Benefits</h3>
-              <p className="text-muted-foreground mb-6">
-                Layer additional coverage to create your complete protection package
-              </p>
+              {/* Choices → Stack Visual */}
+              <div className="flex items-center gap-4 mb-8 flex-1">
+                {/* Available Choices */}
+                <div className="flex-1 space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Available</p>
+                  {supplementalBenefits.map((benefit, index) => (
+                    <div 
+                      key={benefit}
+                      className="px-3 py-2 bg-muted/50 rounded-lg text-sm font-medium text-foreground border border-border/30 hover:border-accent/50 hover:bg-accent/5 transition-all cursor-pointer"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {benefit}
+                    </div>
+                  ))}
+                </div>
 
-              {/* Benefits Tags */}
-              <div className="flex flex-wrap gap-2 mb-8 flex-1">
-                {supplementalBenefits.map((benefit) => (
-                  <span 
-                    key={benefit}
-                    className="px-3 py-1.5 bg-muted rounded-full text-sm font-medium text-foreground border border-border/50"
-                  >
-                    {benefit}
-                  </span>
-                ))}
+                {/* Arrow */}
+                <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+
+                {/* My Plan Stack */}
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">My Plan</p>
+                  <div className="relative min-h-[180px] bg-muted/30 rounded-xl border-2 border-dashed border-border/50 p-3">
+                    {/* Stacked preview items */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 bg-accent/10 rounded-lg text-sm font-medium text-accent border border-accent/20 shadow-sm">
+                        Dental
+                      </div>
+                      <div className="px-3 py-2 bg-accent/10 rounded-lg text-sm font-medium text-accent border border-accent/20 shadow-sm">
+                        Vision
+                      </div>
+                    </div>
+                    <p className="absolute bottom-3 left-0 right-0 text-center text-xs text-muted-foreground">
+                      Drop benefits here
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* CTA */}
               <Button size="lg" variant="outline" className="w-full group/btn" asChild>
                 <Link to="/dashboard">
-                  Add Benefits
+                  Build Your Stack
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>
               </Button>

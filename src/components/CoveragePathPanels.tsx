@@ -100,12 +100,15 @@ export const CoveragePathPanels = () => {
                   {supplementalBenefits.map((benefit, index) => (
                     <div 
                       key={benefit.type}
-                      className="px-3 py-2 bg-muted/50 rounded-lg border border-border/30 hover:border-accent/50 hover:bg-accent/5 transition-all cursor-pointer"
+                      className="flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 hover:border-accent/50 hover:bg-accent/5 transition-all cursor-pointer h-14"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <p className="text-sm font-semibold text-foreground">{benefit.type}</p>
-                      <p className="text-xs text-muted-foreground">{benefit.provider}</p>
-                      <p className="text-[10px] text-muted-foreground/70">{benefit.network}</p>
+                      <span className="text-sm font-semibold text-foreground min-w-[70px]">{benefit.type}</span>
+                      <div className="w-px h-8 bg-border/60" />
+                      <div className="flex flex-col justify-center">
+                        <p className="text-xs font-medium text-foreground leading-tight">{benefit.provider}</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{benefit.network}</p>
+                      </div>
                     </div>
                   ))}
                 </div>

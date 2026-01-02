@@ -10,11 +10,11 @@ const ichraFeatures = [
 ];
 
 const supplementalBenefits = [
-  "Dental",
-  "Vision", 
-  "Accident",
-  "Hospital Indemnity",
-  "Life",
+  { type: "Dental", provider: "Delta Dental PPO", network: "142,000+ dentists" },
+  { type: "Vision", provider: "VSP Vision Care", network: "40,000+ providers" },
+  { type: "Accident", provider: "Aflac", network: "Direct pay" },
+  { type: "Hospital Indemnity", provider: "MetLife", network: "All hospitals" },
+  { type: "Life", provider: "Principal Financial", network: "Guaranteed issue" },
 ];
 
 export const CoveragePathPanels = () => {
@@ -99,11 +99,13 @@ export const CoveragePathPanels = () => {
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Available</p>
                   {supplementalBenefits.map((benefit, index) => (
                     <div 
-                      key={benefit}
-                      className="px-3 py-2 bg-muted/50 rounded-lg text-sm font-medium text-foreground border border-border/30 hover:border-accent/50 hover:bg-accent/5 transition-all cursor-pointer"
+                      key={benefit.type}
+                      className="px-3 py-2 bg-muted/50 rounded-lg border border-border/30 hover:border-accent/50 hover:bg-accent/5 transition-all cursor-pointer"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      {benefit}
+                      <p className="text-sm font-semibold text-foreground">{benefit.type}</p>
+                      <p className="text-xs text-muted-foreground">{benefit.provider}</p>
+                      <p className="text-[10px] text-muted-foreground/70">{benefit.network}</p>
                     </div>
                   ))}
                 </div>

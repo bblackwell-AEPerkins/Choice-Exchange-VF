@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ProviderMap from "./pages/ProviderMap";
 import MemberDashboard from "./pages/MemberDashboard";
 import EmployerAdmin from "./pages/EmployerAdmin";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,6 +20,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/providers" element={<ProviderMap />} />
           <Route path="/dashboard" element={<MemberDashboard />} />
           <Route path="/employer" element={<EmployerAdmin />} />

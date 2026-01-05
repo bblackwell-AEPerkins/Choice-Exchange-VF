@@ -14,7 +14,272 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      addresses: {
+        Row: {
+          address1: string
+          address2: string | null
+          city: string
+          created_at: string
+          id: string
+          individual_id: string
+          is_primary_address: boolean
+          state: string
+          updated_at: string
+          zip_code: string
+        }
+        Insert: {
+          address1: string
+          address2?: string | null
+          city: string
+          created_at?: string
+          id?: string
+          individual_id: string
+          is_primary_address?: boolean
+          state: string
+          updated_at?: string
+          zip_code: string
+        }
+        Update: {
+          address1?: string
+          address2?: string | null
+          city?: string
+          created_at?: string
+          id?: string
+          individual_id?: string
+          is_primary_address?: boolean
+          state?: string
+          updated_at?: string
+          zip_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_individual_id_fkey"
+            columns: ["individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_methods: {
+        Row: {
+          created_at: string
+          id: string
+          individual_id: string
+          is_primary: boolean
+          type: Database["public"]["Enums"]["contact_method_type"]
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          individual_id: string
+          is_primary?: boolean
+          type: Database["public"]["Enums"]["contact_method_type"]
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          individual_id?: string
+          is_primary?: boolean
+          type?: Database["public"]["Enums"]["contact_method_type"]
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_methods_individual_id_fkey"
+            columns: ["individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coverage_enrollments: {
+        Row: {
+          created_at: string
+          effective_date: string
+          id: string
+          individual_id: string
+          maintenance_action: Database["public"]["Enums"]["maintenance_action"]
+          plan_id: string
+          plan_name: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
+          termination_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_date: string
+          id?: string
+          individual_id: string
+          maintenance_action?: Database["public"]["Enums"]["maintenance_action"]
+          plan_id: string
+          plan_name?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          termination_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_date?: string
+          id?: string
+          individual_id?: string
+          maintenance_action?: Database["public"]["Enums"]["maintenance_action"]
+          plan_id?: string
+          plan_name?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          termination_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coverage_enrollments_individual_id_fkey"
+            columns: ["individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          created_at: string
+          household_id: string
+          id: string
+          individual_id: string
+          is_primary: boolean
+          relationship_to_primary: Database["public"]["Enums"]["relationship_type"]
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          id?: string
+          individual_id: string
+          is_primary?: boolean
+          relationship_to_primary: Database["public"]["Enums"]["relationship_type"]
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          id?: string
+          individual_id?: string
+          is_primary?: boolean
+          relationship_to_primary?: Database["public"]["Enums"]["relationship_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_individual_id_fkey"
+            columns: ["individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string
+          id: string
+          primary_individual_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          primary_individual_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          primary_individual_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "households_primary_individual_id_fkey"
+            columns: ["primary_individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      individuals: {
+        Row: {
+          created_at: string
+          date_of_birth: string
+          external_member_id: string
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id: string
+          last_name: string
+          member_ssn: string | null
+          middle_initial: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth: string
+          external_member_id: string
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          last_name: string
+          member_ssn?: string | null
+          middle_initial?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string
+          external_member_id?: string
+          first_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          last_name?: string
+          member_ssn?: string | null
+          middle_initial?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +288,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contact_method_type: "Phone" | "Email"
+      enrollment_status: "Active" | "Terminated" | "Pending" | "COBRA"
+      gender_type: "M" | "F" | "U"
+      maintenance_action: "New" | "Change" | "Termination" | "Reinstatement"
+      relationship_type: "Self" | "SP" | "DEP"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +419,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      contact_method_type: ["Phone", "Email"],
+      enrollment_status: ["Active", "Terminated", "Pending", "COBRA"],
+      gender_type: ["M", "F", "U"],
+      maintenance_action: ["New", "Change", "Termination", "Reinstatement"],
+      relationship_type: ["Self", "SP", "DEP"],
+    },
   },
 } as const

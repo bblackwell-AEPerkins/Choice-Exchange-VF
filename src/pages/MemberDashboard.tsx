@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -25,13 +28,56 @@ import {
   Pill,
   Activity,
   DollarSign,
+  LogOut,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const MemberDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      if (!session?.user) {
+        navigate("/auth", { replace: true });
+      }
+    });
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      if (!session?.user) {
+        navigate("/auth", { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/auth", { replace: true });
+  };
+
+  // Use "Brandon Goldstein" as the display name
   const memberData = {
-    name: "Sarah Johnson",
+    name: "Brandon Goldstein",
     memberId: "CHX-2024-78392",
     plan: "ICHRA Plus",
     employer: "TechCorp Inc.",
@@ -68,6 +114,18 @@ const MemberDashboard = () => {
     { id: 3, title: "Document Ready", message: "Your EOB is ready to download", time: "3 days ago", read: true },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <Header />
@@ -95,6 +153,10 @@ const MemberDashboard = () => {
                 <Button>
                   <CreditCard className="h-4 w-4 mr-2" />
                   View ID Card
+                </Button>
+                <Button variant="outline" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
                 </Button>
               </div>
             </div>

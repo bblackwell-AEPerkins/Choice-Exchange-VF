@@ -217,20 +217,21 @@ const EmployerAdmin = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="h-64 flex items-end gap-4 pt-4">
-                      {monthlyStats.map((stat, i) => (
-                        <div key={stat.month} className="flex-1 flex flex-col items-center gap-2">
-                          <div 
-                            className="w-full bg-primary/20 rounded-t-lg relative overflow-hidden"
-                            style={{ height: `${(stat.spending / 200000) * 100}%` }}
-                          >
-                            <div 
-                              className="absolute bottom-0 left-0 right-0 bg-primary rounded-t-lg transition-all duration-500"
-                              style={{ height: `${(stat.spending / 200000) * 100}%` }}
-                            />
+                      {monthlyStats.map((stat, i) => {
+                        const maxSpending = Math.max(...monthlyStats.map(s => s.spending));
+                        const heightPercent = (stat.spending / maxSpending) * 100;
+                        return (
+                          <div key={stat.month} className="flex-1 flex flex-col items-center gap-2 h-full">
+                            <div className="flex-1 w-full flex items-end">
+                              <div 
+                                className="w-full bg-primary rounded-t-lg transition-all duration-500"
+                                style={{ height: `${heightPercent}%`, minHeight: '20px' }}
+                              />
+                            </div>
+                            <span className="text-sm text-muted-foreground">{stat.month}</span>
                           </div>
-                          <span className="text-sm text-muted-foreground">{stat.month}</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                       <div>

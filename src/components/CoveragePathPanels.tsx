@@ -69,7 +69,7 @@ export const CoveragePathPanels = () => {
 
               {/* CTA */}
               <Button size="lg" className="w-full gradient-primary border-0 group/btn" asChild>
-                <Link to="/dashboard">
+                <Link to="/auth">
                   Enroll Now
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>
@@ -140,7 +140,7 @@ export const CoveragePathPanels = () => {
 
               {/* CTA */}
               <Button size="lg" variant="outline" className="w-full group/btn" asChild>
-                <Link to="/dashboard">
+                <Link to="/auth">
                   Build Your Stack
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                 </Link>

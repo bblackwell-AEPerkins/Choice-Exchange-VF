@@ -83,7 +83,7 @@ export const Header = () => {
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/#plans" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
+                <Link to="/compare-ichra" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
                   Compare Plans
                 </Link>
               </NavigationMenuItem>
@@ -93,10 +93,10 @@ export const Header = () => {
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
             <Button variant="ghost" asChild>
-              <Link to="/dashboard">Sign In</Link>
+              <Link to="/auth">Sign In</Link>
             </Button>
             <Button className="gradient-primary border-0" asChild>
-              <Link to="/employer">Get Started</Link>
+              <Link to="/auth">Get Started</Link>
             </Button>
           </div>
 
@@ -129,10 +129,10 @@ export const Header = () => {
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                 <Button variant="outline" asChild className="w-full">
-                  <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                 </Button>
                 <Button className="w-full gradient-primary border-0" asChild>
-                  <Link to="/employer" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
                 </Button>
               </div>
             </nav>

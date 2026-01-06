@@ -8,6 +8,7 @@ import ProviderMap from "./pages/ProviderMap";
 import MemberDashboard from "./pages/MemberDashboard";
 import EmployerAdmin from "./pages/EmployerAdmin";
 import Auth from "./pages/Auth";
+import ICHRACompare from "./pages/ICHRACompare";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/providers" element={<ProviderMap />} />
           <Route path="/dashboard" element={<MemberDashboard />} />
           <Route path="/employer" element={<EmployerAdmin />} />
+          <Route path="/compare-ichra" element={<ICHRACompare />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

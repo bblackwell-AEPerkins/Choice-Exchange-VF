@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, FileText, Calendar, CreditCard, Eye, EyeOff } from "lucide-react";
+import { Heart, FileText, Calendar, CreditCard, Eye, EyeOff, User, Phone } from "lucide-react";
 import { z } from "zod";
 import { Header } from "@/components/Header";
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
 const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" }).max(72);
+const nameSchema = z.string().trim().min(1, { message: "This field is required" }).max(100);
+const phoneSchema = z.string().trim().min(10, { message: "Please enter a valid phone number" }).max(20);
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
@@ -63,6 +68,38 @@ const Auth = () => {
       return;
     }
 
+    if (activeTab === "signup") {
+      const firstNameResult = nameSchema.safeParse(firstName);
+      if (!firstNameResult.success) {
+        toast({
+          title: "First Name Required",
+          description: firstNameResult.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const lastNameResult = nameSchema.safeParse(lastName);
+      if (!lastNameResult.success) {
+        toast({
+          title: "Last Name Required",
+          description: lastNameResult.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const phoneResult = phoneSchema.safeParse(phoneNumber);
+      if (!phoneResult.success) {
+        toast({
+          title: "Invalid Phone Number",
+          description: phoneResult.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
 
     if (activeTab === "login") {
@@ -93,6 +130,11 @@ const Auth = () => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          data: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            phone: phoneNumber.trim(),
+          },
         },
       });
 
@@ -208,6 +250,56 @@ const Auth = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {activeTab === "signup" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <div className="relative">
+                        <Input
+                          id="firstName"
+                          type="text"
+                          placeholder="John"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className="h-12 pl-10"
+                          required
+                        />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="h-12"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(555) 123-4567"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="h-12 pl-10"
+                        required
+                      />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

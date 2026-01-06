@@ -241,7 +241,7 @@ export const PlanExplorer = () => {
                         variant={plan.popular ? "default" : "outline"}
                         asChild
                       >
-                        <Link to="/dashboard">
+                        <Link to="/auth">
                           Get Started
                           <ArrowRight className="w-4 h-4 ml-2" />
                         </Link>
@@ -260,8 +260,8 @@ export const PlanExplorer = () => {
             Not sure which plan is right for you?
           </p>
           <Button variant="link" className="text-primary" asChild>
-            <Link to="/dashboard">
-              Take our quick assessment
+            <Link to="/compare-ichra">
+              Compare ICHRA Plans
               <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </Button>

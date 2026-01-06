@@ -125,7 +125,7 @@ const MemberDashboard = () => {
   const myProviders = [
     { id: 1, name: "Dr. Sarah Chen", specialty: "Primary Care", address: "1234 Medical Center Dr, Miami, FL", phone: "(305) 555-0123", rating: 4.9, nextVisit: "Jan 5, 2025" },
     { id: 2, name: "Dr. Michael Roberts", specialty: "Cardiology", address: "5678 Heart Health Blvd, Miami, FL", phone: "(305) 555-0456", rating: 4.8, nextVisit: "Dec 28, 2024" },
-    { id: 3, name: "Dr. Emily Watson", specialty: "Internal Medicine", address: "910 Wellness Way, Miami, FL", phone: "(305) 555-0789", rating: 4.7, nextVisit: null },
+    { id: 3, name: "Dr. James Morrison", specialty: "Orthopedics", address: "910 Bone & Joint Center, Miami, FL", phone: "(305) 555-0789", rating: 4.7, nextVisit: null },
   ];
 
   // Available supplemental benefits for enrollment

@@ -537,6 +537,91 @@ const MemberDashboard = () => {
 
             {/* Enrollment Tab - Benefit Stacking */}
             <TabsContent value="enrollment" className="space-y-6">
+              {/* Subscription-Based Care Plans */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Stethoscope className="h-5 w-5 text-primary" />
+                    Subscription-Based Care Plans
+                  </CardTitle>
+                  <CardDescription>
+                    Direct access to your provider groups with predictable monthly pricing. These plans include your current care team.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    {/* Primary Care Plan */}
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                      <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-foreground">Primary Care</h4>
+                          <p className="text-xs text-muted-foreground">Dr. Sarah Chen</p>
+                        </div>
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1 mb-4">
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Unlimited visits</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Same-day appointments</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> 24/7 virtual care</li>
+                      </ul>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-primary">$99/mo</span>
+                        <Badge variant="outline" className="bg-primary/10 border-primary text-primary">Enrolled</Badge>
+                      </div>
+                    </div>
+
+                    {/* Cardiology Plan */}
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                      <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                          <Heart className="h-6 w-6 text-red-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-foreground">Cardiology</h4>
+                          <p className="text-xs text-muted-foreground">Dr. Michael Roberts</p>
+                        </div>
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1 mb-4">
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Quarterly check-ups</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Heart monitoring</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Priority scheduling</li>
+                      </ul>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-primary">$149/mo</span>
+                        <Badge variant="outline" className="bg-primary/10 border-primary text-primary">Enrolled</Badge>
+                      </div>
+                    </div>
+
+                    {/* Orthopedics Plan */}
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                      <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Activity className="h-6 w-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-foreground">Orthopedics</h4>
+                          <p className="text-xs text-muted-foreground">Dr. James Morrison</p>
+                        </div>
+                      </div>
+                      <ul className="text-xs text-muted-foreground space-y-1 mb-4">
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Joint & bone care</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Physical therapy access</li>
+                        <li className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-accent" /> Imaging included</li>
+                      </ul>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-primary">$129/mo</span>
+                        <Badge variant="outline" className="bg-primary/10 border-primary text-primary">Enrolled</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <div className="grid lg:grid-cols-3 gap-6">
                 {/* Available Benefits - Left Side */}
                 <div className="lg:col-span-2 space-y-4">

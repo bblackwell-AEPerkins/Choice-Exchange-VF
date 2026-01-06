@@ -1,21 +1,22 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ContactPopover } from "@/components/ContactPopover";
 
 const footerLinks = {
   solutions: {
     title: "Solutions",
     links: [
-      { name: "For Individuals", path: "/dashboard" },
+      { name: "For Individuals", path: "/auth" },
       { name: "For Employers", path: "/employer" },
       { name: "Provider Network", path: "/providers" },
-      { name: "Compare Plans", path: "/#plans" },
+      { name: "Compare Plans", path: "/compare-ichra" },
     ],
   },
   resources: {
     title: "Resources",
     links: [
-      { name: "ICHRA Guide", path: "/" },
+      { name: "ICHRA Guide", path: "/compare-ichra" },
       { name: "Healthcare FAQ", path: "/" },
       { name: "Pricing Calculator", path: "/" },
       { name: "Blog", path: "/" },
@@ -57,13 +58,13 @@ export const Footer = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
-                <Link to="/employer">
+                <Link to="/auth">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10" asChild>
-                <Link to="/dashboard">
+                <Link to="/compare-ichra">
                   Explore Plans
                 </Link>
               </Button>
@@ -89,14 +90,16 @@ export const Footer = () => {
               Transparent healthcare, powered by choice. ICHRA, group plans, and personalized care—all in one place.
             </p>
             <div className="space-y-2 text-sm text-secondary-foreground/60">
-              <div className="flex items-center gap-2">
+              <a href="mailto:hello@choiceexchange.com" className="flex items-center gap-2 hover:text-secondary-foreground transition-colors">
                 <Mail className="h-4 w-4" />
                 <span>hello@choiceexchange.com</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span>1-800-CHOICE</span>
-              </div>
+              </a>
+              <ContactPopover>
+                <button className="flex items-center gap-2 hover:text-secondary-foreground transition-colors cursor-pointer">
+                  <Phone className="h-4 w-4" />
+                  <span>1-800-CHOICE</span>
+                </button>
+              </ContactPopover>
             </div>
           </div>
 

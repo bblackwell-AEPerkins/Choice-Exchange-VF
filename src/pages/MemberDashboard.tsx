@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { Header } from "@/components/Header";
@@ -308,8 +308,8 @@ const MemberDashboard = () => {
                         Upcoming Appointments
                       </CardTitle>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Book New
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/providers">Book New</Link>
                     </Button>
                   </CardHeader>
                   <CardContent>

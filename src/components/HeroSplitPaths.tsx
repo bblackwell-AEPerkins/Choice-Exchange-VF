@@ -73,14 +73,14 @@ export const HeroSplitPaths = () => {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
             <Button size="lg" className="gradient-primary border-0 text-lg px-8 py-6 glow-primary" asChild>
-              <Link to="/dashboard">
+              <Link to="/auth">
                 Build Your Plan
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-              <Link to="/employer">
-                Employer Solutions
+              <Link to="/compare-ichra">
+                Compare ICHRA Plans
               </Link>
             </Button>
           </div>

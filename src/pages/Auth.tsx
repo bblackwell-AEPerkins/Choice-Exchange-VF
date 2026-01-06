@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,13 +158,13 @@ const Auth = () => {
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+        <Link to="/" className="text-center mb-8 block group">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
             <Shield className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Choice Exchange</h1>
+          <h1 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">Choice Exchange</h1>
           <p className="text-muted-foreground mt-1">Member Portal</p>
-        </div>
+        </Link>
 
         <Card className="shadow-lg border-border/50">
           <Tabs defaultValue="login" className="w-full">

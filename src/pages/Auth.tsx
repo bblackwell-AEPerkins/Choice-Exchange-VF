@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Heart, FileText, Calendar, CreditCard, Eye, EyeOff } from "lucide-react";
+import { Heart, FileText, Calendar, CreditCard, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import { Header } from "@/components/Header";
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
 const passwordSchema = z.string().min(6, { message: "Password must be at least 6 characters" }).max(72);
@@ -135,19 +136,12 @@ const Auth = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
+    <div className="min-h-screen bg-muted/30 flex flex-col">
+      <Header />
+      <div className="flex-1 flex">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-background p-12 flex-col justify-center">
         <div className="max-w-md mx-auto">
-          <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-              Choice Exchange
-            </span>
-          </Link>
-
           <h1 className="text-4xl font-bold text-foreground mb-4">
             Your Personal{" "}
             <span className="text-primary">Benefits Hub</span>
@@ -176,15 +170,6 @@ const Auth = () => {
       {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8 justify-center group">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-              Choice Exchange
-            </span>
-          </Link>
 
           <div className="bg-background rounded-2xl shadow-lg border border-border/50 p-8">
             <div className="text-center mb-6">
@@ -275,6 +260,7 @@ const Auth = () => {
             By continuing, you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>
+      </div>
       </div>
     </div>
   );

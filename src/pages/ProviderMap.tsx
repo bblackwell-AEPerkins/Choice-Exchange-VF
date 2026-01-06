@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -29,13 +29,17 @@ const specialties = [
   { id: "orthopedics", name: "Orthopedics", icon: Bone, count: 789 },
 ];
 
-const providers = [
+const allProviders = [
   {
     id: 1,
     name: "Dr. Sarah Chen",
     specialty: "Primary Care",
+    specialtyId: "primary",
     clinic: "Choice Health Partners",
     address: "123 Medical Center Dr, Austin, TX 78701",
+    city: "Austin",
+    state: "TX",
+    zip: "78701",
     rating: 4.9,
     reviews: 342,
     distance: "0.8 mi",
@@ -43,13 +47,18 @@ const providers = [
     nextAvailable: "Tomorrow",
     price: "$$",
     insurances: ["ICHRA", "Group", "Individual"],
+    keywords: ["family medicine", "wellness", "checkup", "annual physical", "preventive care"],
   },
   {
     id: 2,
     name: "Dr. Michael Roberts",
     specialty: "Cardiology",
+    specialtyId: "cardiology",
     clinic: "Heart & Vascular Institute",
     address: "456 Cardiac Way, Austin, TX 78702",
+    city: "Austin",
+    state: "TX",
+    zip: "78702",
     rating: 4.8,
     reviews: 218,
     distance: "1.2 mi",
@@ -57,13 +66,18 @@ const providers = [
     nextAvailable: "This Week",
     price: "$$$",
     insurances: ["ICHRA", "Group"],
+    keywords: ["heart", "cardiovascular", "blood pressure", "cholesterol", "cardiac"],
   },
   {
     id: 3,
     name: "Dr. Emily Watson",
     specialty: "Pediatrics",
+    specialtyId: "pediatrics",
     clinic: "Children's Wellness Center",
     address: "789 Kids Blvd, Austin, TX 78703",
+    city: "Austin",
+    state: "TX",
+    zip: "78703",
     rating: 5.0,
     reviews: 567,
     distance: "2.1 mi",
@@ -71,13 +85,18 @@ const providers = [
     nextAvailable: "2 Weeks",
     price: "$$",
     insurances: ["Individual", "Group"],
+    keywords: ["children", "kids", "baby", "infant", "toddler", "child", "pediatric", "vaccines", "immunizations"],
   },
   {
     id: 4,
     name: "Dr. James Park",
     specialty: "Orthopedics",
+    specialtyId: "orthopedics",
     clinic: "Sports Medicine & Ortho",
     address: "321 Athletic Dr, Austin, TX 78704",
+    city: "Austin",
+    state: "TX",
+    zip: "78704",
     rating: 4.7,
     reviews: 189,
     distance: "3.4 mi",
@@ -85,6 +104,83 @@ const providers = [
     nextAvailable: "Tomorrow",
     price: "$$",
     insurances: ["ICHRA", "Individual", "Group"],
+    keywords: ["bones", "joints", "sports injury", "knee", "hip", "shoulder", "back pain", "spine"],
+  },
+  {
+    id: 5,
+    name: "Dr. Lisa Martinez",
+    specialty: "Pediatrics",
+    specialtyId: "pediatrics",
+    clinic: "Austin Kids Health",
+    address: "555 Family Way, Austin, TX 78745",
+    city: "Austin",
+    state: "TX",
+    zip: "78745",
+    rating: 4.9,
+    reviews: 423,
+    distance: "4.2 mi",
+    acceptingNew: true,
+    nextAvailable: "Today",
+    price: "$$",
+    insurances: ["ICHRA", "Individual", "Group"],
+    keywords: ["children", "kids", "baby", "newborn", "adolescent", "teen", "pediatric", "well-child visits"],
+  },
+  {
+    id: 6,
+    name: "Dr. Robert Kim",
+    specialty: "Primary Care",
+    specialtyId: "primary",
+    clinic: "Downtown Family Medicine",
+    address: "100 Congress Ave, Austin, TX 78701",
+    city: "Austin",
+    state: "TX",
+    zip: "78701",
+    rating: 4.6,
+    reviews: 298,
+    distance: "0.5 mi",
+    acceptingNew: true,
+    nextAvailable: "Tomorrow",
+    price: "$",
+    insurances: ["ICHRA", "Individual", "Group"],
+    keywords: ["family", "general practice", "wellness", "preventive", "checkup"],
+  },
+  {
+    id: 7,
+    name: "Dr. Amanda Foster",
+    specialty: "Ophthalmology",
+    specialtyId: "ophthalmology",
+    clinic: "Clear Vision Eye Care",
+    address: "200 Vision Pkwy, Austin, TX 78746",
+    city: "Austin",
+    state: "TX",
+    zip: "78746",
+    rating: 4.8,
+    reviews: 156,
+    distance: "5.1 mi",
+    acceptingNew: true,
+    nextAvailable: "This Week",
+    price: "$$",
+    insurances: ["Group", "Individual"],
+    keywords: ["eyes", "vision", "glasses", "contacts", "lasik", "cataracts", "glaucoma"],
+  },
+  {
+    id: 8,
+    name: "Dr. David Nguyen",
+    specialty: "Neurology",
+    specialtyId: "neurology",
+    clinic: "Austin Brain & Spine Center",
+    address: "750 Neuro Dr, Austin, TX 78756",
+    city: "Austin",
+    state: "TX",
+    zip: "78756",
+    rating: 4.9,
+    reviews: 312,
+    distance: "3.8 mi",
+    acceptingNew: true,
+    nextAvailable: "Next Week",
+    price: "$$$",
+    insurances: ["ICHRA", "Group"],
+    keywords: ["brain", "headache", "migraine", "stroke", "seizure", "memory", "nerve"],
   },
 ];
 
@@ -97,7 +193,48 @@ const regions = [
 
 const ProviderMap = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("Austin, TX");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+
+  // Filter providers based on search query, location, and specialty
+  const filteredProviders = useMemo(() => {
+    let results = allProviders;
+
+    // Filter by specialty if selected
+    if (selectedSpecialty) {
+      results = results.filter(p => p.specialtyId === selectedSpecialty);
+    }
+
+    // Filter by location
+    if (locationQuery.trim()) {
+      const locationLower = locationQuery.toLowerCase();
+      results = results.filter(p => 
+        p.city.toLowerCase().includes(locationLower) ||
+        p.state.toLowerCase().includes(locationLower) ||
+        p.zip.includes(locationQuery) ||
+        p.address.toLowerCase().includes(locationLower)
+      );
+    }
+
+    // Filter by search query (matches name, specialty, clinic, keywords, or address)
+    if (searchQuery.trim()) {
+      const searchTerms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+      results = results.filter(provider => {
+        const searchableText = [
+          provider.name,
+          provider.specialty,
+          provider.clinic,
+          provider.address,
+          ...provider.keywords
+        ].join(" ").toLowerCase();
+
+        // Check if ALL search terms match somewhere in the searchable text
+        return searchTerms.every(term => searchableText.includes(term));
+      });
+    }
+
+    return results;
+  }, [searchQuery, locationQuery, selectedSpecialty]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,7 +274,8 @@ const ProviderMap = () => {
                   <Input
                     placeholder="City, State, or ZIP code"
                     className="pl-10 h-12 border-0 bg-muted/50"
-                    defaultValue="Austin, TX"
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
                   />
                 </div>
                 <Button size="lg" className="h-12 px-8">
@@ -265,7 +403,8 @@ const ProviderMap = () => {
               <div className="lg:col-span-2 space-y-4">
                 <div className="flex items-center justify-between mb-6">
                   <p className="text-muted-foreground">
-                    Showing <span className="font-medium text-foreground">4</span> providers near Austin, TX
+                    Showing <span className="font-medium text-foreground">{filteredProviders.length}</span> providers
+                    {locationQuery && ` near ${locationQuery}`}
                   </p>
                   <select className="p-2 rounded-lg border border-border bg-background text-sm">
                     <option>Sort by: Relevance</option>
@@ -275,7 +414,11 @@ const ProviderMap = () => {
                   </select>
                 </div>
 
-                {providers.map((provider) => (
+                {filteredProviders.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <p className="text-muted-foreground">No providers found matching your search. Try adjusting your filters.</p>
+                  </Card>
+                ) : filteredProviders.map((provider) => (
                   <Card key={provider.id} className="hover:shadow-lg transition-shadow duration-200">
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row gap-6">

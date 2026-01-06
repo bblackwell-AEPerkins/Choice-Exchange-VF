@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
-import { Header } from "@/components/Header";
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -175,12 +175,12 @@ const MemberDashboard = () => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <Header />
+      <DashboardHeader activeTab={activeTab} onTabChange={setActiveTab} />
       
-      <main className="pt-20 pb-12">
+      <main className="pt-24 pb-12">
         <div className="container mx-auto px-4">
           {/* Welcome Header */}
-          <div className="py-8">
+          <div className="py-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-foreground">
@@ -190,19 +190,7 @@ const MemberDashboard = () => {
                   Member ID: {memberData.memberId} • {memberData.plan}
                 </p>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" size="icon">
-                  <Bell className="h-5 w-5" />
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Settings className="h-5 w-5" />
-                </Button>
-                <MemberIDCard memberData={memberData} />
-                <Button variant="outline" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
+              <MemberIDCard memberData={memberData} />
             </div>
           </div>
 
@@ -229,29 +217,8 @@ const MemberDashboard = () => {
             ))}
           </div>
 
-          {/* Main Dashboard Tabs */}
+          {/* Main Dashboard Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-card border border-border p-1 flex-wrap h-auto">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="benefits" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Benefits
-              </TabsTrigger>
-              <TabsTrigger value="providers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                My Providers
-              </TabsTrigger>
-              <TabsTrigger value="enrollment" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Enroll
-              </TabsTrigger>
-              <TabsTrigger value="claims" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Claims
-              </TabsTrigger>
-              <TabsTrigger value="documents" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Documents
-              </TabsTrigger>
-            </TabsList>
-
             <TabsContent value="overview" className="space-y-6">
               <div className="grid lg:grid-cols-3 gap-6">
                 {/* Benefits Usage */}

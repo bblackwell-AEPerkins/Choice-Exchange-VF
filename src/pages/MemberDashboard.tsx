@@ -11,7 +11,6 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   User,
-  CreditCard,
   FileText,
   Calendar,
   Heart,
@@ -30,6 +29,7 @@ import {
   DollarSign,
   LogOut,
 } from "lucide-react";
+import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
 
 const MemberDashboard = () => {
@@ -150,10 +150,7 @@ const MemberDashboard = () => {
                 <Button variant="outline" size="icon">
                   <Settings className="h-5 w-5" />
                 </Button>
-                <Button>
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  View ID Card
-                </Button>
+                <MemberIDCard memberData={memberData} />
                 <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout

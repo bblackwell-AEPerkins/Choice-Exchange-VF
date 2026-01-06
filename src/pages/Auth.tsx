@@ -4,10 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, LogIn, UserPlus } from "lucide-react";
+import { Shield, Heart, FileText, Calendar, CreditCard, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().trim().email({ message: "Invalid email address" }).max(255);
@@ -18,11 +16,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         navigate("/dashboard", { replace: true });
@@ -30,7 +29,6 @@ const Auth = () => {
       setCheckingSession(false);
     });
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         navigate("/dashboard", { replace: true });
@@ -41,10 +39,9 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate inputs
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       toast({
@@ -66,196 +63,218 @@ const Auth = () => {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: emailResult.data,
-      password,
-    });
 
-    if (error) {
-      toast({
-        title: "Login Failed",
-        description: error.message === "Invalid login credentials" 
-          ? "Invalid email or password. Please try again."
-          : error.message,
-        variant: "destructive",
+    if (activeTab === "login") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: emailResult.data,
+        password,
       });
-    } else {
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
-    }
-    setLoading(false);
-  };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate inputs
-    const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      toast({
-        title: "Invalid Email",
-        description: emailResult.error.errors[0].message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      toast({
-        title: "Invalid Password",
-        description: passwordResult.error.errors[0].message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email: emailResult.data,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
-    });
-
-    if (error) {
-      if (error.message.includes("already registered")) {
+      if (error) {
         toast({
-          title: "Account Exists",
-          description: "This email is already registered. Please log in instead.",
+          title: "Login Failed",
+          description: error.message === "Invalid login credentials" 
+            ? "Invalid email or password. Please try again."
+            : error.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Signup Failed",
-          description: error.message,
-          variant: "destructive",
+          title: "Welcome back!",
+          description: "You have successfully logged in.",
         });
       }
     } else {
-      toast({
-        title: "Account Created!",
-        description: "You can now access your dashboard.",
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email: emailResult.data,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
       });
+
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast({
+            title: "Account Exists",
+            description: "This email is already registered. Please log in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Signup Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Account Created!",
+          description: "You can now access your dashboard.",
+        });
+      }
     }
     setLoading(false);
   };
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
   }
 
+  const features = [
+    { icon: Heart, title: "Coverage Details", description: "View your plan benefits and coverage" },
+    { icon: FileText, title: "Claims History", description: "Track and manage your claims easily" },
+    { icon: Calendar, title: "Find Providers", description: "Search in-network doctors near you" },
+    { icon: CreditCard, title: "ID Cards", description: "Access your digital member ID cards" },
+  ];
+
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand */}
-        <Link to="/" className="text-center mb-8 block group">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
-            <Shield className="h-8 w-8 text-primary" />
+    <div className="min-h-screen bg-muted/30 flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-background p-12 flex-col justify-center">
+        <div className="max-w-md mx-auto">
+          <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <Shield className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+              Choice Exchange
+            </span>
+          </Link>
+
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Your Personal{" "}
+            <span className="text-primary">Benefits Hub</span>
+          </h1>
+          
+          <p className="text-muted-foreground text-lg mb-10">
+            Access your complete health benefits in one place. Manage coverage, claims, providers, and more.
+          </p>
+
+          <div className="space-y-6">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <feature.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-foreground">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          <h1 className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">Choice Exchange</h1>
-          <p className="text-muted-foreground mt-1">Member Portal</p>
-        </Link>
+        </div>
+      </div>
 
-        <Card className="shadow-lg border-border/50">
-          <Tabs defaultValue="login" className="w-full">
-            <CardHeader className="pb-0">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Login
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Sign Up
-                </TabsTrigger>
-              </TabsList>
-            </CardHeader>
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <Link to="/" className="lg:hidden flex items-center gap-2 mb-8 justify-center group">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <Shield className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+              Choice Exchange
+            </span>
+          </Link>
 
-            <TabsContent value="login">
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4 pt-6">
-                  <CardDescription className="text-center">
-                    Access your benefits, claims, and coverage information.
-                  </CardDescription>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="brandon.goldstein@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in..." : "Sign In"}
-                  </Button>
-                </CardContent>
-              </form>
-            </TabsContent>
+          <div className="bg-background rounded-2xl shadow-lg border border-border/50 p-8">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-semibold text-primary">
+                {activeTab === "login" ? "Welcome Back" : "Create Account"}
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                {activeTab === "login" ? "Sign in to continue" : "Sign up to get started"}
+              </p>
+            </div>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup}>
-                <CardContent className="space-y-4 pt-6">
-                  <CardDescription className="text-center">
-                    Create an account to manage your health benefits.
-                  </CardDescription>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Creating account..." : "Create Account"}
-                  </Button>
-                </CardContent>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </Card>
+            {/* Tab Switcher */}
+            <div className="flex rounded-full bg-muted p-1 mb-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab("login")}
+                className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all ${
+                  activeTab === "login"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("signup")}
+                className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all ${
+                  activeTab === "signup"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          By continuing, you agree to our Terms of Service and Privacy Policy.
-        </p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base font-medium mt-2" 
+                disabled={loading}
+              >
+                {loading 
+                  ? (activeTab === "login" ? "Signing in..." : "Creating account...") 
+                  : (activeTab === "login" ? "Sign In" : "Create Account")
+                }
+              </Button>
+            </form>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            By continuing, you agree to our Terms of Service and Privacy Policy.
+          </p>
+        </div>
       </div>
     </div>
   );

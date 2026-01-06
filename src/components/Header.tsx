@@ -12,6 +12,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { UserTypeModal } from "./UserTypeModal";
 
 const navItems = [
   { 
@@ -37,6 +38,7 @@ const navItems = [
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userTypeModalOpen, setUserTypeModalOpen] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -119,8 +121,11 @@ export const Header = () => {
                 <Button variant="ghost" asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
-                <Button className="gradient-primary border-0" asChild>
-                  <Link to="/auth">Get Started</Link>
+                <Button 
+                  className="gradient-primary border-0"
+                  onClick={() => setUserTypeModalOpen(true)}
+                >
+                  Get Started
                 </Button>
               </>
             )}
@@ -166,8 +171,14 @@ export const Header = () => {
                     <Button variant="outline" asChild className="w-full">
                       <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
                     </Button>
-                    <Button className="w-full gradient-primary border-0" asChild>
-                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                    <Button 
+                      className="w-full gradient-primary border-0"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setUserTypeModalOpen(true);
+                      }}
+                    >
+                      Get Started
                     </Button>
                   </>
                 )}
@@ -176,6 +187,8 @@ export const Header = () => {
           </div>
         )}
       </div>
+      
+      <UserTypeModal open={userTypeModalOpen} onOpenChange={setUserTypeModalOpen} />
     </header>
   );
 };

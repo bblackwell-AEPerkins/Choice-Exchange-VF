@@ -10,7 +10,9 @@ import EmployerAdmin from "./pages/EmployerAdmin";
 import Auth from "./pages/Auth";
 import ICHRACompare from "./pages/ICHRACompare";
 import BenefitPlans from "./pages/BenefitPlans";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import { ChatWidget } from "./components/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -28,9 +30,11 @@ const App = () => (
           <Route path="/employer" element={<EmployerAdmin />} />
           <Route path="/compare-ichra" element={<ICHRACompare />} />
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
+          <Route path="/support" element={<Support />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ChatWidget />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

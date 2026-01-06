@@ -35,6 +35,9 @@ import {
   Minus,
   Sparkles,
   ArrowRight,
+  Search,
+  X,
+  Scale,
 } from "lucide-react";
 import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
@@ -141,7 +144,7 @@ const MemberDashboard = () => {
   ];
 
   const [enrolledBenefits, setEnrolledBenefits] = useState<string[]>(["dental", "vision"]);
-  
+  const [comparePlans, setComparePlans] = useState<string[]>([]);
   // Subscription care plan costs (aligned with My Providers)
   const subscriptionPlans = [
     { id: "primary", name: "Primary Care", provider: "Dr. Sarah Chen", monthlyPremium: 99 },
@@ -553,22 +556,88 @@ const MemberDashboard = () => {
 
             {/* Enrollment Tab - Benefit Stacking */}
             <TabsContent value="enrollment" className="space-y-6">
+              {/* Compare Plans Bar */}
+              {comparePlans.length > 0 && (
+                <Card className="border-2 border-accent bg-accent/5">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Scale className="h-5 w-5 text-accent" />
+                        <span className="font-medium">Comparing {comparePlans.length} plan{comparePlans.length > 1 ? 's' : ''}</span>
+                        <div className="flex gap-2">
+                          {comparePlans.map(planId => {
+                            const plan = subscriptionPlans.find(p => p.id === planId);
+                            return plan ? (
+                              <Badge key={planId} variant="secondary" className="flex items-center gap-1">
+                                {plan.name}
+                                <button onClick={() => setComparePlans(prev => prev.filter(id => id !== planId))}>
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setComparePlans([])}
+                        >
+                          Clear
+                        </Button>
+                        <Button size="sm" disabled={comparePlans.length < 2}>
+                          <Scale className="h-4 w-4 mr-1" />
+                          Compare Now
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Subscription-Based Care Plans */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Stethoscope className="h-5 w-5 text-primary" />
-                    Subscription-Based Care Plans
-                  </CardTitle>
-                  <CardDescription>
-                    Direct access to your provider groups with predictable monthly pricing. These plans include your current care team.
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-primary" />
+                      Subscription-Based Care Plans
+                    </CardTitle>
+                    <CardDescription>
+                      Direct access to your provider groups with predictable monthly pricing. These plans include your current care team.
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/providers" className="flex items-center gap-2">
+                      <Search className="h-4 w-4" />
+                      Find New Plans
+                    </Link>
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="grid sm:grid-cols-3 gap-4">
                     {/* Primary Care Plan */}
-                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative group">
                       <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      {!comparePlans.includes("primary") && comparePlans.length < 3 && (
+                        <button 
+                          onClick={() => setComparePlans(prev => [...prev, "primary"])}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted border-2 border-dashed border-muted-foreground/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:border-primary hover:bg-primary/10"
+                          title="Add to compare"
+                        >
+                          <Plus className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
+                      {comparePlans.includes("primary") && (
+                        <button 
+                          onClick={() => setComparePlans(prev => prev.filter(id => id !== "primary"))}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"
+                          title="Remove from compare"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-accent-foreground" />
+                        </button>
+                      )}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                           <User className="h-6 w-6 text-primary" />
@@ -590,8 +659,26 @@ const MemberDashboard = () => {
                     </div>
 
                     {/* Cardiology Plan */}
-                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative group">
                       <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      {!comparePlans.includes("cardiology") && comparePlans.length < 3 && (
+                        <button 
+                          onClick={() => setComparePlans(prev => [...prev, "cardiology"])}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted border-2 border-dashed border-muted-foreground/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:border-primary hover:bg-primary/10"
+                          title="Add to compare"
+                        >
+                          <Plus className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
+                      {comparePlans.includes("cardiology") && (
+                        <button 
+                          onClick={() => setComparePlans(prev => prev.filter(id => id !== "cardiology"))}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"
+                          title="Remove from compare"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-accent-foreground" />
+                        </button>
+                      )}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                           <Heart className="h-6 w-6 text-red-500" />
@@ -613,8 +700,26 @@ const MemberDashboard = () => {
                     </div>
 
                     {/* Orthopedics Plan */}
-                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative">
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary/5 relative group">
                       <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground text-xs">Your Provider</Badge>
+                      {!comparePlans.includes("orthopedics") && comparePlans.length < 3 && (
+                        <button 
+                          onClick={() => setComparePlans(prev => [...prev, "orthopedics"])}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-muted border-2 border-dashed border-muted-foreground/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:border-primary hover:bg-primary/10"
+                          title="Add to compare"
+                        >
+                          <Plus className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      )}
+                      {comparePlans.includes("orthopedics") && (
+                        <button 
+                          onClick={() => setComparePlans(prev => prev.filter(id => id !== "orthopedics"))}
+                          className="absolute top-2 left-2 w-6 h-6 rounded-full bg-accent flex items-center justify-center"
+                          title="Remove from compare"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-accent-foreground" />
+                        </button>
+                      )}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                           <Activity className="h-6 w-6 text-blue-500" />

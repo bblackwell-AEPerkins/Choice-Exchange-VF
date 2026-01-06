@@ -28,6 +28,13 @@ import {
   Activity,
   DollarSign,
   LogOut,
+  MapPin,
+  Phone,
+  Star,
+  Plus,
+  Minus,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
@@ -114,6 +121,46 @@ const MemberDashboard = () => {
     { id: 3, title: "Document Ready", message: "Your EOB is ready to download", time: "3 days ago", read: true },
   ];
 
+  // My Providers data
+  const myProviders = [
+    { id: 1, name: "Dr. Sarah Chen", specialty: "Primary Care", address: "1234 Medical Center Dr, Miami, FL", phone: "(305) 555-0123", rating: 4.9, nextVisit: "Jan 5, 2025" },
+    { id: 2, name: "Dr. Michael Roberts", specialty: "Cardiology", address: "5678 Heart Health Blvd, Miami, FL", phone: "(305) 555-0456", rating: 4.8, nextVisit: "Dec 28, 2024" },
+    { id: 3, name: "Dr. Emily Watson", specialty: "Internal Medicine", address: "910 Wellness Way, Miami, FL", phone: "(305) 555-0789", rating: 4.7, nextVisit: null },
+  ];
+
+  // Available supplemental benefits for enrollment
+  const availableBenefits = [
+    { id: "dental", name: "Dental Coverage", description: "Preventive, basic & major services", monthlyPremium: 45, icon: "🦷" },
+    { id: "vision", name: "Vision Coverage", description: "Eye exams, glasses & contacts", monthlyPremium: 15, icon: "👁️" },
+    { id: "life", name: "Life Insurance", description: "Term life up to $100,000", monthlyPremium: 25, icon: "🛡️" },
+    { id: "disability", name: "Short-Term Disability", description: "60% income replacement", monthlyPremium: 35, icon: "💼" },
+    { id: "accident", name: "Accident Insurance", description: "Lump sum for injuries", monthlyPremium: 20, icon: "🏥" },
+    { id: "critical", name: "Critical Illness", description: "Coverage for major diagnoses", monthlyPremium: 30, icon: "❤️" },
+    { id: "hospital", name: "Hospital Indemnity", description: "Daily cash for hospital stays", monthlyPremium: 40, icon: "🏨" },
+    { id: "pet", name: "Pet Insurance", description: "Coverage for your furry friends", monthlyPremium: 35, icon: "🐾" },
+  ];
+
+  const [enrolledBenefits, setEnrolledBenefits] = useState<string[]>(["dental", "vision"]);
+  const monthlyBudget = 200; // Employer contribution for supplemental benefits
+
+  const getEnrolledTotal = () => {
+    return availableBenefits
+      .filter(b => enrolledBenefits.includes(b.id))
+      .reduce((sum, b) => sum + b.monthlyPremium, 0);
+  };
+
+  const getRemainingBudget = () => {
+    return monthlyBudget - getEnrolledTotal();
+  };
+
+  const toggleBenefit = (benefitId: string) => {
+    setEnrolledBenefits(prev => 
+      prev.includes(benefitId) 
+        ? prev.filter(id => id !== benefitId)
+        : [...prev, benefitId]
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
@@ -184,12 +231,18 @@ const MemberDashboard = () => {
 
           {/* Main Dashboard Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-card border border-border p-1">
+            <TabsList className="bg-card border border-border p-1 flex-wrap h-auto">
               <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Overview
               </TabsTrigger>
               <TabsTrigger value="benefits" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Benefits
+              </TabsTrigger>
+              <TabsTrigger value="providers" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                My Providers
+              </TabsTrigger>
+              <TabsTrigger value="enrollment" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Enroll
               </TabsTrigger>
               <TabsTrigger value="claims" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Claims
@@ -447,6 +500,244 @@ const MemberDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* My Providers Tab */}
+            <TabsContent value="providers" className="space-y-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-primary" />
+                      My Healthcare Providers
+                    </CardTitle>
+                    <CardDescription>Your saved and preferred healthcare providers</CardDescription>
+                  </div>
+                  <Button asChild>
+                    <Link to="/providers">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Find Providers
+                    </Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {myProviders.map((provider) => (
+                      <div 
+                        key={provider.id}
+                        className="p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <Stethoscope className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-foreground">{provider.name}</h3>
+                              <Badge variant="secondary" className="mt-1 mb-2">{provider.specialty}</Badge>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground mb-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {provider.address}
+                              </div>
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Phone className="h-3.5 w-3.5" />
+                                <a href={`tel:${provider.phone}`} className="hover:text-primary">{provider.phone}</a>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 md:min-w-[140px]">
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                              <span className="font-medium">{provider.rating}</span>
+                            </div>
+                            {provider.nextVisit ? (
+                              <div className="text-xs text-muted-foreground bg-accent/10 text-accent px-2 py-1 rounded">
+                                Next: {provider.nextVisit}
+                              </div>
+                            ) : (
+                              <Button variant="outline" size="sm" asChild>
+                                <Link to="/providers">Book Visit</Link>
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Enrollment Tab - Benefit Stacking */}
+            <TabsContent value="enrollment" className="space-y-6">
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Available Benefits - Left Side */}
+                <div className="lg:col-span-2 space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        Available Supplemental Benefits
+                      </CardTitle>
+                      <CardDescription>
+                        Click to add benefits to your plan. Your employer provides ${monthlyBudget}/month for supplemental coverage.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {availableBenefits.map((benefit) => {
+                          const isEnrolled = enrolledBenefits.includes(benefit.id);
+                          const wouldExceedBudget = !isEnrolled && (getEnrolledTotal() + benefit.monthlyPremium > monthlyBudget);
+                          
+                          return (
+                            <button
+                              key={benefit.id}
+                              onClick={() => toggleBenefit(benefit.id)}
+                              disabled={wouldExceedBudget}
+                              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                                isEnrolled 
+                                  ? "border-primary bg-primary/5 shadow-md" 
+                                  : wouldExceedBudget
+                                    ? "border-border bg-muted/50 opacity-50 cursor-not-allowed"
+                                    : "border-border hover:border-primary/50 hover:bg-muted/30"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-2xl">{benefit.icon}</span>
+                                  <div>
+                                    <h4 className="font-semibold text-foreground">{benefit.name}</h4>
+                                    <p className="text-xs text-muted-foreground">{benefit.description}</p>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className="text-sm font-bold text-primary">${benefit.monthlyPremium}/mo</span>
+                                  {isEnrolled ? (
+                                    <Badge className="bg-primary text-primary-foreground text-xs">
+                                      <Minus className="h-3 w-3 mr-1" /> Remove
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs">
+                                      <Plus className="h-3 w-3 mr-1" /> Add
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* My Plan Stack - Right Side */}
+                <div className="space-y-4">
+                  {/* Budget Card */}
+                  <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-accent" />
+                        Monthly Budget
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-4">
+                        <div className="text-4xl font-bold text-foreground">
+                          ${getRemainingBudget()}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">remaining of ${monthlyBudget}</p>
+                        <Progress 
+                          value={(getEnrolledTotal() / monthlyBudget) * 100} 
+                          className="h-3 mt-4"
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">
+                          ${getEnrolledTotal()} used • {enrolledBenefits.length} benefits enrolled
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Stacked Benefits */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        My Plan Stack
+                      </CardTitle>
+                      <CardDescription>Your enrolled supplemental benefits</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {enrolledBenefits.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Plus className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No benefits enrolled yet</p>
+                          <p className="text-xs">Click on benefits to add them</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-0">
+                          {availableBenefits
+                            .filter(b => enrolledBenefits.includes(b.id))
+                            .map((benefit, index) => (
+                              <div 
+                                key={benefit.id}
+                                className={`relative p-3 bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/30 
+                                  ${index === 0 ? "rounded-t-lg" : ""} 
+                                  ${index === enrolledBenefits.length - 1 ? "rounded-b-lg" : "border-b-0"}
+                                  transform hover:scale-[1.02] transition-transform cursor-pointer`}
+                                onClick={() => toggleBenefit(benefit.id)}
+                                style={{ 
+                                  zIndex: enrolledBenefits.length - index,
+                                  marginTop: index > 0 ? "-4px" : "0"
+                                }}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg">{benefit.icon}</span>
+                                    <span className="font-medium text-sm">{benefit.name}</span>
+                                  </div>
+                                  <span className="text-sm font-bold text-primary">${benefit.monthlyPremium}</span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                      
+                      {enrolledBenefits.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="font-semibold">Monthly Total</span>
+                            <span className="text-xl font-bold text-primary">${getEnrolledTotal()}</span>
+                          </div>
+                          <Button className="w-full" size="lg">
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Confirm Enrollment
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Incentive Message */}
+                  {getRemainingBudget() > 0 && enrolledBenefits.length > 0 && (
+                    <Card className="border-accent/30 bg-accent/5">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          <Sparkles className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              You have ${getRemainingBudget()} left to spend!
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Add more benefits to maximize your employer contribution.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="claims">

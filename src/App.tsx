@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import ProviderMap from "./pages/ProviderMap";
 import MemberDashboard from "./pages/MemberDashboard";
 import EmployerAdmin from "./pages/EmployerAdmin";
+import EmployerSignup from "./pages/EmployerSignup";
 import Auth from "./pages/Auth";
 import ICHRACompare from "./pages/ICHRACompare";
 import BenefitPlans from "./pages/BenefitPlans";
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/providers" element={<ProviderMap />} />
           <Route path="/dashboard" element={<MemberDashboard />} />
           <Route path="/employer" element={<EmployerAdmin />} />
+          <Route path="/employer/signup" element={<EmployerSignup />} />
           <Route path="/compare-ichra" element={<ICHRACompare />} />
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           <Route path="/support" element={<Support />} />

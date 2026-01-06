@@ -141,16 +141,32 @@ const MemberDashboard = () => {
   ];
 
   const [enrolledBenefits, setEnrolledBenefits] = useState<string[]>(["dental", "vision"]);
-  const monthlyBudget = 200; // Employer contribution for supplemental benefits
+  
+  // Subscription care plan costs (aligned with My Providers)
+  const subscriptionPlans = [
+    { id: "primary", name: "Primary Care", provider: "Dr. Sarah Chen", monthlyPremium: 99 },
+    { id: "cardiology", name: "Cardiology", provider: "Dr. Michael Roberts", monthlyPremium: 149 },
+    { id: "orthopedics", name: "Orthopedics", provider: "Dr. James Morrison", monthlyPremium: 129 },
+  ];
+  
+  const monthlyBudget = memberData.monthlyAllowance; // ICHRA allowance ($800/month)
 
-  const getEnrolledTotal = () => {
+  const getSubscriptionTotal = () => {
+    return subscriptionPlans.reduce((sum, p) => sum + p.monthlyPremium, 0);
+  };
+
+  const getSupplementalTotal = () => {
     return availableBenefits
       .filter(b => enrolledBenefits.includes(b.id))
       .reduce((sum, b) => sum + b.monthlyPremium, 0);
   };
 
+  const getTotalEnrolledCost = () => {
+    return getSubscriptionTotal() + getSupplementalTotal();
+  };
+
   const getRemainingBudget = () => {
-    return monthlyBudget - getEnrolledTotal();
+    return monthlyBudget - getTotalEnrolledCost();
   };
 
   const toggleBenefit = (benefitId: string) => {
@@ -631,15 +647,15 @@ const MemberDashboard = () => {
                         <Sparkles className="h-5 w-5 text-primary" />
                         Available Supplemental Benefits
                       </CardTitle>
-                      <CardDescription>
-                        Click to add benefits to your plan. Your employer provides ${monthlyBudget}/month for supplemental coverage.
-                      </CardDescription>
+                    <CardDescription>
+                      Click to add benefits to your plan. Add to your monthly coverage stack.
+                    </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="grid sm:grid-cols-2 gap-3">
                         {availableBenefits.map((benefit) => {
                           const isEnrolled = enrolledBenefits.includes(benefit.id);
-                          const wouldExceedBudget = !isEnrolled && (getEnrolledTotal() + benefit.monthlyPremium > monthlyBudget);
+                          const wouldExceedBudget = !isEnrolled && (getTotalEnrolledCost() + benefit.monthlyPremium > monthlyBudget);
                           
                           return (
                             <button
@@ -698,14 +714,25 @@ const MemberDashboard = () => {
                         <div className="text-4xl font-bold text-foreground">
                           ${getRemainingBudget()}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">remaining of ${monthlyBudget}</p>
+                        <p className="text-sm text-muted-foreground mt-1">remaining of ${monthlyBudget} ICHRA</p>
                         <Progress 
-                          value={(getEnrolledTotal() / monthlyBudget) * 100} 
+                          value={(getTotalEnrolledCost() / monthlyBudget) * 100} 
                           className="h-3 mt-4"
                         />
-                        <p className="text-xs text-muted-foreground mt-2">
-                          ${getEnrolledTotal()} used • {enrolledBenefits.length} benefits enrolled
-                        </p>
+                        <div className="text-xs text-muted-foreground mt-3 space-y-1">
+                          <div className="flex justify-between">
+                            <span>Subscription Plans:</span>
+                            <span className="font-medium">${getSubscriptionTotal()}/mo</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Supplemental Benefits:</span>
+                            <span className="font-medium">${getSupplementalTotal()}/mo</span>
+                          </div>
+                          <div className="flex justify-between pt-1 border-t border-border mt-2">
+                            <span className="font-medium">Total:</span>
+                            <span className="font-bold text-primary">${getTotalEnrolledCost()}/mo</span>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -717,56 +744,82 @@ const MemberDashboard = () => {
                         <Shield className="h-5 w-5 text-primary" />
                         My Plan Stack
                       </CardTitle>
-                      <CardDescription>Your enrolled supplemental benefits</CardDescription>
+                      <CardDescription>Subscription plans + supplemental benefits</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {enrolledBenefits.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Plus className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm">No benefits enrolled yet</p>
-                          <p className="text-xs">Click on benefits to add them</p>
-                        </div>
-                      ) : (
+                      {/* Subscription Plans Section */}
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Subscription Plans</p>
                         <div className="space-y-0">
-                          {availableBenefits
-                            .filter(b => enrolledBenefits.includes(b.id))
-                            .map((benefit, index) => (
-                              <div 
-                                key={benefit.id}
-                                className={`relative p-3 bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/30 
-                                  ${index === 0 ? "rounded-t-lg" : ""} 
-                                  ${index === enrolledBenefits.length - 1 ? "rounded-b-lg" : "border-b-0"}
-                                  transform hover:scale-[1.02] transition-transform cursor-pointer`}
-                                onClick={() => toggleBenefit(benefit.id)}
-                                style={{ 
-                                  zIndex: enrolledBenefits.length - index,
-                                  marginTop: index > 0 ? "-4px" : "0"
-                                }}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg">{benefit.icon}</span>
-                                    <span className="font-medium text-sm">{benefit.name}</span>
+                          {subscriptionPlans.map((plan, index) => (
+                            <div 
+                              key={plan.id}
+                              className={`relative p-3 bg-gradient-to-r from-primary/15 to-primary/5 border-2 border-primary/40 
+                                ${index === 0 ? "rounded-t-lg" : ""} 
+                                ${index === subscriptionPlans.length - 1 ? "rounded-b-lg" : "border-b-0"}`}
+                              style={{ 
+                                zIndex: subscriptionPlans.length - index,
+                                marginTop: index > 0 ? "-4px" : "0"
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Stethoscope className="h-4 w-4 text-primary" />
+                                  <div>
+                                    <span className="font-medium text-sm">{plan.name}</span>
+                                    <p className="text-xs text-muted-foreground">{plan.provider}</p>
                                   </div>
-                                  <span className="text-sm font-bold text-primary">${benefit.monthlyPremium}</span>
                                 </div>
+                                <span className="text-sm font-bold text-primary">${plan.monthlyPremium}</span>
                               </div>
-                            ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Supplemental Benefits Section */}
+                      {enrolledBenefits.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Supplemental Benefits</p>
+                          <div className="space-y-0">
+                            {availableBenefits
+                              .filter(b => enrolledBenefits.includes(b.id))
+                              .map((benefit, index) => (
+                                <div 
+                                  key={benefit.id}
+                                  className={`relative p-3 bg-gradient-to-r from-accent/10 to-accent/5 border-2 border-accent/30 
+                                    ${index === 0 ? "rounded-t-lg" : ""} 
+                                    ${index === enrolledBenefits.length - 1 ? "rounded-b-lg" : "border-b-0"}
+                                    transform hover:scale-[1.02] transition-transform cursor-pointer`}
+                                  onClick={() => toggleBenefit(benefit.id)}
+                                  style={{ 
+                                    zIndex: enrolledBenefits.length - index,
+                                    marginTop: index > 0 ? "-4px" : "0"
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">{benefit.icon}</span>
+                                      <span className="font-medium text-sm">{benefit.name}</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-accent">${benefit.monthlyPremium}</span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
                       )}
                       
-                      {enrolledBenefits.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-border">
-                          <div className="flex justify-between items-center mb-4">
-                            <span className="font-semibold">Monthly Total</span>
-                            <span className="text-xl font-bold text-primary">${getEnrolledTotal()}</span>
-                          </div>
-                          <Button className="w-full" size="lg">
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Confirm Enrollment
-                          </Button>
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-semibold">Monthly Total</span>
+                          <span className="text-xl font-bold text-primary">${getTotalEnrolledCost()}</span>
                         </div>
-                      )}
+                        <Button className="w-full" size="lg">
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Confirm Enrollment
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
 

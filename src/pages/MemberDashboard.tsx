@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { DashboardHeader } from "@/components/DashboardHeader";
@@ -38,6 +38,7 @@ import {
   Search,
   X,
   Scale,
+  Eye,
 } from "lucide-react";
 import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
@@ -131,17 +132,23 @@ const MemberDashboard = () => {
     { id: 3, name: "Dr. James Morrison", specialty: "Orthopedics", address: "910 Bone & Joint Center, Miami, FL", phone: "(305) 555-0789", rating: 4.7, nextVisit: null },
   ];
 
-  // Available supplemental benefits for enrollment
+  // Available supplemental benefits for enrollment with basic tier pricing
   const availableBenefits = [
-    { id: "dental", name: "Dental Coverage", description: "Preventive, basic & major services", monthlyPremium: 45, icon: "🦷" },
-    { id: "vision", name: "Vision Coverage", description: "Eye exams, glasses & contacts", monthlyPremium: 15, icon: "👁️" },
-    { id: "life", name: "Life Insurance", description: "Term life up to $100,000", monthlyPremium: 25, icon: "🛡️" },
-    { id: "disability", name: "Short-Term Disability", description: "60% income replacement", monthlyPremium: 35, icon: "💼" },
-    { id: "accident", name: "Accident Insurance", description: "Lump sum for injuries", monthlyPremium: 20, icon: "🏥" },
-    { id: "critical", name: "Critical Illness", description: "Coverage for major diagnoses", monthlyPremium: 30, icon: "❤️" },
-    { id: "hospital", name: "Hospital Indemnity", description: "Daily cash for hospital stays", monthlyPremium: 40, icon: "🏨" },
-    { id: "pet", name: "Pet Insurance", description: "Coverage for your furry friends", monthlyPremium: 35, icon: "🐾" },
+    { id: "dental", name: "Dental Coverage", description: "Preventive, basic & major services", basicPremium: 25, monthlyPremium: 45, icon: "🦷" },
+    { id: "vision", name: "Vision Coverage", description: "Eye exams, glasses & contacts", basicPremium: 10, monthlyPremium: 15, icon: "👁️" },
+    { id: "life", name: "Life Insurance", description: "Term life up to $100,000", basicPremium: 15, monthlyPremium: 25, icon: "🛡️" },
+    { id: "disability", name: "Short-Term Disability", description: "60% income replacement", basicPremium: 20, monthlyPremium: 35, icon: "💼" },
+    { id: "accident", name: "Accident Insurance", description: "Lump sum for injuries", basicPremium: 12, monthlyPremium: 20, icon: "🏥" },
+    { id: "critical", name: "Critical Illness", description: "Coverage for major diagnoses", basicPremium: 18, monthlyPremium: 30, icon: "❤️" },
+    { id: "hospital", name: "Hospital Indemnity", description: "Daily cash for hospital stays", basicPremium: 25, monthlyPremium: 40, icon: "🏨" },
+    { id: "pet", name: "Pet Insurance", description: "Coverage for your furry friends", basicPremium: 20, monthlyPremium: 35, icon: "🐾" },
   ];
+
+  // Track which tier is enrolled for each benefit
+  const [enrolledTiers, setEnrolledTiers] = useState<Record<string, "basic" | "standard" | "premium">>({
+    dental: "standard",
+    vision: "standard",
+  });
 
   const [enrolledBenefits, setEnrolledBenefits] = useState<string[]>(["dental", "vision"]);
   const [comparePlans, setComparePlans] = useState<string[]>([]);
@@ -161,7 +168,11 @@ const MemberDashboard = () => {
   const getSupplementalTotal = () => {
     return availableBenefits
       .filter(b => enrolledBenefits.includes(b.id))
-      .reduce((sum, b) => sum + b.monthlyPremium, 0);
+      .reduce((sum, b) => {
+        const tier = enrolledTiers[b.id];
+        if (tier === "basic") return sum + b.basicPremium;
+        return sum + b.monthlyPremium; // standard or premium uses monthlyPremium
+      }, 0);
   };
 
   const getTotalEnrolledCost = () => {
@@ -172,12 +183,24 @@ const MemberDashboard = () => {
     return monthlyBudget - getTotalEnrolledCost();
   };
 
-  const toggleBenefit = (benefitId: string) => {
-    setEnrolledBenefits(prev => 
-      prev.includes(benefitId) 
-        ? prev.filter(id => id !== benefitId)
-        : [...prev, benefitId]
-    );
+  const addBasicBenefit = (benefitId: string) => {
+    if (!enrolledBenefits.includes(benefitId)) {
+      setEnrolledBenefits(prev => [...prev, benefitId]);
+      setEnrolledTiers(prev => ({ ...prev, [benefitId]: "basic" }));
+      toast({
+        title: "Basic Plan Added",
+        description: `${availableBenefits.find(b => b.id === benefitId)?.name} Basic has been added to your enrollment.`,
+      });
+    }
+  };
+
+  const removeBenefit = (benefitId: string) => {
+    setEnrolledBenefits(prev => prev.filter(id => id !== benefitId));
+    setEnrolledTiers(prev => {
+      const newTiers = { ...prev };
+      delete newTiers[benefitId];
+      return newTiers;
+    });
   };
 
   if (loading) {
@@ -760,22 +783,20 @@ const MemberDashboard = () => {
                       <div className="grid sm:grid-cols-2 gap-3">
                         {availableBenefits.map((benefit) => {
                           const isEnrolled = enrolledBenefits.includes(benefit.id);
-                          const wouldExceedBudget = !isEnrolled && (getTotalEnrolledCost() + benefit.monthlyPremium > monthlyBudget);
+                          const enrolledTier = enrolledTiers[benefit.id];
+                          const currentPremium = enrolledTier === "basic" ? benefit.basicPremium : benefit.monthlyPremium;
+                          const wouldExceedBudget = !isEnrolled && (getTotalEnrolledCost() + benefit.basicPremium > monthlyBudget);
                           
                           return (
-                            <button
+                            <div
                               key={benefit.id}
-                              onClick={() => toggleBenefit(benefit.id)}
-                              disabled={wouldExceedBudget}
-                              className={`p-4 rounded-lg border-2 text-left transition-all ${
+                              className={`p-4 rounded-lg border-2 transition-all ${
                                 isEnrolled 
                                   ? "border-primary bg-primary/5 shadow-md" 
-                                  : wouldExceedBudget
-                                    ? "border-border bg-muted/50 opacity-50 cursor-not-allowed"
-                                    : "border-border hover:border-primary/50 hover:bg-muted/30"
+                                  : "border-border hover:border-primary/50 hover:bg-muted/30"
                               }`}
                             >
-                              <div className="flex items-start justify-between">
+                              <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                   <span className="text-2xl">{benefit.icon}</span>
                                   <div>
@@ -783,20 +804,68 @@ const MemberDashboard = () => {
                                     <p className="text-xs text-muted-foreground">{benefit.description}</p>
                                   </div>
                                 </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <span className="text-sm font-bold text-primary">${benefit.monthlyPremium}/mo</span>
-                                  {isEnrolled ? (
-                                    <Badge className="bg-primary text-primary-foreground text-xs">
-                                      <Minus className="h-3 w-3 mr-1" /> Remove
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="text-xs">
-                                      <Plus className="h-3 w-3 mr-1" /> Add
-                                    </Badge>
-                                  )}
-                                </div>
+                                {isEnrolled && (
+                                  <Badge className="bg-primary text-primary-foreground text-xs capitalize">
+                                    {enrolledTier}
+                                  </Badge>
+                                )}
                               </div>
-                            </button>
+                              
+                              {isEnrolled ? (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-bold text-primary">${currentPremium}/mo</span>
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="text-xs h-7"
+                                      asChild
+                                    >
+                                      <Link to={`/benefits/${benefit.id}`}>
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        Change Plan
+                                      </Link>
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      className="text-xs h-7 text-destructive hover:text-destructive"
+                                      onClick={() => removeBenefit(benefit.id)}
+                                    >
+                                      <Minus className="h-3 w-3 mr-1" />
+                                      Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-muted-foreground">From ${benefit.basicPremium}/mo</span>
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      variant="default" 
+                                      size="sm"
+                                      className="text-xs h-7"
+                                      disabled={wouldExceedBudget}
+                                      onClick={() => addBasicBenefit(benefit.id)}
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Add Basic
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="text-xs h-7"
+                                      asChild
+                                    >
+                                      <Link to={`/benefits/${benefit.id}`}>
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        View Plans
+                                      </Link>
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
@@ -889,28 +958,38 @@ const MemberDashboard = () => {
                           <div className="space-y-0">
                             {availableBenefits
                               .filter(b => enrolledBenefits.includes(b.id))
-                              .map((benefit, index) => (
-                                <div 
-                                  key={benefit.id}
-                                  className={`relative p-3 bg-gradient-to-r from-accent/10 to-accent/5 border-2 border-accent/30 
-                                    ${index === 0 ? "rounded-t-lg" : ""} 
-                                    ${index === enrolledBenefits.length - 1 ? "rounded-b-lg" : "border-b-0"}
-                                    transform hover:scale-[1.02] transition-transform cursor-pointer`}
-                                  onClick={() => toggleBenefit(benefit.id)}
-                                  style={{ 
-                                    zIndex: enrolledBenefits.length - index,
-                                    marginTop: index > 0 ? "-4px" : "0"
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-lg">{benefit.icon}</span>
-                                      <span className="font-medium text-sm">{benefit.name}</span>
+                              .map((benefit, index, filteredArr) => {
+                                const enrolledTier = enrolledTiers[benefit.id];
+                                const currentPremium = enrolledTier === "basic" ? benefit.basicPremium : benefit.monthlyPremium;
+                                return (
+                                  <div 
+                                    key={benefit.id}
+                                    className={`relative p-3 bg-gradient-to-r from-accent/10 to-accent/5 border-2 border-accent/30 
+                                      ${index === 0 ? "rounded-t-lg" : ""} 
+                                      ${index === filteredArr.length - 1 ? "rounded-b-lg" : "border-b-0"}
+                                      transform hover:scale-[1.02] transition-transform cursor-pointer group`}
+                                    onClick={() => removeBenefit(benefit.id)}
+                                    style={{ 
+                                      zIndex: filteredArr.length - index,
+                                      marginTop: index > 0 ? "-4px" : "0"
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-lg">{benefit.icon}</span>
+                                        <div className="flex flex-col">
+                                          <span className="font-medium text-sm">{benefit.name}</span>
+                                          <span className="text-xs text-muted-foreground capitalize">{enrolledTier}</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-accent">${currentPremium}</span>
+                                        <X className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                                      </div>
                                     </div>
-                                    <span className="text-sm font-bold text-accent">${benefit.monthlyPremium}</span>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                           </div>
                         </div>
                       )}

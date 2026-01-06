@@ -9,6 +9,7 @@ import MemberDashboard from "./pages/MemberDashboard";
 import EmployerAdmin from "./pages/EmployerAdmin";
 import Auth from "./pages/Auth";
 import ICHRACompare from "./pages/ICHRACompare";
+import BenefitPlans from "./pages/BenefitPlans";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/dashboard" element={<MemberDashboard />} />
           <Route path="/employer" element={<EmployerAdmin />} />
           <Route path="/compare-ichra" element={<ICHRACompare />} />
+          <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

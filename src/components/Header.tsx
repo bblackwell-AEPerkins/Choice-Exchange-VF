@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Users, Building2, MapPin, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, ChevronDown, Users, Building2, MapPin, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -34,6 +36,19 @@ const navItems = [
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -92,12 +107,23 @@ export const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link to="/auth">Sign In</Link>
-            </Button>
-            <Button className="gradient-primary border-0" asChild>
-              <Link to="/auth">Get Started</Link>
-            </Button>
+            {user ? (
+              <Button variant="ghost" asChild className="flex items-center gap-2">
+                <Link to="/dashboard">
+                  <User className="h-4 w-4" />
+                  My Profile
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button className="gradient-primary border-0" asChild>
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -128,12 +154,23 @@ export const Header = () => {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
-                </Button>
-                <Button className="w-full gradient-primary border-0" asChild>
-                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
-                </Button>
+                {user ? (
+                  <Button variant="outline" asChild className="w-full flex items-center gap-2">
+                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                      <User className="h-4 w-4" />
+                      My Profile
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                    </Button>
+                    <Button className="w-full gradient-primary border-0" asChild>
+                      <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>

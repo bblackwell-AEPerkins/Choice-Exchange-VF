@@ -19,14 +19,14 @@ const userTypes = [
     title: "Individual",
     description: "I'm looking for personal health coverage",
     icon: Users,
-    href: "/dashboard",
+    href: "/auth",
   },
   {
     id: "employer",
     title: "Employer",
     description: "I want to offer benefits to my employees",
     icon: Building2,
-    href: "/employer",
+    href: "/employer/signup",
   },
   {
     id: "broker",

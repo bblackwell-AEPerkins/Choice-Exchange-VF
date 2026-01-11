@@ -204,40 +204,173 @@ const ProviderMap = () => {
           </div>
         </section>
 
-        {/* How to Use - Minimal */}
+        {/* How It Works - Expanded */}
         <section className="py-24 border-t border-border/50">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-12">
-                <div className="relative">
-                  <div className="text-7xl font-bold text-primary/10 absolute -top-4 -left-2">1</div>
-                  <div className="relative pt-8">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Search</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Enter a specialty, condition, or provider name along with your location to find matching providers.
+            <div className="max-w-6xl mx-auto">
+              {/* Section Header */}
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  Healthcare, <span className="text-gradient-primary">Reimagined</span>
+                </h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  We believe you deserve to know exactly what you're paying for, who's providing your care, and have the power to choose what's best for you.
+                </p>
+              </div>
+
+              {/* Three Pillars - Expanded */}
+              <div className="grid md:grid-cols-3 gap-8">
+                {/* Search */}
+                <div className="group relative p-8 rounded-3xl border border-border/50 bg-card/30 hover:bg-card/60 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <Search className="h-7 w-7 text-primary" />
+                      </div>
+                      <div className="text-6xl font-bold text-primary/15">01</div>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-foreground mb-3">Search Your Way</h3>
+                    
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      Find care that fits your life. Our intelligent search understands your preferences and matches you with providers based on specialty, location, availability, and your specific health needs.
                     </p>
+                    
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        </div>
+                        <span className="text-muted-foreground">Search by condition, specialty, or provider name</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        </div>
+                        <span className="text-muted-foreground">Filter by distance, ratings, and availability</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        </div>
+                        <span className="text-muted-foreground">Access providers across all 48 states</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
-                
-                <div className="relative">
-                  <div className="text-7xl font-bold text-primary/10 absolute -top-4 -left-2">2</div>
-                  <div className="relative pt-8">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Compare</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Review verified credentials, patient ratings, and transparent pricing to make informed decisions.
+
+                {/* Compare */}
+                <div className="group relative p-8 rounded-3xl border border-border/50 bg-card/30 hover:bg-card/60 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                        <svg className="h-7 w-7 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 3v18h18" />
+                          <path d="M7 12h2v5H7z" />
+                          <path d="M12 8h2v9h-2z" />
+                          <path d="M17 5h2v12h-2z" />
+                        </svg>
+                      </div>
+                      <div className="text-6xl font-bold text-accent/15">02</div>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-foreground mb-3">Compare with Confidence</h3>
+                    
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      No more hidden costs or surprises. See transparent pricing upfront and compare providers side-by-side on what matters most—quality, cost, and patient experiences.
                     </p>
+                    
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        </div>
+                        <span className="text-muted-foreground">Transparent pricing before you book</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        </div>
+                        <span className="text-muted-foreground">Verified credentials and certifications</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        </div>
+                        <span className="text-muted-foreground">Real patient ratings and reviews</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                        </div>
+                        <span className="text-muted-foreground">Side-by-side provider comparisons</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
-                
-                <div className="relative">
-                  <div className="text-7xl font-bold text-primary/10 absolute -top-4 -left-2">3</div>
-                  <div className="relative pt-8">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Connect</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Book appointments directly or save providers to your care team for easy access later.
+
+                {/* Connect */}
+                <div className="group relative p-8 rounded-3xl border border-border/50 bg-card/30 hover:bg-card/60 transition-all duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet/5 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet/20 to-violet/5 flex items-center justify-center">
+                        <svg className="h-7 w-7 text-violet" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                      </div>
+                      <div className="text-6xl font-bold text-violet/15">03</div>
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-foreground mb-3">Connect Seamlessly</h3>
+                    
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      Build your personal care team. Book appointments instantly, save your favorite providers, and manage all your healthcare relationships in one place.
                     </p>
+                    
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-violet/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet" />
+                        </div>
+                        <span className="text-muted-foreground">One-click appointment booking</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-violet/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet" />
+                        </div>
+                        <span className="text-muted-foreground">Build your personal care team</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-violet/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet" />
+                        </div>
+                        <span className="text-muted-foreground">Secure messaging with providers</span>
+                      </li>
+                      <li className="flex items-start gap-3 text-sm">
+                        <div className="w-5 h-5 rounded-full bg-violet/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-violet" />
+                        </div>
+                        <span className="text-muted-foreground">Works with ICHRA, Group, or Individual plans</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
+              </div>
+
+              {/* Value Statement */}
+              <div className="mt-16 p-8 rounded-3xl bg-gradient-to-r from-primary/5 via-accent/5 to-violet/5 border border-border/30 text-center">
+                <p className="text-lg text-foreground font-medium max-w-3xl mx-auto">
+                  "Healthcare providers compete on <span className="text-primary font-semibold">price</span> and <span className="text-accent font-semibold">value</span>. You get <span className="text-violet font-semibold">transparency</span> and the power to choose what's best for you."
+                </p>
               </div>
             </div>
           </div>

@@ -42,34 +42,33 @@ const values = [
 
 export const ValueProposition = () => {
   return (
-    <section className="py-20 md:py-28 bg-muted/30">
+    <section className="py-12 md:py-20 lg:py-28 bg-muted/30">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <p className="text-primary font-semibold mb-3">Why Choice Exchange</p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-8 md:mb-16">
+          <p className="text-primary font-semibold mb-2 md:mb-3 text-sm">Why Choice Exchange</p>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-display font-bold mb-4 md:mb-6 px-2">
             Healthcare reimagined around <span className="text-gradient-primary">you</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            We believe everyone deserves access to affordable, transparent healthcare. 
-            That's why we built a platform that puts choice and clarity first.
+          <p className="text-sm md:text-lg text-muted-foreground px-4 md:px-0">
+            We believe everyone deserves access to affordable, transparent healthcare.
           </p>
         </div>
 
-        {/* Values Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Values Grid - 2 columns on mobile, 3 on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {values.map((value, index) => (
             <Card 
               key={value.title} 
               className="border-border/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <CardContent className="p-6">
-                <div className={`w-12 h-12 rounded-xl ${value.color} flex items-center justify-center mb-4`}>
-                  <value.icon className="w-6 h-6" />
+              <CardContent className="p-4 md:p-6">
+                <div className={`w-10 md:w-12 h-10 md:h-12 rounded-xl ${value.color} flex items-center justify-center mb-3 md:mb-4`}>
+                  <value.icon className="w-5 md:w-6 h-5 md:h-6" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{value.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{value.description}</p>
+                <h3 className="text-base md:text-xl font-semibold mb-2 md:mb-3">{value.title}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground leading-relaxed line-clamp-3 md:line-clamp-none">{value.description}</p>
               </CardContent>
             </Card>
           ))}

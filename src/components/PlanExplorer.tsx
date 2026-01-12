@@ -172,67 +172,68 @@ export const PlanExplorer = () => {
   const filteredPlans = plans.filter((plan) => plan.type === selectedType);
 
   return (
-    <section id="plans" className="py-20 md:py-28">
+    <section id="plans" className="py-12 md:py-20 lg:py-28">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <p className="text-primary font-semibold mb-3">Compare Plans</p>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-8 md:mb-12">
+          <p className="text-primary font-semibold mb-2 md:mb-3 text-sm">Compare Plans</p>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-display font-bold mb-4 md:mb-6 px-2">
             Find your perfect <span className="text-gradient-accent">healthcare match</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Whether you're an individual, an employer offering ICHRA, or managing group benefits—
-            we have transparent options for everyone.
+          <p className="text-sm md:text-lg text-muted-foreground px-4 md:px-0">
+            Individual plans, employer ICHRA, or group benefits—we have options for everyone.
           </p>
         </div>
 
-        {/* Plan Type Tabs */}
+        {/* Plan Type Tabs - Scrollable on mobile */}
         <Tabs value={selectedType} onValueChange={(v) => setSelectedType(v as PlanType)} className="w-full">
-          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-12">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8 md:mb-12 h-12 md:h-10">
             {tabs.map((tab) => (
               <TabsTrigger 
                 key={tab.value} 
                 value={tab.value}
-                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex items-center justify-center gap-1.5 md:gap-2 text-sm md:text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5"
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>
 
           {tabs.map((tab) => (
             <TabsContent key={tab.value} value={tab.value} className="mt-0">
-              <div className="grid md:grid-cols-3 gap-6">
+              {/* Horizontal scroll on mobile, grid on desktop */}
+              <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scrollbar-thin">
                 {filteredPlans.map((plan) => (
                   <Card 
                     key={plan.id}
-                    className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                    className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl flex-shrink-0 w-[280px] md:w-auto snap-center ${
                       plan.popular ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border/50'
                     }`}
                   >
                     {plan.popular && (
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-primary text-primary-foreground">
+                      <div className="absolute top-3 md:top-4 right-3 md:right-4">
+                        <Badge className="bg-primary text-primary-foreground text-xs">
                           <Star className="w-3 h-3 mr-1 fill-current" />
                           Popular
                         </Badge>
                       </div>
                     )}
-                    <CardHeader className="pb-4">
-                      <p className="text-sm text-muted-foreground mb-1">{plan.highlight}</p>
-                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardHeader className="pb-3 md:pb-4">
+                      <p className="text-xs md:text-sm text-muted-foreground mb-1">{plan.highlight}</p>
+                      <CardTitle className="text-lg md:text-2xl">{plan.name}</CardTitle>
                       <div className="flex items-baseline gap-1 mt-2">
-                        <span className="text-4xl font-display font-bold">${plan.price}</span>
-                        <span className="text-muted-foreground">{plan.priceLabel}</span>
+                        <span className="text-3xl md:text-4xl font-display font-bold">${plan.price}</span>
+                        <span className="text-muted-foreground text-sm">{plan.priceLabel}</span>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3 mb-6">
+                    <CardContent className="pt-0">
+                      <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6">
                         {plan.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2">
-                            <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
+                            <Check className="w-4 md:w-5 h-4 md:h-5 text-accent shrink-0 mt-0.5" />
+                            <span className="text-xs md:text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>
@@ -250,13 +251,18 @@ export const PlanExplorer = () => {
                   </Card>
                 ))}
               </div>
+              
+              {/* Mobile scroll hint */}
+              <p className="text-center text-xs text-muted-foreground mt-3 md:hidden">
+                ← Swipe to see more plans →
+              </p>
             </TabsContent>
           ))}
         </Tabs>
 
         {/* Bottom CTA */}
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground mb-4">
+        <div className="text-center mt-8 md:mt-12">
+          <p className="text-sm text-muted-foreground mb-3 md:mb-4">
             Not sure which plan is right for you?
           </p>
           <Button variant="link" className="text-primary" asChild>

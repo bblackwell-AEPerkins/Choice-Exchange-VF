@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Calendar, User, DollarSign, FileText, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, User, DollarSign, FileText, ExternalLink, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 import { EventDetailModal, MemberEvent } from "./EventDetailModal";
@@ -15,6 +15,7 @@ interface HistoryItem {
   amount?: number;
   status?: "paid" | "pending" | "covered";
   description?: string;
+  location?: string;
 }
 
 interface ExpandableMetricCardProps {
@@ -50,6 +51,8 @@ export const ExpandableMetricCard = ({
       billed_amount: item.amount ? item.amount * 1.5 : undefined,
       allowed_amount: item.amount ? item.amount * 1.2 : undefined,
       plan_paid: item.amount ? item.amount * 0.8 : undefined,
+      facility_name: item.location,
+      facility_address: item.location,
       notes: item.description,
     };
     setSelectedEvent(fullEvent);
@@ -145,6 +148,12 @@ export const ExpandableMetricCard = ({
                           <span className="flex items-center gap-1">
                             <User className="h-3 w-3" />
                             {item.provider}
+                          </span>
+                        )}
+                        {item.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {item.location}
                           </span>
                         )}
                         {item.amount !== undefined && (

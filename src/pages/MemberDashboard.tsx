@@ -140,10 +140,10 @@ const MemberDashboard = () => {
   ];
 
   const healthMetrics = [
-    { label: "Last Checkup", value: "2 weeks ago", icon: Stethoscope, status: "good" as const, history: visitHistory },
-    { label: "Prescriptions", value: "2 active", icon: Pill, status: "good" as const, history: prescriptionHistory },
-    { label: "Health Score", value: "87/100", icon: Activity, status: "good" as const, history: healthScoreHistory },
-    { label: "Savings YTD", value: "$1,247", icon: DollarSign, status: "great" as const, history: savingsHistory },
+    { label: "Last Checkup", value: "2 weeks ago", icon: Stethoscope, status: "good" as const, history: visitHistory, eventType: "visit" },
+    { label: "Prescriptions", value: "2 active", icon: Pill, status: "good" as const, history: prescriptionHistory, eventType: "prescription" },
+    { label: "Health Score", value: "87/100", icon: Activity, status: "good" as const, history: healthScoreHistory, eventType: "note" },
+    { label: "Savings YTD", value: "$1,247", icon: DollarSign, status: "great" as const, history: savingsHistory, eventType: "claim" },
   ];
 
   const notifications = [
@@ -273,6 +273,7 @@ const MemberDashboard = () => {
                 icon={metric.icon}
                 status={metric.status}
                 history={metric.history}
+                eventType={metric.eventType}
               />
             ))}
           </div>

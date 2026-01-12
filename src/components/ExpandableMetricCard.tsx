@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, Calendar, User, DollarSign, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, User, DollarSign, FileText, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
+import { EventDetailModal, MemberEvent } from "./EventDetailModal";
+import { convertHistoryToEvent } from "@/hooks/useMemberEvents";
 
 interface HistoryItem {
   id: string;
@@ -22,6 +24,7 @@ interface ExpandableMetricCardProps {
   status: "good" | "great" | "warning";
   history: HistoryItem[];
   emptyMessage?: string;
+  eventType?: string; // 'visit', 'prescription', 'appointment', etc.
 }
 
 export const ExpandableMetricCard = ({
@@ -31,8 +34,27 @@ export const ExpandableMetricCard = ({
   status,
   history,
   emptyMessage = "No history available",
+  eventType = "visit",
 }: ExpandableMetricCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<MemberEvent | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleItemClick = (item: HistoryItem) => {
+    // Convert history item to event format for the modal
+    const eventData = convertHistoryToEvent(item, eventType) as MemberEvent;
+    // Merge with the original item to preserve all data
+    const fullEvent: MemberEvent = {
+      ...eventData,
+      individual_id: "mock-individual-id",
+      billed_amount: item.amount ? item.amount * 1.5 : undefined,
+      allowed_amount: item.amount ? item.amount * 1.2 : undefined,
+      plan_paid: item.amount ? item.amount * 0.8 : undefined,
+      notes: item.description,
+    };
+    setSelectedEvent(fullEvent);
+    setModalOpen(true);
+  };
 
   const getStatusBadge = (itemStatus?: string) => {
     switch (itemStatus) {
@@ -102,12 +124,15 @@ export const ExpandableMetricCard = ({
               history.map((item) => (
                 <div 
                   key={item.id}
-                  className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer active:scale-[0.99]"
+                  className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer active:scale-[0.99] group"
+                  onClick={() => handleItemClick(item)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm text-foreground">{item.title}</span>
+                        <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors">
+                          {item.title}
+                        </span>
                         {getStatusBadge(item.status)}
                       </div>
                       
@@ -136,7 +161,10 @@ export const ExpandableMetricCard = ({
                         </p>
                       )}
                     </div>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground rotate-[-90deg] flex-shrink-0 mt-1" />
+                    <div className="flex items-center gap-1">
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground rotate-[-90deg] flex-shrink-0" />
+                    </div>
                   </div>
                 </div>
               ))
@@ -149,6 +177,13 @@ export const ExpandableMetricCard = ({
             )}
           </div>
         )}
+
+        {/* Event Detail Modal */}
+        <EventDetailModal
+          event={selectedEvent}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
       </CardContent>
     </Card>
   );

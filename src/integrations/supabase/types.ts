@@ -259,6 +259,116 @@ export type Database = {
         }
         Relationships: []
       }
+      member_events: {
+        Row: {
+          allowed_amount: number | null
+          appointment_type: string | null
+          attachments: Json | null
+          billed_amount: number | null
+          confirmation_number: string | null
+          created_at: string
+          description: string | null
+          dosage: string | null
+          end_date: string | null
+          event_category: string
+          event_date: string
+          event_type: string
+          facility_address: string | null
+          facility_name: string | null
+          id: string
+          individual_id: string
+          is_recurring: boolean | null
+          medication_name: string | null
+          member_responsibility: number | null
+          notes: string | null
+          parent_event_id: string | null
+          pharmacy_name: string | null
+          plan_paid: number | null
+          provider_name: string | null
+          provider_specialty: string | null
+          quantity: number | null
+          recurrence_pattern: string | null
+          refills_remaining: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_amount?: number | null
+          appointment_type?: string | null
+          attachments?: Json | null
+          billed_amount?: number | null
+          confirmation_number?: string | null
+          created_at?: string
+          description?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          event_category: string
+          event_date: string
+          event_type: string
+          facility_address?: string | null
+          facility_name?: string | null
+          id?: string
+          individual_id: string
+          is_recurring?: boolean | null
+          medication_name?: string | null
+          member_responsibility?: number | null
+          notes?: string | null
+          parent_event_id?: string | null
+          pharmacy_name?: string | null
+          plan_paid?: number | null
+          provider_name?: string | null
+          provider_specialty?: string | null
+          quantity?: number | null
+          recurrence_pattern?: string | null
+          refills_remaining?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_amount?: number | null
+          appointment_type?: string | null
+          attachments?: Json | null
+          billed_amount?: number | null
+          confirmation_number?: string | null
+          created_at?: string
+          description?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          event_category?: string
+          event_date?: string
+          event_type?: string
+          facility_address?: string | null
+          facility_name?: string | null
+          id?: string
+          individual_id?: string
+          is_recurring?: boolean | null
+          medication_name?: string | null
+          member_responsibility?: number | null
+          notes?: string | null
+          parent_event_id?: string | null
+          pharmacy_name?: string | null
+          plan_paid?: number | null
+          provider_name?: string | null
+          provider_specialty?: string | null
+          quantity?: number | null
+          recurrence_pattern?: string | null
+          refills_remaining?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_events_parent_event_id_fkey"
+            columns: ["parent_event_id"]
+            isOneToOne: false
+            referencedRelation: "member_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

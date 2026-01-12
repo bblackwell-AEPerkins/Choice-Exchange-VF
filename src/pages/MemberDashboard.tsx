@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
+import { ExpandableMetricCard } from "@/components/ExpandableMetricCard";
 
 const MemberDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -112,11 +113,37 @@ const MemberDashboard = () => {
     { id: 2, date: "Jan 5, 2025", time: "2:30 PM", provider: "Dr. Emily Watson", type: "Annual Physical" },
   ];
 
+  // Historical data for expandable metric cards
+  const visitHistory = [
+    { id: "v1", date: "Dec 15, 2024", title: "Primary Care Visit", provider: "Dr. Sarah Chen", amount: 150, status: "paid" as const, description: "Annual wellness checkup. Blood pressure normal, vitals good. Follow-up in 6 months." },
+    { id: "v2", date: "Nov 28, 2024", title: "Urgent Care Visit", provider: "Urgent Care Plus", amount: 200, status: "paid" as const, description: "Treatment for minor respiratory infection. Prescribed antibiotics." },
+    { id: "v3", date: "Oct 12, 2024", title: "Cardiology Follow-up", provider: "Dr. Michael Roberts", amount: 275, status: "paid" as const, description: "Routine heart health monitoring. EKG results normal." },
+    { id: "v4", date: "Sep 5, 2024", title: "Lab Work", provider: "LabCorp", amount: 287, status: "covered" as const, description: "Comprehensive metabolic panel and lipid profile." },
+  ];
+
+  const prescriptionHistory = [
+    { id: "p1", date: "Dec 10, 2024", title: "Lisinopril 10mg", provider: "CVS Pharmacy", amount: 15.99, status: "paid" as const, description: "Blood pressure medication - 90 day supply" },
+    { id: "p2", date: "Dec 10, 2024", title: "Atorvastatin 20mg", provider: "CVS Pharmacy", amount: 29.99, status: "paid" as const, description: "Cholesterol medication - 90 day supply" },
+    { id: "p3", date: "Sep 15, 2024", title: "Amoxicillin 500mg", provider: "Walgreens", amount: 12.50, status: "paid" as const, description: "Antibiotic - 10 day course" },
+  ];
+
+  const savingsHistory = [
+    { id: "s1", date: "Dec 2024", title: "ICHRA Reimbursement", amount: 523.45, status: "paid" as const, description: "Monthly premium and copay reimbursements processed" },
+    { id: "s2", date: "Nov 2024", title: "ICHRA Reimbursement", amount: 412.30, status: "paid" as const, description: "Monthly premium and prescription reimbursements" },
+    { id: "s3", date: "Oct 2024", title: "ICHRA Reimbursement", amount: 311.25, status: "paid" as const, description: "Premium reimbursement plus preventive care" },
+  ];
+
+  const healthScoreHistory = [
+    { id: "h1", date: "Dec 2024", title: "Health Assessment", status: "paid" as const, description: "Score: 87/100 - Excellent overall health. Keep up the regular checkups and healthy habits!" },
+    { id: "h2", date: "Sep 2024", title: "Health Assessment", status: "paid" as const, description: "Score: 82/100 - Good health. Recommended increasing physical activity." },
+    { id: "h3", date: "Jun 2024", title: "Health Assessment", status: "paid" as const, description: "Score: 79/100 - Average. Started new medication regimen." },
+  ];
+
   const healthMetrics = [
-    { label: "Last Checkup", value: "2 weeks ago", icon: Stethoscope, status: "good" },
-    { label: "Prescriptions", value: "2 active", icon: Pill, status: "good" },
-    { label: "Health Score", value: "87/100", icon: Activity, status: "good" },
-    { label: "Savings YTD", value: "$1,247", icon: DollarSign, status: "great" },
+    { label: "Last Checkup", value: "2 weeks ago", icon: Stethoscope, status: "good" as const, history: visitHistory },
+    { label: "Prescriptions", value: "2 active", icon: Pill, status: "good" as const, history: prescriptionHistory },
+    { label: "Health Score", value: "87/100", icon: Activity, status: "good" as const, history: healthScoreHistory },
+    { label: "Savings YTD", value: "$1,247", icon: DollarSign, status: "great" as const, history: savingsHistory },
   ];
 
   const notifications = [
@@ -236,26 +263,17 @@ const MemberDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Stats */}
+          {/* Quick Stats - Expandable Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {healthMetrics.map((metric, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{metric.label}</p>
-                      <p className="text-2xl font-bold text-foreground mt-1">{metric.value}</p>
-                    </div>
-                    <div className={`p-3 rounded-full ${
-                      metric.status === "great" 
-                        ? "bg-accent/10 text-accent" 
-                        : "bg-primary/10 text-primary"
-                    }`}>
-                      <metric.icon className="h-6 w-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <ExpandableMetricCard
+                key={index}
+                label={metric.label}
+                value={metric.value}
+                icon={metric.icon}
+                status={metric.status}
+                history={metric.history}
+              />
             ))}
           </div>
 

@@ -43,12 +43,15 @@ import {
 import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
 import { ExpandableMetricCard } from "@/components/ExpandableMetricCard";
+import { EventDetailModal, MemberEvent } from "@/components/EventDetailModal";
 
 const MemberDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<MemberEvent | null>(null);
+  const [eventModalOpen, setEventModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -101,12 +104,264 @@ const MemberDashboard = () => {
     usedOutOfPocket: 2341,
   };
 
-  const recentClaims = [
-    { id: 1, date: "Dec 15, 2024", provider: "Dr. Sarah Chen", type: "Primary Care Visit", amount: 150, status: "approved" },
-    { id: 2, date: "Dec 10, 2024", provider: "CVS Pharmacy", type: "Prescription", amount: 45.99, status: "approved" },
-    { id: 3, date: "Dec 5, 2024", provider: "LabCorp", type: "Blood Work", amount: 287, status: "pending" },
-    { id: 4, date: "Nov 28, 2024", provider: "Urgent Care Plus", type: "Urgent Care", amount: 200, status: "approved" },
+  // Subscription events - parent events for care plans
+  const subscriptionEvents: MemberEvent[] = [
+    {
+      id: "sub-primary-001",
+      individual_id: "user-001",
+      event_type: "subscription",
+      event_category: "administrative",
+      title: "Primary Care Subscription",
+      description: "Unlimited primary care visits with Dr. Sarah Chen. Includes same-day appointments, 24/7 virtual care, and no copays for routine visits.",
+      event_date: "2024-01-01T00:00:00Z",
+      provider_name: "Dr. Sarah Chen",
+      provider_specialty: "Primary Care",
+      facility_name: "Chen Family Medicine",
+      facility_address: "1234 Medical Center Dr, Miami, FL",
+      billed_amount: 99,
+      member_responsibility: 99,
+      status: "active",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      notes: "Annual subscription started January 2024. Renews automatically on the 1st of each month.",
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
+    {
+      id: "sub-cardio-001",
+      individual_id: "user-001",
+      event_type: "subscription",
+      event_category: "administrative",
+      title: "Cardiology Care Subscription",
+      description: "Specialized cardiology care with Dr. Michael Roberts. Includes regular monitoring, EKG tests, and priority scheduling.",
+      event_date: "2024-03-01T00:00:00Z",
+      provider_name: "Dr. Michael Roberts",
+      provider_specialty: "Cardiology",
+      facility_name: "Heart Health Center",
+      facility_address: "5678 Heart Health Blvd, Miami, FL",
+      billed_amount: 149,
+      member_responsibility: 149,
+      status: "active",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      notes: "Cardiology subscription for ongoing heart health monitoring.",
+      created_at: "2024-03-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
+    {
+      id: "sub-ortho-001",
+      individual_id: "user-001",
+      event_type: "subscription",
+      event_category: "administrative",
+      title: "Orthopedics Care Subscription",
+      description: "Comprehensive orthopedic care with Dr. James Morrison. Includes consultations, physical therapy referrals, and imaging.",
+      event_date: "2024-06-01T00:00:00Z",
+      provider_name: "Dr. James Morrison",
+      provider_specialty: "Orthopedics",
+      facility_name: "Bone & Joint Center",
+      facility_address: "910 Bone & Joint Center, Miami, FL",
+      billed_amount: 129,
+      member_responsibility: 129,
+      status: "active",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      notes: "Orthopedics subscription for musculoskeletal care.",
+      created_at: "2024-06-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
   ];
+
+  // Claims with full event data - each claim links to a parent event
+  const claimEvents: MemberEvent[] = [
+    {
+      id: "claim-001",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "medical",
+      title: "Primary Care Visit",
+      description: "Annual wellness checkup with Dr. Sarah Chen. Blood pressure normal, vitals good. Follow-up scheduled in 6 months.",
+      event_date: "2024-12-15T10:00:00Z",
+      provider_name: "Dr. Sarah Chen",
+      provider_specialty: "Primary Care",
+      facility_name: "Chen Family Medicine",
+      facility_address: "1234 Medical Center Dr, Miami, FL",
+      billed_amount: 250,
+      allowed_amount: 200,
+      plan_paid: 50,
+      member_responsibility: 150,
+      status: "completed",
+      notes: "Covered under Primary Care Subscription. Copay waived.",
+      parent_event_id: "sub-primary-001",
+      created_at: "2024-12-15T10:00:00Z",
+      updated_at: "2024-12-15T12:00:00Z",
+    },
+    {
+      id: "claim-002",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "pharmacy",
+      title: "Prescription - Lisinopril 10mg",
+      description: "Blood pressure medication - 90 day supply. Prescribed by Dr. Sarah Chen.",
+      event_date: "2024-12-10T14:30:00Z",
+      provider_name: "Dr. Sarah Chen",
+      provider_specialty: "Primary Care",
+      facility_name: "CVS Pharmacy",
+      facility_address: "123 Main St, Miami, FL",
+      pharmacy_name: "CVS Pharmacy - Main St",
+      medication_name: "Lisinopril",
+      dosage: "10mg",
+      quantity: 90,
+      refills_remaining: 2,
+      billed_amount: 65.99,
+      allowed_amount: 45.99,
+      plan_paid: 0,
+      member_responsibility: 45.99,
+      status: "completed",
+      created_at: "2024-12-10T14:30:00Z",
+      updated_at: "2024-12-10T15:00:00Z",
+    },
+    {
+      id: "claim-003",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "medical",
+      title: "Blood Work - Comprehensive Panel",
+      description: "Comprehensive metabolic panel and lipid profile. Results pending review.",
+      event_date: "2024-12-05T09:00:00Z",
+      provider_name: "LabCorp",
+      provider_specialty: "Diagnostics",
+      facility_name: "LabCorp Patient Service Center",
+      facility_address: "456 Diagnostics Ave, Miami, FL",
+      billed_amount: 450,
+      allowed_amount: 287,
+      plan_paid: 0,
+      member_responsibility: 287,
+      status: "pending",
+      notes: "Waiting for insurance processing.",
+      created_at: "2024-12-05T09:00:00Z",
+      updated_at: "2024-12-05T09:30:00Z",
+    },
+    {
+      id: "claim-004",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "medical",
+      title: "Urgent Care Visit",
+      description: "Treatment for minor respiratory infection. Diagnosed with acute bronchitis. Prescribed antibiotics course.",
+      event_date: "2024-11-28T16:00:00Z",
+      provider_name: "Dr. Amanda Wilson",
+      provider_specialty: "Emergency Medicine",
+      facility_name: "Urgent Care Plus",
+      facility_address: "789 Emergency Lane, Miami, FL",
+      billed_amount: 350,
+      allowed_amount: 280,
+      plan_paid: 80,
+      member_responsibility: 200,
+      status: "completed",
+      notes: "Out-of-network urgent care. Higher member responsibility.",
+      created_at: "2024-11-28T16:00:00Z",
+      updated_at: "2024-11-29T10:00:00Z",
+    },
+    // Subscription payment claims - monthly payments linked to subscription events
+    {
+      id: "claim-sub-primary-dec",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "administrative",
+      title: "Primary Care Subscription - December 2024",
+      description: "Monthly subscription payment for Primary Care plan with Dr. Sarah Chen.",
+      event_date: "2024-12-01T00:00:00Z",
+      provider_name: "Dr. Sarah Chen",
+      provider_specialty: "Primary Care",
+      facility_name: "Chen Family Medicine",
+      facility_address: "1234 Medical Center Dr, Miami, FL",
+      billed_amount: 99,
+      member_responsibility: 99,
+      status: "completed",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      parent_event_id: "sub-primary-001",
+      notes: "Part of annual subscription. Auto-renewed.",
+      created_at: "2024-12-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
+    {
+      id: "claim-sub-cardio-dec",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "administrative",
+      title: "Cardiology Subscription - December 2024",
+      description: "Monthly subscription payment for Cardiology plan with Dr. Michael Roberts.",
+      event_date: "2024-12-01T00:00:00Z",
+      provider_name: "Dr. Michael Roberts",
+      provider_specialty: "Cardiology",
+      facility_name: "Heart Health Center",
+      facility_address: "5678 Heart Health Blvd, Miami, FL",
+      billed_amount: 149,
+      member_responsibility: 149,
+      status: "completed",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      parent_event_id: "sub-cardio-001",
+      notes: "Part of cardiology subscription. Auto-renewed.",
+      created_at: "2024-12-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
+    {
+      id: "claim-sub-ortho-dec",
+      individual_id: "user-001",
+      event_type: "claim",
+      event_category: "administrative",
+      title: "Orthopedics Subscription - December 2024",
+      description: "Monthly subscription payment for Orthopedics plan with Dr. James Morrison.",
+      event_date: "2024-12-01T00:00:00Z",
+      provider_name: "Dr. James Morrison",
+      provider_specialty: "Orthopedics",
+      facility_name: "Bone & Joint Center",
+      facility_address: "910 Bone & Joint Center, Miami, FL",
+      billed_amount: 129,
+      member_responsibility: 129,
+      status: "completed",
+      is_recurring: true,
+      recurrence_pattern: "monthly",
+      parent_event_id: "sub-ortho-001",
+      notes: "Part of orthopedics subscription. Auto-renewed.",
+      created_at: "2024-12-01T00:00:00Z",
+      updated_at: "2024-12-01T00:00:00Z",
+    },
+  ];
+
+  // Helper to get parent subscription event
+  const getParentSubscription = (parentEventId?: string) => {
+    if (!parentEventId) return null;
+    return subscriptionEvents.find(e => e.id === parentEventId) || null;
+  };
+
+  // Handler to open claim event modal
+  const handleClaimClick = (claim: MemberEvent) => {
+    setSelectedEvent(claim);
+    setEventModalOpen(true);
+  };
+
+  // Handler to view parent subscription from a claim
+  const handleViewSubscription = (parentEventId: string) => {
+    const subscription = getParentSubscription(parentEventId);
+    if (subscription) {
+      setSelectedEvent(subscription);
+      // Modal stays open, just switches content
+    }
+  };
+
+  // Legacy format for display
+  const recentClaims = claimEvents.slice(0, 4).map(claim => ({
+    id: claim.id,
+    date: new Date(claim.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    provider: claim.provider_name || claim.facility_name || 'Unknown',
+    type: claim.title,
+    amount: claim.member_responsibility || 0,
+    status: claim.status === 'completed' ? 'approved' : claim.status,
+    eventData: claim,
+  }));
 
   const upcomingAppointments = [
     { id: 1, date: "Dec 28, 2024", time: "10:00 AM", provider: "Dr. Michael Roberts", type: "Cardiology Follow-up" },
@@ -437,7 +692,8 @@ const MemberDashboard = () => {
                       {recentClaims.map((claim) => (
                         <div 
                           key={claim.id}
-                          className="flex items-center justify-between p-3 rounded-lg border border-border"
+                          onClick={() => handleClaimClick(claim.eventData)}
+                          className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer group"
                         >
                           <div className="flex items-center gap-3">
                             {claim.status === "approved" ? (
@@ -446,21 +702,24 @@ const MemberDashboard = () => {
                               <Clock className="h-5 w-5 text-amber-500" />
                             )}
                             <div>
-                              <p className="text-sm font-medium">{claim.type}</p>
+                              <p className="text-sm font-medium group-hover:text-primary transition-colors">{claim.type}</p>
                               <p className="text-xs text-muted-foreground">{claim.provider}</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="font-medium">${claim.amount}</p>
-                            <Badge 
-                              variant="secondary" 
-                              className={claim.status === "approved" 
-                                ? "bg-accent/10 text-accent" 
-                                : "bg-amber-500/10 text-amber-600"
-                              }
-                            >
-                              {claim.status}
-                            </Badge>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="font-medium">${claim.amount}</p>
+                              <Badge 
+                                variant="secondary" 
+                                className={claim.status === "approved" 
+                                  ? "bg-accent/10 text-accent" 
+                                  : "bg-amber-500/10 text-amber-600"
+                                }
+                              >
+                                {claim.status}
+                              </Badge>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                           </div>
                         </div>
                       ))}
@@ -1052,38 +1311,93 @@ const MemberDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Claims History</CardTitle>
-                  <CardDescription>View and track all your healthcare claims</CardDescription>
+                  <CardDescription>View and track all your healthcare claims. Click any claim to see the full event details.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentClaims.map((claim) => (
-                      <div 
-                        key={claim.id}
-                        className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          {claim.status === "approved" ? (
-                            <CheckCircle2 className="h-6 w-6 text-accent" />
-                          ) : (
-                            <Clock className="h-6 w-6 text-amber-500" />
-                          )}
-                          <div>
-                            <p className="font-medium">{claim.type}</p>
-                            <p className="text-sm text-muted-foreground">{claim.provider}</p>
-                            <p className="text-xs text-muted-foreground">{claim.date}</p>
+                    {claimEvents.map((claim) => {
+                      const parentSub = getParentSubscription(claim.parent_event_id);
+                      return (
+                        <div 
+                          key={claim.id}
+                          onClick={() => handleClaimClick(claim)}
+                          className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-4">
+                            {claim.status === "completed" ? (
+                              <CheckCircle2 className="h-6 w-6 text-accent" />
+                            ) : (
+                              <Clock className="h-6 w-6 text-amber-500" />
+                            )}
+                            <div>
+                              <p className="font-medium group-hover:text-primary transition-colors">{claim.title}</p>
+                              <p className="text-sm text-muted-foreground">{claim.provider_name || claim.facility_name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(claim.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </p>
+                              {parentSub && (
+                                <Badge variant="outline" className="mt-1 text-xs bg-primary/5 border-primary/20 text-primary">
+                                  Part of: {parentSub.title}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="text-lg font-semibold">${claim.member_responsibility || 0}</p>
+                              <Badge 
+                                variant="secondary" 
+                                className={claim.status === "completed" 
+                                  ? "bg-accent/10 text-accent" 
+                                  : "bg-amber-500/10 text-amber-600"
+                                }
+                              >
+                                {claim.status === "completed" ? "approved" : claim.status}
+                              </Badge>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-semibold">${claim.amount}</p>
-                          <Badge 
-                            variant="secondary" 
-                            className={claim.status === "approved" 
-                              ? "bg-accent/10 text-accent" 
-                              : "bg-amber-500/10 text-amber-600"
-                            }
-                          >
-                            {claim.status}
-                          </Badge>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Active Subscriptions */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-primary" />
+                    Active Subscriptions
+                  </CardTitle>
+                  <CardDescription>Your subscription-based care plans. Click to view all payments and details.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {subscriptionEvents.map((sub) => (
+                      <div
+                        key={sub.id}
+                        onClick={() => handleClaimClick(sub)}
+                        className="p-4 rounded-lg border-2 border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <Stethoscope className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold group-hover:text-primary transition-colors">{sub.title.replace(' Subscription', '')}</p>
+                            <p className="text-xs text-muted-foreground">{sub.provider_name}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground">
+                            Since {new Date(sub.event_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="font-bold text-primary">${sub.billed_amount}/mo</span>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1133,6 +1447,13 @@ const MemberDashboard = () => {
       </main>
 
       <Footer />
+
+      {/* Event Detail Modal */}
+      <EventDetailModal 
+        event={selectedEvent} 
+        open={eventModalOpen} 
+        onOpenChange={setEventModalOpen} 
+      />
     </div>
   );
 };

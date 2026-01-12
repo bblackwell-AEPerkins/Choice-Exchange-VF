@@ -3,8 +3,10 @@ import { Footer } from "@/components/Footer";
 import { HeroSplitPaths } from "@/components/HeroSplitPaths";
 import { ValueProposition } from "@/components/ValueProposition";
 import { CoveragePathPanels } from "@/components/CoveragePathPanels";
+import { BenefitTypesExplainer } from "@/components/BenefitTypesExplainer";
 import { PlanExplorer } from "@/components/PlanExplorer";
 import { TrustIndicators } from "@/components/TrustIndicators";
+import { MobileEnrollmentSteps } from "@/components/MobileEnrollmentSteps";
 
 const Index = () => {
   return (
@@ -12,8 +14,10 @@ const Index = () => {
       <Header />
       <main>
         <HeroSplitPaths />
-        <ValueProposition />
+        <MobileEnrollmentSteps />
+        <BenefitTypesExplainer />
         <CoveragePathPanels />
+        <ValueProposition />
         <PlanExplorer />
         <TrustIndicators />
       </main>

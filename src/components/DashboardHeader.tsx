@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, User, LogOut, LayoutDashboard, Users, ShoppingCart, Bell, Settings } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard, Users, ShoppingCart, Settings } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 interface DashboardHeaderProps {
   activeTab: string;
@@ -66,9 +67,7 @@ export const DashboardHeader = ({ activeTab, onTabChange }: DashboardHeaderProps
 
           {/* Desktop User Actions */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationDropdown />
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
             </Button>
@@ -115,11 +114,14 @@ export const DashboardHeader = ({ activeTab, onTabChange }: DashboardHeaderProps
                 </button>
               ))}
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
-                <div className="flex items-center gap-3 px-3 py-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-4 w-4 text-primary" />
+                <div className="flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-medium">Brandon Goldstein</span>
                   </div>
-                  <span className="font-medium">Brandon Goldstein</span>
+                  <NotificationDropdown />
                 </div>
                 <Button variant="outline" onClick={handleLogout} className="w-full">
                   <LogOut className="h-4 w-4 mr-2" />

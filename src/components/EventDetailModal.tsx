@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Stethoscope,
   Activity,
-  ClipboardList
+  ClipboardList,
+  X
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -127,7 +128,16 @@ export const EventDetailModal = ({ event, open, onOpenChange }: EventDetailModal
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        {/* Close button - top right */}
+        <button
+          onClick={() => onOpenChange(false)}
+          className="absolute right-4 top-4 p-2 rounded-full hover:bg-muted transition-colors z-10"
+          aria-label="Close"
+        >
+          <X className="h-5 w-5 text-muted-foreground" />
+        </button>
+
+        <DialogHeader className="pr-10">
           <div className="flex items-start gap-4">
             <div className={`p-3 rounded-xl ${getCategoryColor()}`}>
               {getEventIcon()}

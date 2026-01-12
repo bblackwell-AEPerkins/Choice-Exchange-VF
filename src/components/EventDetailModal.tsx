@@ -344,6 +344,54 @@ export const EventDetailModal = ({ event, open, onOpenChange }: EventDetailModal
             </div>
           )}
 
+          {/* Parent Subscription Link */}
+          {event.parent_event_id && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Part of a subscription plan</span>
+                </div>
+                <Badge variant="outline" className="bg-primary/10 border-primary/30 text-primary">
+                  Subscription
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                This claim is linked to a recurring subscription. View the parent subscription to see all related payments and plan details.
+              </p>
+            </div>
+          )}
+
+          {/* Subscription Details (for subscription events) */}
+          {event.event_type === "subscription" && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                  Subscription Details
+                </h4>
+                <div className="bg-primary/5 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge className="bg-accent/10 text-accent border-accent/20">Active</Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Billing Cycle</span>
+                    <span className="font-medium capitalize">{event.recurrence_pattern || 'Monthly'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Monthly Amount</span>
+                    <span className="font-bold text-primary">{formatCurrency(event.billed_amount || 0)}</span>
+                  </div>
+                  <Separator />
+                  <p className="text-xs text-muted-foreground">
+                    All monthly payments for this subscription appear in your Claims history.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button variant="outline" className="flex-1 gap-2">

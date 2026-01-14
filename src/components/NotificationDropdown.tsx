@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Bell, X, Calendar, CheckCircle2, AlertCircle, FileText, DollarSign, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, X, Calendar, CheckCircle2, AlertCircle, FileText, DollarSign, Clock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -18,6 +19,7 @@ interface Notification {
   read: boolean;
   type: "claim" | "appointment" | "document" | "alert" | "info";
   details?: {
+    eventId?: string;
     eventType?: string;
     provider?: string;
     location?: string;
@@ -37,6 +39,7 @@ const notifications: Notification[] = [
     read: false,
     type: "claim",
     details: {
+      eventId: "claim-001",
       eventType: "Primary Care Visit",
       provider: "Dr. Sarah Chen",
       location: "1234 Medical Center Dr, Miami, FL",
@@ -98,6 +101,7 @@ export const NotificationDropdown = () => {
   const [open, setOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const navigate = useNavigate();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -324,8 +328,20 @@ export const NotificationDropdown = () => {
                   <Button variant="outline" className="flex-1" onClick={() => setDetailOpen(false)}>
                     Dismiss
                   </Button>
-                  <Button className="flex-1">
+                  <Button 
+                    className="flex-1 gap-2"
+                    onClick={() => {
+                      setDetailOpen(false);
+                      if (selectedNotification?.details?.eventId) {
+                        navigate(`/event/${selectedNotification.details.eventId}`);
+                      } else {
+                        // Navigate to claims tab on dashboard if no specific event
+                        navigate("/dashboard?tab=claims");
+                      }
+                    }}
+                  >
                     View Related Event
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

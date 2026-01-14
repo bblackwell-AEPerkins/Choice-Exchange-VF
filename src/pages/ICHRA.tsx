@@ -170,8 +170,7 @@ const ICHRA = () => {
                   with choice. Learn how Choice Exchange can help you implement ICHRA.
                 </p>
                 <Button 
-                  variant="outline" 
-                  className="border-secondary-foreground/30 text-secondary-foreground hover:bg-secondary-foreground/10"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => navigate("/employer")}
                 >
                   <Briefcase className="mr-2 h-4 w-4" />

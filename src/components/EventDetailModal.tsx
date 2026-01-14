@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,8 @@ interface EventDetailModalProps {
 }
 
 export const EventDetailModal = ({ event, open, onOpenChange }: EventDetailModalProps) => {
+  const navigate = useNavigate();
+  
   if (!event) return null;
 
   const getStatusBadge = (status: string) => {
@@ -398,7 +401,13 @@ export const EventDetailModal = ({ event, open, onOpenChange }: EventDetailModal
               <Download className="h-4 w-4" />
               Download Details
             </Button>
-            <Button className="flex-1 gap-2">
+            <Button 
+              className="flex-1 gap-2"
+              onClick={() => {
+                onOpenChange(false);
+                navigate(`/event/${event.id}`);
+              }}
+            >
               View Full Record
               <ChevronRight className="h-4 w-4" />
             </Button>

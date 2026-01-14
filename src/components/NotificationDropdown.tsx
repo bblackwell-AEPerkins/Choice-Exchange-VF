@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Calendar, CheckCircle2, AlertCircle, FileText, DollarSign, Clock, ChevronRight } from "lucide-react";
+import { Bell, X, Calendar, CheckCircle2, AlertCircle, FileText, DollarSign, Clock, ChevronRight, Pill, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,99 +9,132 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { format, formatDistanceToNow } from "date-fns";
 
 interface Notification {
   id: string;
+  eventId: string;
   title: string;
   message: string;
   time: string;
   read: boolean;
-  type: "claim" | "appointment" | "document" | "alert" | "info";
-  details?: {
-    eventId?: string;
-    eventType?: string;
+  type: "claim" | "appointment" | "document" | "alert" | "info" | "prescription";
+  details: {
+    eventType: string;
     provider?: string;
     location?: string;
     amount?: number;
-    date?: string;
-    actionRequired?: boolean;
-    description?: string;
+    date: string;
+    actionRequired: boolean;
+    description: string;
   };
 }
-
-const notifications: Notification[] = [
-  { 
-    id: "n1", 
-    title: "Claim Approved", 
-    message: "Your claim for $150 has been approved", 
-    time: "2 hours ago", 
-    read: false,
-    type: "claim",
-    details: {
-      eventId: "claim-001",
-      eventType: "Primary Care Visit",
-      provider: "Dr. Sarah Chen",
-      location: "1234 Medical Center Dr, Miami, FL",
-      amount: 150,
-      date: "Dec 15, 2024",
-      actionRequired: false,
-      description: "Your claim for the primary care visit on December 15th has been processed and approved. The approved amount of $150.00 has been applied to your benefits. No further action is required."
-    }
-  },
-  { 
-    id: "n2", 
-    title: "Appointment Reminder", 
-    message: "Cardiology follow-up in 6 days", 
-    time: "1 day ago", 
-    read: false,
-    type: "appointment",
-    details: {
-      eventType: "Cardiology Follow-up",
-      provider: "Dr. Michael Roberts",
-      location: "5678 Heart Health Blvd, Miami, FL",
-      date: "Dec 28, 2024 at 10:00 AM",
-      actionRequired: true,
-      description: "You have an upcoming cardiology follow-up appointment. Please arrive 15 minutes early to complete any necessary paperwork. Bring your insurance card and a list of current medications."
-    }
-  },
-  { 
-    id: "n3", 
-    title: "Document Ready", 
-    message: "Your EOB is ready to download", 
-    time: "3 days ago", 
-    read: true,
-    type: "document",
-    details: {
-      eventType: "Explanation of Benefits",
-      date: "Dec 12, 2024",
-      actionRequired: false,
-      description: "Your Explanation of Benefits (EOB) for services rendered in November 2024 is now available. This document shows what was billed, what your plan covered, and any amount you may owe. You can download it from your documents section."
-    }
-  },
-  { 
-    id: "n4", 
-    title: "Prescription Refill Due", 
-    message: "Lisinopril 10mg refill available", 
-    time: "5 days ago", 
-    read: true,
-    type: "alert",
-    details: {
-      eventType: "Prescription Refill",
-      provider: "Dr. Sarah Chen",
-      location: "CVS Pharmacy, 123 Main St, Miami, FL",
-      date: "Dec 20, 2024",
-      actionRequired: true,
-      description: "Your prescription for Lisinopril 10mg is due for a refill. You have 2 refills remaining. Contact your pharmacy or use the CVS app to request your refill."
-    }
-  },
-];
 
 export const NotificationDropdown = () => {
   const [open, setOpen] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        // Fetch recent member_events to use as notifications
+        const { data: events, error } = await supabase
+          .from("member_events")
+          .select("*")
+          .order("event_date", { ascending: false })
+          .limit(10);
+
+        if (error) {
+          console.error("Error fetching notifications:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (events && events.length > 0) {
+          const mappedNotifications: Notification[] = events.map((event, index) => {
+            const eventDate = new Date(event.event_date);
+            const isUpcoming = eventDate > new Date();
+            
+            let type: Notification["type"] = "info";
+            let title = event.title;
+            let message = event.description || "";
+            let actionRequired = false;
+
+            switch (event.event_type) {
+              case "claim":
+                type = "claim";
+                title = event.status === "completed" ? "Claim Processed" : "Claim Update";
+                message = event.member_responsibility 
+                  ? `Your responsibility: $${event.member_responsibility.toFixed(2)}`
+                  : event.description || "Your claim has been updated";
+                break;
+              case "appointment":
+                type = "appointment";
+                title = isUpcoming ? "Upcoming Appointment" : "Appointment Complete";
+                message = `${event.appointment_type || "Appointment"} with ${event.provider_name || "your provider"}`;
+                actionRequired = isUpcoming;
+                break;
+              case "prescription":
+                type = "prescription";
+                title = event.refills_remaining !== null && event.refills_remaining <= 1 
+                  ? "Prescription Refill Due" 
+                  : "Prescription Update";
+                message = `${event.medication_name}${event.dosage ? ` ${event.dosage}` : ""}`;
+                actionRequired = event.refills_remaining !== null && event.refills_remaining <= 1;
+                break;
+              case "visit":
+                type = "claim";
+                title = "Visit Summary Available";
+                message = `${event.provider_name || "Provider"} - ${event.provider_specialty || "Visit"}`;
+                break;
+              case "lab_result":
+                type = "document";
+                title = "Lab Results Ready";
+                message = event.description || "Your lab results are now available";
+                break;
+              default:
+                type = "info";
+                title = event.title;
+                message = event.description || "";
+            }
+
+            return {
+              id: `notif-${event.id}`,
+              eventId: event.id,
+              title,
+              message,
+              time: formatDistanceToNow(eventDate, { addSuffix: true }),
+              read: index > 2, // Mark first 3 as unread for demo
+              type,
+              details: {
+                eventType: event.event_type.replace("_", " "),
+                provider: event.provider_name || undefined,
+                location: event.facility_address || event.facility_name || undefined,
+                amount: event.member_responsibility || event.billed_amount || undefined,
+                date: format(eventDate, "MMM d, yyyy 'at' h:mm a"),
+                actionRequired,
+                description: event.description || `${event.title} on ${format(eventDate, "MMMM d, yyyy")}`
+              }
+            };
+          });
+
+          setNotifications(mappedNotifications);
+        }
+      } catch (err) {
+        console.error("Error in fetchNotifications:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -115,6 +148,8 @@ export const NotificationDropdown = () => {
         return <FileText className="h-4 w-4" />;
       case "alert":
         return <AlertCircle className="h-4 w-4" />;
+      case "prescription":
+        return <Pill className="h-4 w-4" />;
       default:
         return <Bell className="h-4 w-4" />;
     }
@@ -130,6 +165,8 @@ export const NotificationDropdown = () => {
         return "bg-blue-500/10 text-blue-600";
       case "alert":
         return "bg-yellow-500/10 text-yellow-600";
+      case "prescription":
+        return "bg-green-500/10 text-green-600";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -166,7 +203,11 @@ export const NotificationDropdown = () => {
             </div>
           </div>
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                Loading...
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 No notifications
               </div>
@@ -204,8 +245,16 @@ export const NotificationDropdown = () => {
             )}
           </div>
           <div className="p-3 border-t">
-            <Button variant="ghost" className="w-full text-sm" size="sm">
-              View All Notifications
+            <Button 
+              variant="ghost" 
+              className="w-full text-sm" 
+              size="sm"
+              onClick={() => {
+                setOpen(false);
+                navigate("/dashboard?tab=claims");
+              }}
+            >
+              View All Activity
             </Button>
           </div>
         </PopoverContent>
@@ -234,9 +283,9 @@ export const NotificationDropdown = () => {
                     <DialogTitle className="text-lg font-bold leading-tight mb-1">
                       {selectedNotification.title}
                     </DialogTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <DialogDescription className="text-sm text-muted-foreground">
                       {selectedNotification.time}
-                    </p>
+                    </DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
@@ -248,79 +297,71 @@ export const NotificationDropdown = () => {
                 </div>
 
                 {/* Details */}
-                {selectedNotification.details && (
+                <Separator />
+                
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Event Type</p>
+                      <p className="text-sm font-medium capitalize">{selectedNotification.details.eventType}</p>
+                    </div>
+                  </div>
+
+                  {selectedNotification.details.provider && (
+                    <div className="flex items-center gap-3">
+                      <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Provider</p>
+                        <p className="text-sm font-medium">{selectedNotification.details.provider}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedNotification.details.location && (
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Location</p>
+                        <p className="text-sm font-medium">{selectedNotification.details.location}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Date</p>
+                      <p className="text-sm font-medium">{selectedNotification.details.date}</p>
+                    </div>
+                  </div>
+
+                  {selectedNotification.details.amount !== undefined && (
+                    <div className="flex items-center gap-3">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Amount</p>
+                        <p className="text-sm font-medium">${selectedNotification.details.amount.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {selectedNotification.details.description && (
                   <>
                     <Separator />
-                    
-                    <div className="space-y-3">
-                      {selectedNotification.details.eventType && (
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Event Type</p>
-                            <p className="text-sm font-medium">{selectedNotification.details.eventType}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedNotification.details.provider && (
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Provider</p>
-                            <p className="text-sm font-medium">{selectedNotification.details.provider}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedNotification.details.location && (
-                        <div className="flex items-center gap-3">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Location</p>
-                            <p className="text-sm font-medium">{selectedNotification.details.location}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedNotification.details.date && (
-                        <div className="flex items-center gap-3">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Date</p>
-                            <p className="text-sm font-medium">{selectedNotification.details.date}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedNotification.details.amount !== undefined && (
-                        <div className="flex items-center gap-3">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Amount</p>
-                            <p className="text-sm font-medium">${selectedNotification.details.amount.toFixed(2)}</p>
-                          </div>
-                        </div>
-                      )}
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-2">Details</p>
+                      <p className="text-sm leading-relaxed">{selectedNotification.details.description}</p>
                     </div>
-
-                    {selectedNotification.details.description && (
-                      <>
-                        <Separator />
-                        <div>
-                          <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-2">Details</p>
-                          <p className="text-sm leading-relaxed">{selectedNotification.details.description}</p>
-                        </div>
-                      </>
-                    )}
-
-                    {selectedNotification.details.actionRequired && (
-                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-yellow-600" />
-                        <span className="text-sm text-yellow-700 font-medium">Action Required</span>
-                      </div>
-                    )}
                   </>
+                )}
+
+                {selectedNotification.details.actionRequired && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-yellow-600" />
+                    <span className="text-sm text-yellow-700 font-medium">Action Required</span>
+                  </div>
                 )}
 
                 {/* Actions */}
@@ -332,15 +373,10 @@ export const NotificationDropdown = () => {
                     className="flex-1 gap-2"
                     onClick={() => {
                       setDetailOpen(false);
-                      if (selectedNotification?.details?.eventId) {
-                        navigate(`/event/${selectedNotification.details.eventId}`);
-                      } else {
-                        // Navigate to claims tab on dashboard if no specific event
-                        navigate("/dashboard?tab=claims");
-                      }
+                      navigate(`/event/${selectedNotification.eventId}`);
                     }}
                   >
-                    View Related Event
+                    View Event
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>

@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import ICHRACompare from "./pages/ICHRACompare";
 import ICHRA from "./pages/ICHRA";
 import ICHRAEnroll from "./pages/ICHRAEnroll";
+import ICHRAPlans from "./pages/ICHRAPlans";
 import BenefitPlans from "./pages/BenefitPlans";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/compare-ichra" element={<ICHRACompare />} />
           <Route path="/ichra" element={<ICHRA />} />
           <Route path="/ichra/enroll" element={<ICHRAEnroll />} />
+          <Route path="/plans" element={<ICHRAPlans />} />
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           <Route path="/support" element={<Support />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, X, Users, Building2, User, Shield, CreditCard, Stethoscope, Network, BarChart3, FileCode, UserCheck, Briefcase } from "lucide-react";
+import { Menu, X, Users, Building2, User, Shield, CreditCard, Stethoscope, Network, BarChart3, FileCode, UserCheck, Briefcase, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -15,6 +15,12 @@ import {
 import { UserTypeModal } from "./UserTypeModal";
 
 const memberSolutions = [
+  { 
+    title: "Browse ICHRA Plans", 
+    href: "/plans",
+    icon: Search,
+    description: "View health plans available in your area"
+  },
   { 
     title: "ICHRA Enrollment", 
     href: "/ichra",

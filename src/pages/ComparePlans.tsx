@@ -283,7 +283,7 @@ const ComparePlans = () => {
                               {plan.features.map((feature, idx) => (
                                 <span
                                   key={idx}
-                                  className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent"
+                                  className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
                                 >
                                   {feature}
                                 </span>

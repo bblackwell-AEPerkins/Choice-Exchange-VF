@@ -88,10 +88,14 @@ const MemberDashboard = () => {
     const fetchMemberEvents = async () => {
       try {
         setEventsLoading(true);
+        console.log("Fetching member events for user:", user?.id);
+        
         const { data, error } = await supabase
           .from("member_events")
           .select("*")
           .order("event_date", { ascending: false });
+
+        console.log("Member events response:", { data, error, count: data?.length });
 
         if (error) {
           console.error("Error fetching member events:", error);

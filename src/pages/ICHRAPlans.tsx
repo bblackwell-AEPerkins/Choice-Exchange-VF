@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Shield,
@@ -24,6 +25,8 @@ import {
   AlertCircle,
   Star,
   Leaf,
+  Scale,
+  X,
 } from "lucide-react";
 import {
   Select,
@@ -67,6 +70,7 @@ const metalTierIcons: Record<string, React.ReactNode> = {
 };
 
 const ICHRAPlans = () => {
+  const navigate = useNavigate();
   const [zipCode, setZipCode] = useState("");
   const [searchedZip, setSearchedZip] = useState("");
   const [plans, setPlans] = useState<ICHRAPlan[]>([]);
@@ -75,6 +79,30 @@ const ICHRAPlans = () => {
   const [metalFilter, setMetalFilter] = useState<string>("all");
   const [planTypeFilter, setPlanTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("premium-low");
+  const [selectedPlans, setSelectedPlans] = useState<string[]>([]);
+
+  const togglePlanSelection = (planId: string) => {
+    setSelectedPlans(prev => {
+      if (prev.includes(planId)) {
+        return prev.filter(id => id !== planId);
+      }
+      if (prev.length >= 3) {
+        return prev; // Max 3 plans
+      }
+      return [...prev, planId];
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedPlans.length >= 2) {
+      // Store selected plans in sessionStorage for the compare page
+      sessionStorage.setItem("comparePlans", JSON.stringify(selectedPlans));
+      sessionStorage.setItem("comparePlansData", JSON.stringify(
+        plans.filter(p => selectedPlans.includes(p.id))
+      ));
+      navigate("/compare-plans");
+    }
+  };
 
   const fetchPlans = async (zip: string) => {
     if (!zip || zip.length < 5) return;
@@ -315,18 +343,30 @@ const ICHRAPlans = () => {
             {/* Plan Cards */}
             {!loading && filteredPlans.length > 0 && (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPlans.map((plan) => (
+                {filteredPlans.map((plan) => {
+                  const isSelected = selectedPlans.includes(plan.id);
+                  return (
                   <Card 
                     key={plan.id} 
-                    className="group hover:shadow-lg transition-all duration-300 hover:border-primary/50"
+                    className={`group hover:shadow-lg transition-all duration-300 ${
+                      isSelected ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/50"
+                    }`}
                   >
                     <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">{plan.carrier_name}</p>
-                          <CardTitle className="text-lg mt-1">{plan.plan_name}</CardTitle>
+                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => togglePlanSelection(plan.id)}
+                            disabled={!isSelected && selectedPlans.length >= 3}
+                            className="mt-1"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">{plan.carrier_name}</p>
+                            <CardTitle className="text-lg mt-1">{plan.plan_name}</CardTitle>
+                          </div>
                         </div>
-                        <Badge className={`${metalTierColors[plan.metal_tier] || "bg-muted"} flex items-center gap-1`}>
+                        <Badge className={`${metalTierColors[plan.metal_tier] || "bg-muted"} flex items-center gap-1 flex-shrink-0`}>
                           {metalTierIcons[plan.metal_tier]}
                           {plan.metal_tier}
                         </Badge>
@@ -417,16 +457,75 @@ const ICHRAPlans = () => {
                         </div>
                       )}
 
-                      {/* CTA */}
-                      <Button className="w-full mt-2 group-hover:gradient-primary group-hover:border-0" variant="outline" asChild>
-                        <Link to="/auth?redirect=/ichra/enroll">
-                          Enroll in This Plan
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Link>
-                      </Button>
+                      {/* CTA Buttons */}
+                      <div className="flex gap-2 mt-2">
+                        <Button 
+                          variant={isSelected ? "default" : "outline"}
+                          className={`flex-1 ${isSelected ? "gradient-primary border-0" : ""}`}
+                          onClick={() => togglePlanSelection(plan.id)}
+                          disabled={!isSelected && selectedPlans.length >= 3}
+                        >
+                          {isSelected ? (
+                            <>
+                              <CheckCircle2 className="h-4 w-4 mr-1" />
+                              Selected
+                            </>
+                          ) : (
+                            <>
+                              <Scale className="h-4 w-4 mr-1" />
+                              Compare
+                            </>
+                          )}
+                        </Button>
+                        <Button variant="outline" asChild className="flex-1">
+                          <Link to="/auth?redirect=/ichra/enroll">
+                            Enroll
+                            <ArrowRight className="h-4 w-4 ml-1" />
+                          </Link>
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Floating Compare Bar */}
+            {selectedPlans.length > 0 && (
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+                <Card className="shadow-2xl border-2 border-primary/30 bg-card/95 backdrop-blur-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Scale className="h-5 w-5 text-primary" />
+                        <span className="font-medium text-sm">
+                          {selectedPlans.length} plan{selectedPlans.length !== 1 ? "s" : ""} selected
+                        </span>
+                        <span className="text-xs text-muted-foreground">(max 3)</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedPlans([])}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Clear
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gradient-primary border-0"
+                          onClick={handleCompare}
+                          disabled={selectedPlans.length < 2}
+                        >
+                          Compare Plans
+                          <ArrowRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>

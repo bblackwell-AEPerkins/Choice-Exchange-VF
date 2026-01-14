@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Users, Building2, MapPin, User } from "lucide-react";
+import { Menu, X, ChevronDown, Users, Building2, MapPin, User, Shield, CreditCard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -26,12 +26,6 @@ const navItems = [
     href: "/employer",
     icon: Building2,
     description: "Manage ICHRA & group plans"
-  },
-  { 
-    title: "Providers", 
-    href: "/providers",
-    icon: MapPin,
-    description: "Explore our provider network"
   },
 ];
 
@@ -94,14 +88,20 @@ export const Header = () => {
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
+              
+              {/* ICHRA - Separate Lane */}
               <NavigationMenuItem>
-                <Link to="/providers" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
-                  Provider Network
+                <Link to="/ichra" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-primary/5 border border-primary/20 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus:bg-primary/10 focus:outline-none">
+                  <Shield className="h-4 w-4 mr-2" />
+                  ICHRA Enrollment
                 </Link>
               </NavigationMenuItem>
+
+              {/* Subscription Care - Separate Lane */}
               <NavigationMenuItem>
-                <Link to="/compare-ichra" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent/10 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none">
-                  Compare Plans
+                <Link to="/providers" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-accent/5 border border-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus:bg-accent/10 focus:outline-none">
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  Subscription Care
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -144,6 +144,39 @@ export const Header = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t animate-fade-in">
             <nav className="flex flex-col gap-2">
+              {/* Clear separation in mobile menu */}
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Insurance & Benefits</p>
+                <Link
+                  to="/ichra"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
+                >
+                  <Shield className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-primary">ICHRA Enrollment</p>
+                    <p className="text-sm text-muted-foreground">Employer-sponsored health benefit</p>
+                  </div>
+                </Link>
+              </div>
+
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Direct Care</p>
+                <Link
+                  to="/providers"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-3 rounded-lg bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors"
+                >
+                  <CreditCard className="h-5 w-5 text-accent" />
+                  <div>
+                    <p className="font-medium text-accent">Subscription Care</p>
+                    <p className="text-sm text-muted-foreground">Flat-rate, no insurance needed</p>
+                  </div>
+                </Link>
+              </div>
+
+              <div className="h-px bg-border my-2" />
+
               {navItems.map((item) => (
                 <Link
                   key={item.title}
@@ -151,7 +184,7 @@ export const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted transition-colors"
                 >
-                  <item.icon className="h-5 w-5 text-primary" />
+                  <item.icon className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{item.title}</p>
                     <p className="text-sm text-muted-foreground">{item.description}</p>

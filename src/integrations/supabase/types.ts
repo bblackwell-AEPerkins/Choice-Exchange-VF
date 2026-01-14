@@ -146,6 +146,36 @@ export type Database = {
           },
         ]
       }
+      employers: {
+        Row: {
+          created_at: string
+          email_domain: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_domain: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_domain?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       household_members: {
         Row: {
           created_at: string
@@ -216,6 +246,201 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ichra_enrollments: {
+        Row: {
+          attested_accurate: boolean | null
+          attested_at: string | null
+          coverage_zip_code: string | null
+          created_at: string
+          enrollment_completed_at: string | null
+          external_carrier_name: string | null
+          external_effective_date: string | null
+          external_monthly_premium: number | null
+          external_plan_name: string | null
+          external_plan_type: string | null
+          external_policy_number: string | null
+          ichra_offer_id: string
+          id: string
+          individual_id: string
+          selected_plan_id: string | null
+          status: Database["public"]["Enums"]["ichra_enrollment_status"]
+          updated_at: string
+          waiver_date: string | null
+          waiver_reason: string | null
+        }
+        Insert: {
+          attested_accurate?: boolean | null
+          attested_at?: string | null
+          coverage_zip_code?: string | null
+          created_at?: string
+          enrollment_completed_at?: string | null
+          external_carrier_name?: string | null
+          external_effective_date?: string | null
+          external_monthly_premium?: number | null
+          external_plan_name?: string | null
+          external_plan_type?: string | null
+          external_policy_number?: string | null
+          ichra_offer_id: string
+          id?: string
+          individual_id: string
+          selected_plan_id?: string | null
+          status?: Database["public"]["Enums"]["ichra_enrollment_status"]
+          updated_at?: string
+          waiver_date?: string | null
+          waiver_reason?: string | null
+        }
+        Update: {
+          attested_accurate?: boolean | null
+          attested_at?: string | null
+          coverage_zip_code?: string | null
+          created_at?: string
+          enrollment_completed_at?: string | null
+          external_carrier_name?: string | null
+          external_effective_date?: string | null
+          external_monthly_premium?: number | null
+          external_plan_name?: string | null
+          external_plan_type?: string | null
+          external_policy_number?: string | null
+          ichra_offer_id?: string
+          id?: string
+          individual_id?: string
+          selected_plan_id?: string | null
+          status?: Database["public"]["Enums"]["ichra_enrollment_status"]
+          updated_at?: string
+          waiver_date?: string | null
+          waiver_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ichra_enrollments_ichra_offer_id_fkey"
+            columns: ["ichra_offer_id"]
+            isOneToOne: false
+            referencedRelation: "ichra_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ichra_enrollments_individual_id_fkey"
+            columns: ["individual_id"]
+            isOneToOne: false
+            referencedRelation: "individuals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ichra_enrollments_selected_plan_id_fkey"
+            columns: ["selected_plan_id"]
+            isOneToOne: false
+            referencedRelation: "ichra_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ichra_offers: {
+        Row: {
+          created_at: string
+          effective_date: string
+          employer_id: string
+          enrollment_end_date: string
+          enrollment_start_date: string
+          id: string
+          is_active: boolean
+          monthly_allowance: number
+          plan_year_end: string
+          plan_year_start: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_date: string
+          employer_id: string
+          enrollment_end_date: string
+          enrollment_start_date: string
+          id?: string
+          is_active?: boolean
+          monthly_allowance: number
+          plan_year_end: string
+          plan_year_start: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_date?: string
+          employer_id?: string
+          enrollment_end_date?: string
+          enrollment_start_date?: string
+          id?: string
+          is_active?: boolean
+          monthly_allowance?: number
+          plan_year_end?: string
+          plan_year_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ichra_offers_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "employers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ichra_plans: {
+        Row: {
+          carrier_name: string
+          copay_emergency: number | null
+          copay_primary: number | null
+          copay_specialist: number | null
+          coverage_areas: string[]
+          created_at: string
+          deductible: number
+          features: string[] | null
+          id: string
+          is_active: boolean
+          is_hsa_eligible: boolean
+          metal_tier: string
+          monthly_premium: number
+          out_of_pocket_max: number
+          plan_name: string
+          plan_type: string
+        }
+        Insert: {
+          carrier_name: string
+          copay_emergency?: number | null
+          copay_primary?: number | null
+          copay_specialist?: number | null
+          coverage_areas: string[]
+          created_at?: string
+          deductible: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          is_hsa_eligible?: boolean
+          metal_tier: string
+          monthly_premium: number
+          out_of_pocket_max: number
+          plan_name: string
+          plan_type: string
+        }
+        Update: {
+          carrier_name?: string
+          copay_emergency?: number | null
+          copay_primary?: number | null
+          copay_specialist?: number | null
+          coverage_areas?: string[]
+          created_at?: string
+          deductible?: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean
+          is_hsa_eligible?: boolean
+          metal_tier?: string
+          monthly_premium?: number
+          out_of_pocket_max?: number
+          plan_name?: string
+          plan_type?: string
+        }
+        Relationships: []
       }
       individuals: {
         Row: {
@@ -401,6 +626,12 @@ export type Database = {
       contact_method_type: "Phone" | "Email"
       enrollment_status: "Active" | "Terminated" | "Pending" | "COBRA"
       gender_type: "M" | "F" | "U"
+      ichra_enrollment_status:
+        | "not_started"
+        | "in_progress"
+        | "enrolled"
+        | "waived"
+        | "pending_verification"
       maintenance_action: "New" | "Change" | "Termination" | "Reinstatement"
       relationship_type: "Self" | "SP" | "DEP"
     }
@@ -533,6 +764,13 @@ export const Constants = {
       contact_method_type: ["Phone", "Email"],
       enrollment_status: ["Active", "Terminated", "Pending", "COBRA"],
       gender_type: ["M", "F", "U"],
+      ichra_enrollment_status: [
+        "not_started",
+        "in_progress",
+        "enrolled",
+        "waived",
+        "pending_verification",
+      ],
       maintenance_action: ["New", "Change", "Termination", "Reinstatement"],
       relationship_type: ["Self", "SP", "DEP"],
     },

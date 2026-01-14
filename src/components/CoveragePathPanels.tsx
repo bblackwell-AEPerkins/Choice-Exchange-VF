@@ -57,7 +57,8 @@ export const CoveragePathPanels = () => {
               </div>
 
               {/* Title & Description */}
-              <h3 className="text-xl md:text-2xl font-display font-bold mb-2 text-primary">Primary Health Plan</h3>
+              <h3 className="text-xl md:text-2xl font-display font-bold mb-2 text-primary">Individual Health Plan</h3>
+              <p className="text-xs text-accent font-medium mb-2">Empowered by ICHRA</p>
               <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6">
                 Your core medical coverage — doctor visits, hospitals, prescriptions, and more.
               </p>
@@ -150,7 +151,8 @@ export const CoveragePathPanels = () => {
           }`}>
             <div className="max-w-2xl mx-auto grid gap-3 md:grid-cols-2 md:gap-4 text-sm px-4 md:px-0">
               <div className="bg-card border-2 border-primary/20 rounded-lg p-4 text-left">
-                <p className="font-semibold text-primary mb-1">🏥 Primary Health Plan</p>
+                <p className="font-semibold text-primary mb-1">🏥 Individual Health Plan</p>
+                <p className="text-xs text-accent mb-1">Empowered by ICHRA</p>
                 <p className="text-muted-foreground text-sm">Required. Covers major medical: doctor visits, hospitals, prescriptions, preventive care.</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-left">

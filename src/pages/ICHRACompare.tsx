@@ -287,9 +287,14 @@ const ICHRACompare = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" className="gradient-primary border-0" asChild>
+                  <Link to="/plans">
+                    Browse ICHRA Plans
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
                   <Link to="/auth">
                     Start Free Trial
-                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>

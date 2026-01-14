@@ -16,27 +16,27 @@ const footerLinks = {
   resources: {
     title: "Resources",
     links: [
-      { name: "ICHRA Guide", path: "/compare-ichra" },
-      { name: "Healthcare FAQ", path: "/" },
-      { name: "Pricing Calculator", path: "/" },
-      { name: "Blog", path: "/" },
+      { name: "ICHRA Guide", path: "/ichra" },
+      { name: "Browse Plans", path: "/plans" },
+      { name: "Healthcare FAQ", path: "/support" },
+      { name: "Get Support", path: "/support" },
     ],
   },
   company: {
     title: "Company",
     links: [
-      { name: "About Us", path: "/" },
-      { name: "Careers", path: "/" },
-      { name: "Contact", path: "/" },
-      { name: "Press", path: "/" },
+      { name: "About Us", path: "/support" },
+      { name: "Contact", path: "/support" },
+      { name: "For Employers", path: "/employer" },
+      { name: "For Providers", path: "/providers" },
     ],
   },
   legal: {
     title: "Legal",
     links: [
-      { name: "Privacy Policy", path: "/" },
-      { name: "Terms of Service", path: "/" },
-      { name: "HIPAA Compliance", path: "/" },
+      { name: "Privacy Policy", path: "/support" },
+      { name: "Terms of Service", path: "/support" },
+      { name: "HIPAA Compliance", path: "/support" },
     ],
   },
 };

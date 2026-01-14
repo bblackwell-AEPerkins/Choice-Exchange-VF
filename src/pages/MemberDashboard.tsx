@@ -897,6 +897,96 @@ const MemberDashboard = () => {
                 </Card>
               )}
 
+              {/* ICHRA Individual Health Plan */}
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader className="flex flex-row items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      Individual Health Plan
+                      <Badge variant="outline" className="ml-2 border-primary/50 text-primary bg-primary/10 text-xs">
+                        Empowered by ICHRA
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>
+                      Your major medical coverage through your employer's ICHRA benefit. This is your underlying healthcare insurance.
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/ichra" className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      View Details
+                    </Link>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-5 rounded-xl border bg-card">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {/* Plan Info */}
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Shield className="h-7 w-7 text-primary" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-lg text-foreground">Blue Cross Blue Shield</h4>
+                            <Badge className="bg-accent text-accent-foreground text-xs">Active</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Silver PPO Plan</p>
+                          <p className="text-xs text-muted-foreground mt-1">Policy #: BCBS-2024-789321</p>
+                        </div>
+                      </div>
+
+                      {/* Plan Details Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground">Monthly Premium</p>
+                          <p className="text-lg font-bold text-foreground">$485</p>
+                          <p className="text-xs text-accent font-medium">ICHRA Covers $400</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground">Deductible</p>
+                          <p className="text-lg font-bold text-foreground">$2,500</p>
+                          <p className="text-xs text-muted-foreground">$1,847 used</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground">Out-of-Pocket Max</p>
+                          <p className="text-lg font-bold text-foreground">$6,000</p>
+                          <p className="text-xs text-muted-foreground">$2,341 used</p>
+                        </div>
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground">Coverage Type</p>
+                          <p className="text-lg font-bold text-foreground">PPO</p>
+                          <p className="text-xs text-muted-foreground">In & Out Network</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Coverage Summary */}
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex flex-wrap gap-3 text-xs">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>Primary Care: $25 copay</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>Specialist: $50 copay</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>ER: $250 copay</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <span>Rx Coverage Included</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Subscription-Based Care Plans */}
               <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
@@ -906,7 +996,7 @@ const MemberDashboard = () => {
                       Subscription-Based Care Plans
                     </CardTitle>
                     <CardDescription>
-                      Direct access to your provider groups with predictable monthly pricing. These plans include your current care team.
+                      Direct access to your provider groups with predictable monthly pricing. These complement your ICHRA health plan.
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" asChild>

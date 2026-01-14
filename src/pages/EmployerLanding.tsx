@@ -141,7 +141,7 @@ const EmployerLanding = () => {
                   {isLoggedIn ? "Go to Dashboard" : "Get Started"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8">
+                <Button size="lg" variant="outline" className="text-lg px-8" onClick={() => navigate("/support")}>
                   Schedule a Demo
                 </Button>
               </div>
@@ -413,6 +413,7 @@ const EmployerLanding = () => {
                 size="lg" 
                 variant="outline" 
                 className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10"
+                onClick={() => navigate("/support")}
               >
                 Talk to Sales
               </Button>

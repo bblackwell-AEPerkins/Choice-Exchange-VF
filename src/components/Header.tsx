@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Users, Building2, MapPin, User, Shield, CreditCard } from "lucide-react";
+import { Menu, X, Users, Building2, User, Shield, CreditCard, Stethoscope, Network, BarChart3, FileCode, UserCheck, Briefcase } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -14,18 +14,72 @@ import {
 } from "@/components/ui/navigation-menu";
 import { UserTypeModal } from "./UserTypeModal";
 
-const navItems = [
+const memberSolutions = [
   { 
-    title: "For Individuals", 
-    href: "/dashboard",
-    icon: Users,
-    description: "Find personalized healthcare plans"
+    title: "ICHRA Enrollment", 
+    href: "/ichra",
+    icon: Shield,
+    description: "Enroll in employer-sponsored ICHRA benefits"
   },
   { 
-    title: "For Employers", 
+    title: "Subscription Care", 
+    href: "/providers",
+    icon: CreditCard,
+    description: "Access flat-rate, direct-to-provider care"
+  },
+  { 
+    title: "Member Profile", 
+    href: "/dashboard",
+    icon: User,
+    description: "View your benefits and health information"
+  },
+];
+
+const employerSolutions = [
+  { 
+    title: "ICHRA Administration", 
     href: "/employer",
-    icon: Building2,
-    description: "Manage ICHRA & group plans"
+    icon: Shield,
+    description: "Set up and manage ICHRA for employees"
+  },
+  { 
+    title: "Group Plans", 
+    href: "/employer",
+    icon: Briefcase,
+    description: "Traditional group health plan options"
+  },
+  { 
+    title: "Build a Network", 
+    href: "/employer",
+    icon: Network,
+    description: "Create custom provider networks"
+  },
+];
+
+const providerSolutions = [
+  { 
+    title: "Join the Network", 
+    href: "/providers",
+    icon: Stethoscope,
+    description: "Become a participating provider"
+  },
+  { 
+    title: "Utilization Analytics", 
+    href: "/providers",
+    icon: BarChart3,
+    description: "Visualize patient utilization data"
+  },
+  { 
+    title: "Patient Profiles", 
+    href: "/providers",
+    icon: UserCheck,
+    description: "Access patient health records"
+  },
+  { 
+    title: "API Integrations", 
+    href: "/providers",
+    icon: FileCode,
+    description: "Connect your systems via API"
   },
 ];
 
@@ -60,48 +114,119 @@ export const Header = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+{/* Desktop Navigation */}
           <NavigationMenu className="hidden lg:flex">
-            <NavigationMenuList>
+            <NavigationMenuList className="gap-1">
+              {/* Solutions Dropdown */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent">Solutions</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="bg-transparent text-foreground font-medium">
+                  Solutions
+                </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                    {navItems.map((item) => (
-                      <li key={item.title}>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            to={item.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent/10 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="flex items-center gap-2">
-                              <item.icon className="h-4 w-4 text-primary" />
-                              <span className="text-sm font-medium leading-none">{item.title}</span>
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {item.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="w-[600px] p-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* Members Column */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+                          For Members
+                        </h4>
+                        <ul className="space-y-1">
+                          {memberSolutions.map((item) => (
+                            <li key={item.title}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to={item.href}
+                                  className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-muted"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <item.icon className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium">{item.title}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1 pl-6">
+                                    {item.description}
+                                  </p>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Employers Column */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+                          For Employers
+                        </h4>
+                        <ul className="space-y-1">
+                          {employerSolutions.map((item) => (
+                            <li key={item.title}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to={item.href}
+                                  className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-muted"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <item.icon className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium">{item.title}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1 pl-6">
+                                    {item.description}
+                                  </p>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Providers Column */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+                          For Providers
+                        </h4>
+                        <ul className="space-y-1">
+                          {providerSolutions.map((item) => (
+                            <li key={item.title}>
+                              <NavigationMenuLink asChild>
+                                <Link
+                                  to={item.href}
+                                  className="block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-muted"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <item.icon className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium">{item.title}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1 pl-6">
+                                    {item.description}
+                                  </p>
+                                </Link>
+                              </NavigationMenuLink>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
               
-              {/* ICHRA - Separate Lane */}
+              {/* Provider Network */}
               <NavigationMenuItem>
-                <Link to="/ichra" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-primary/5 border border-primary/20 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus:bg-primary/10 focus:outline-none">
-                  <Shield className="h-4 w-4 mr-2" />
-                  ICHRA Enrollment
+                <Link 
+                  to="/providers" 
+                  className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:outline-none"
+                >
+                  Provider Network
                 </Link>
               </NavigationMenuItem>
 
-              {/* Subscription Care - Separate Lane */}
+              {/* Compare Plans */}
               <NavigationMenuItem>
-                <Link to="/providers" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-accent/5 border border-accent/20 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus:bg-accent/10 focus:outline-none">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Subscription Care
+                <Link 
+                  to="/plans" 
+                  className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:outline-none"
+                >
+                  Compare Plans
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
@@ -141,56 +266,76 @@ export const Header = () => {
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
+{mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t animate-fade-in">
             <nav className="flex flex-col gap-2">
-              {/* Clear separation in mobile menu */}
-              <div className="px-3 py-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Insurance & Benefits</p>
-                <Link
-                  to="/ichra"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors"
-                >
-                  <Shield className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium text-primary">ICHRA Enrollment</p>
-                    <p className="text-sm text-muted-foreground">Employer-sponsored health benefit</p>
-                  </div>
-                </Link>
-              </div>
-
-              <div className="px-3 py-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Direct Care</p>
+              {/* Quick Links */}
+              <div className="flex gap-2 px-3 mb-2">
                 <Link
                   to="/providers"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg bg-accent/5 border border-accent/20 hover:bg-accent/10 transition-colors"
+                  className="flex-1 text-center py-2 px-3 rounded-lg bg-muted text-sm font-medium"
                 >
-                  <CreditCard className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="font-medium text-accent">Subscription Care</p>
-                    <p className="text-sm text-muted-foreground">Flat-rate, no insurance needed</p>
-                  </div>
+                  Provider Network
+                </Link>
+                <Link
+                  to="/plans"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 px-3 rounded-lg bg-muted text-sm font-medium"
+                >
+                  Compare Plans
                 </Link>
               </div>
 
               <div className="h-px bg-border my-2" />
 
-              {navItems.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted transition-colors"
-                >
-                  <item.icon className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">{item.title}</p>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                  </div>
-                </Link>
-              ))}
+              {/* Members Section */}
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">For Members</p>
+                {memberSolutions.map((item) => (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Employers Section */}
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">For Employers</p>
+                {employerSolutions.map((item) => (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Providers Section */}
+              <div className="px-3 py-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">For Providers</p>
+                {providerSolutions.map((item) => (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
+                  >
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                 {user ? (
                   <Button variant="outline" asChild className="w-full flex items-center gap-2">

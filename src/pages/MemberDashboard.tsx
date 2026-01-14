@@ -52,6 +52,8 @@ const MemberDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MemberEvent | null>(null);
   const [eventModalOpen, setEventModalOpen] = useState(false);
+  const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -81,6 +83,34 @@ const MemberDashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Fetch member events from database
+  useEffect(() => {
+    const fetchMemberEvents = async () => {
+      try {
+        setEventsLoading(true);
+        const { data, error } = await supabase
+          .from("member_events")
+          .select("*")
+          .order("event_date", { ascending: false });
+
+        if (error) {
+          console.error("Error fetching member events:", error);
+          return;
+        }
+
+        setMemberEvents(data as MemberEvent[]);
+      } catch (err) {
+        console.error("Error in fetchMemberEvents:", err);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchMemberEvents();
+    }
+  }, [user]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast({
@@ -104,232 +134,9 @@ const MemberDashboard = () => {
     usedOutOfPocket: 2341,
   };
 
-  // Subscription events - parent events for care plans
-  const subscriptionEvents: MemberEvent[] = [
-    {
-      id: "sub-primary-001",
-      individual_id: "user-001",
-      event_type: "subscription",
-      event_category: "administrative",
-      title: "Primary Care Subscription",
-      description: "Unlimited primary care visits with Dr. Sarah Chen. Includes same-day appointments, 24/7 virtual care, and no copays for routine visits.",
-      event_date: "2024-01-01T00:00:00Z",
-      provider_name: "Dr. Sarah Chen",
-      provider_specialty: "Primary Care",
-      facility_name: "Chen Family Medicine",
-      facility_address: "1234 Medical Center Dr, Miami, FL",
-      billed_amount: 99,
-      member_responsibility: 99,
-      status: "active",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      notes: "Annual subscription started January 2024. Renews automatically on the 1st of each month.",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-    {
-      id: "sub-cardio-001",
-      individual_id: "user-001",
-      event_type: "subscription",
-      event_category: "administrative",
-      title: "Cardiology Care Subscription",
-      description: "Specialized cardiology care with Dr. Michael Roberts. Includes regular monitoring, EKG tests, and priority scheduling.",
-      event_date: "2024-03-01T00:00:00Z",
-      provider_name: "Dr. Michael Roberts",
-      provider_specialty: "Cardiology",
-      facility_name: "Heart Health Center",
-      facility_address: "5678 Heart Health Blvd, Miami, FL",
-      billed_amount: 149,
-      member_responsibility: 149,
-      status: "active",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      notes: "Cardiology subscription for ongoing heart health monitoring.",
-      created_at: "2024-03-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-    {
-      id: "sub-ortho-001",
-      individual_id: "user-001",
-      event_type: "subscription",
-      event_category: "administrative",
-      title: "Orthopedics Care Subscription",
-      description: "Comprehensive orthopedic care with Dr. James Morrison. Includes consultations, physical therapy referrals, and imaging.",
-      event_date: "2024-06-01T00:00:00Z",
-      provider_name: "Dr. James Morrison",
-      provider_specialty: "Orthopedics",
-      facility_name: "Bone & Joint Center",
-      facility_address: "910 Bone & Joint Center, Miami, FL",
-      billed_amount: 129,
-      member_responsibility: 129,
-      status: "active",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      notes: "Orthopedics subscription for musculoskeletal care.",
-      created_at: "2024-06-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-  ];
-
-  // Claims with full event data - each claim links to a parent event
-  const claimEvents: MemberEvent[] = [
-    {
-      id: "claim-001",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "medical",
-      title: "Primary Care Visit",
-      description: "Annual wellness checkup with Dr. Sarah Chen. Blood pressure normal, vitals good. Follow-up scheduled in 6 months.",
-      event_date: "2024-12-15T10:00:00Z",
-      provider_name: "Dr. Sarah Chen",
-      provider_specialty: "Primary Care",
-      facility_name: "Chen Family Medicine",
-      facility_address: "1234 Medical Center Dr, Miami, FL",
-      billed_amount: 250,
-      allowed_amount: 200,
-      plan_paid: 50,
-      member_responsibility: 150,
-      status: "completed",
-      notes: "Covered under Primary Care Subscription. Copay waived.",
-      parent_event_id: "sub-primary-001",
-      created_at: "2024-12-15T10:00:00Z",
-      updated_at: "2024-12-15T12:00:00Z",
-    },
-    {
-      id: "claim-002",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "pharmacy",
-      title: "Prescription - Lisinopril 10mg",
-      description: "Blood pressure medication - 90 day supply. Prescribed by Dr. Sarah Chen.",
-      event_date: "2024-12-10T14:30:00Z",
-      provider_name: "Dr. Sarah Chen",
-      provider_specialty: "Primary Care",
-      facility_name: "CVS Pharmacy",
-      facility_address: "123 Main St, Miami, FL",
-      pharmacy_name: "CVS Pharmacy - Main St",
-      medication_name: "Lisinopril",
-      dosage: "10mg",
-      quantity: 90,
-      refills_remaining: 2,
-      billed_amount: 65.99,
-      allowed_amount: 45.99,
-      plan_paid: 0,
-      member_responsibility: 45.99,
-      status: "completed",
-      created_at: "2024-12-10T14:30:00Z",
-      updated_at: "2024-12-10T15:00:00Z",
-    },
-    {
-      id: "claim-003",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "medical",
-      title: "Blood Work - Comprehensive Panel",
-      description: "Comprehensive metabolic panel and lipid profile. Results pending review.",
-      event_date: "2024-12-05T09:00:00Z",
-      provider_name: "LabCorp",
-      provider_specialty: "Diagnostics",
-      facility_name: "LabCorp Patient Service Center",
-      facility_address: "456 Diagnostics Ave, Miami, FL",
-      billed_amount: 450,
-      allowed_amount: 287,
-      plan_paid: 0,
-      member_responsibility: 287,
-      status: "pending",
-      notes: "Waiting for insurance processing.",
-      created_at: "2024-12-05T09:00:00Z",
-      updated_at: "2024-12-05T09:30:00Z",
-    },
-    {
-      id: "claim-004",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "medical",
-      title: "Urgent Care Visit",
-      description: "Treatment for minor respiratory infection. Diagnosed with acute bronchitis. Prescribed antibiotics course.",
-      event_date: "2024-11-28T16:00:00Z",
-      provider_name: "Dr. Amanda Wilson",
-      provider_specialty: "Emergency Medicine",
-      facility_name: "Urgent Care Plus",
-      facility_address: "789 Emergency Lane, Miami, FL",
-      billed_amount: 350,
-      allowed_amount: 280,
-      plan_paid: 80,
-      member_responsibility: 200,
-      status: "completed",
-      notes: "Out-of-network urgent care. Higher member responsibility.",
-      created_at: "2024-11-28T16:00:00Z",
-      updated_at: "2024-11-29T10:00:00Z",
-    },
-    // Subscription payment claims - monthly payments linked to subscription events
-    {
-      id: "claim-sub-primary-dec",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "administrative",
-      title: "Primary Care Subscription - December 2024",
-      description: "Monthly subscription payment for Primary Care plan with Dr. Sarah Chen.",
-      event_date: "2024-12-01T00:00:00Z",
-      provider_name: "Dr. Sarah Chen",
-      provider_specialty: "Primary Care",
-      facility_name: "Chen Family Medicine",
-      facility_address: "1234 Medical Center Dr, Miami, FL",
-      billed_amount: 99,
-      member_responsibility: 99,
-      status: "completed",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      parent_event_id: "sub-primary-001",
-      notes: "Part of annual subscription. Auto-renewed.",
-      created_at: "2024-12-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-    {
-      id: "claim-sub-cardio-dec",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "administrative",
-      title: "Cardiology Subscription - December 2024",
-      description: "Monthly subscription payment for Cardiology plan with Dr. Michael Roberts.",
-      event_date: "2024-12-01T00:00:00Z",
-      provider_name: "Dr. Michael Roberts",
-      provider_specialty: "Cardiology",
-      facility_name: "Heart Health Center",
-      facility_address: "5678 Heart Health Blvd, Miami, FL",
-      billed_amount: 149,
-      member_responsibility: 149,
-      status: "completed",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      parent_event_id: "sub-cardio-001",
-      notes: "Part of cardiology subscription. Auto-renewed.",
-      created_at: "2024-12-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-    {
-      id: "claim-sub-ortho-dec",
-      individual_id: "user-001",
-      event_type: "claim",
-      event_category: "administrative",
-      title: "Orthopedics Subscription - December 2024",
-      description: "Monthly subscription payment for Orthopedics plan with Dr. James Morrison.",
-      event_date: "2024-12-01T00:00:00Z",
-      provider_name: "Dr. James Morrison",
-      provider_specialty: "Orthopedics",
-      facility_name: "Bone & Joint Center",
-      facility_address: "910 Bone & Joint Center, Miami, FL",
-      billed_amount: 129,
-      member_responsibility: 129,
-      status: "completed",
-      is_recurring: true,
-      recurrence_pattern: "monthly",
-      parent_event_id: "sub-ortho-001",
-      notes: "Part of orthopedics subscription. Auto-renewed.",
-      created_at: "2024-12-01T00:00:00Z",
-      updated_at: "2024-12-01T00:00:00Z",
-    },
-  ];
+  // Filter events by type from real database data - subscriptions and claims
+  const subscriptionEvents = memberEvents.filter(e => e.event_type === "subscription");
+  const claimEvents = memberEvents.filter(e => e.event_type === "claim");
 
   // Helper to get parent subscription event
   const getParentSubscription = (parentEventId?: string) => {
@@ -363,42 +170,75 @@ const MemberDashboard = () => {
     eventData: claim,
   }));
 
-  const upcomingAppointments = [
-    { id: 1, date: "Dec 28, 2024", time: "10:00 AM", provider: "Dr. Michael Roberts", type: "Cardiology Follow-up" },
-    { id: 2, date: "Jan 5, 2025", time: "2:30 PM", provider: "Dr. Emily Watson", type: "Annual Physical" },
-  ];
+  // Filter events by type from real database data
+  const visitEvents = memberEvents.filter(e => e.event_type === "visit" || e.event_type === "lab_result");
+  const prescriptionEvents = memberEvents.filter(e => e.event_type === "prescription");
+  const appointmentEvents = memberEvents.filter(e => e.event_type === "appointment");
+  
+  // Upcoming appointments from real data
+  const upcomingAppointments = appointmentEvents
+    .filter(apt => new Date(apt.event_date) > new Date())
+    .slice(0, 5)
+    .map(apt => ({
+      id: apt.id,
+      date: new Date(apt.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: new Date(apt.event_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      provider: apt.provider_name || "Provider",
+      type: apt.appointment_type || apt.title,
+      eventData: apt,
+    }));
 
-  // Historical data for expandable metric cards
-  const visitHistory = [
-    { id: "v1", date: "Dec 15, 2024", title: "Primary Care Visit", provider: "Dr. Sarah Chen", location: "1234 Medical Center Dr, Miami, FL", amount: 150, status: "paid" as const, description: "Annual wellness checkup. Blood pressure normal, vitals good. Follow-up in 6 months." },
-    { id: "v2", date: "Nov 28, 2024", title: "Urgent Care Visit", provider: "Urgent Care Plus", location: "789 Emergency Lane, Miami, FL", amount: 200, status: "paid" as const, description: "Treatment for minor respiratory infection. Prescribed antibiotics." },
-    { id: "v3", date: "Oct 12, 2024", title: "Cardiology Follow-up", provider: "Dr. Michael Roberts", location: "5678 Heart Health Blvd, Miami, FL", amount: 275, status: "paid" as const, description: "Routine heart health monitoring. EKG results normal." },
-    { id: "v4", date: "Sep 5, 2024", title: "Lab Work", provider: "LabCorp", location: "456 Diagnostics Ave, Miami, FL", amount: 287, status: "covered" as const, description: "Comprehensive metabolic panel and lipid profile." },
-  ];
+  // Convert events to history format for ExpandableMetricCards
+  const convertToHistoryFormat = (events: MemberEvent[]) => {
+    return events.map(event => ({
+      id: event.id,
+      date: new Date(event.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      title: event.title,
+      provider: event.provider_name || event.pharmacy_name || undefined,
+      location: event.facility_address || event.facility_name || undefined,
+      amount: event.member_responsibility || event.billed_amount || undefined,
+      status: (event.status === "completed" ? "paid" : event.status) as "paid" | "pending" | "covered",
+      description: event.description || undefined,
+    }));
+  };
 
-  const prescriptionHistory = [
-    { id: "p1", date: "Dec 10, 2024", title: "Lisinopril 10mg", provider: "Dr. Sarah Chen", location: "CVS Pharmacy, 123 Main St, Miami, FL", amount: 15.99, status: "paid" as const, description: "Blood pressure medication - 90 day supply" },
-    { id: "p2", date: "Dec 10, 2024", title: "Atorvastatin 20mg", provider: "Dr. Michael Roberts", location: "CVS Pharmacy, 123 Main St, Miami, FL", amount: 29.99, status: "paid" as const, description: "Cholesterol medication - 90 day supply" },
-    { id: "p3", date: "Sep 15, 2024", title: "Amoxicillin 500mg", provider: "Urgent Care Plus", location: "Walgreens, 555 Oak Blvd, Miami, FL", amount: 12.50, status: "paid" as const, description: "Antibiotic - 10 day course" },
-  ];
+  const visitHistory = convertToHistoryFormat(visitEvents);
+  const prescriptionHistory = convertToHistoryFormat(prescriptionEvents);
+  
+  // Claims/savings history from claim events
+  const savingsHistory = claimEvents.slice(0, 5).map(claim => ({
+    id: claim.id,
+    date: new Date(claim.event_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+    title: claim.title,
+    provider: claim.provider_name || "Provider",
+    location: claim.facility_name || undefined,
+    amount: claim.plan_paid || claim.member_responsibility || 0,
+    status: "paid" as const,
+    description: claim.description || `Processed on ${new Date(claim.event_date).toLocaleDateString()}`,
+  }));
 
-  const savingsHistory = [
-    { id: "s1", date: "Dec 2024", title: "ICHRA Reimbursement", provider: "TechCorp Inc.", location: "Payroll Direct Deposit", amount: 523.45, status: "paid" as const, description: "Monthly premium and copay reimbursements processed" },
-    { id: "s2", date: "Nov 2024", title: "ICHRA Reimbursement", provider: "TechCorp Inc.", location: "Payroll Direct Deposit", amount: 412.30, status: "paid" as const, description: "Monthly premium and prescription reimbursements" },
-    { id: "s3", date: "Oct 2024", title: "ICHRA Reimbursement", provider: "TechCorp Inc.", location: "Payroll Direct Deposit", amount: 311.25, status: "paid" as const, description: "Premium reimbursement plus preventive care" },
-  ];
-
+  // Health score is synthetic for now
   const healthScoreHistory = [
     { id: "h1", date: "Dec 2024", title: "Health Assessment", provider: "HealthCheck AI", location: "Online Portal", status: "paid" as const, description: "Score: 87/100 - Excellent overall health. Keep up the regular checkups and healthy habits!" },
-    { id: "h2", date: "Sep 2024", title: "Health Assessment", provider: "HealthCheck AI", location: "Online Portal", status: "paid" as const, description: "Score: 82/100 - Good health. Recommended increasing physical activity." },
-    { id: "h3", date: "Jun 2024", title: "Health Assessment", provider: "HealthCheck AI", location: "Online Portal", status: "paid" as const, description: "Score: 79/100 - Average. Started new medication regimen." },
   ];
 
+  // Compute dynamic values for metrics
+  const lastVisit = visitEvents[0];
+  const lastCheckupText = lastVisit 
+    ? `${Math.ceil((Date.now() - new Date(lastVisit.event_date).getTime()) / (1000 * 60 * 60 * 24))} days ago`
+    : "No recent visits";
+  
+  const activePrescriptions = prescriptionEvents.filter(p => 
+    p.refills_remaining === null || p.refills_remaining > 0
+  ).length;
+
+  const totalSavings = claimEvents.reduce((sum, c) => sum + (c.plan_paid || 0), 0);
+
   const healthMetrics = [
-    { label: "Last Checkup", value: "2 weeks ago", icon: Stethoscope, status: "good" as const, history: visitHistory, eventType: "visit" },
-    { label: "Prescriptions", value: "2 active", icon: Pill, status: "good" as const, history: prescriptionHistory, eventType: "prescription" },
+    { label: "Last Checkup", value: lastCheckupText, icon: Stethoscope, status: "good" as const, history: visitHistory, eventType: "visit" },
+    { label: "Prescriptions", value: `${activePrescriptions} active`, icon: Pill, status: activePrescriptions > 0 ? "good" as const : "warning" as const, history: prescriptionHistory, eventType: "prescription" },
     { label: "Health Score", value: "87/100", icon: Activity, status: "good" as const, history: healthScoreHistory, eventType: "note" },
-    { label: "Savings YTD", value: "$1,247", icon: DollarSign, status: "great" as const, history: savingsHistory, eventType: "claim" },
+    { label: "Savings YTD", value: `$${totalSavings.toLocaleString()}`, icon: DollarSign, status: "great" as const, history: savingsHistory, eventType: "claim" },
   ];
 
   const notifications = [

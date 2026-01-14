@@ -36,9 +36,33 @@ const specialties = [
 const ProviderMap = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [searchResults, setSearchResults] = useState<typeof specialties>([]);
 
   const handleSearch = () => {
-    console.log("Searching for:", searchQuery, "in", locationQuery);
+    if (!searchQuery.trim() && !locationQuery.trim()) return;
+    
+    // Filter specialties based on search query
+    const query = searchQuery.toLowerCase();
+    const filtered = specialties.filter(specialty => 
+      specialty.name.toLowerCase().includes(query) ||
+      specialty.id.toLowerCase().includes(query)
+    );
+    
+    // If no specific matches, show all as suggestions
+    setSearchResults(filtered.length > 0 ? filtered : specialties);
+    setHasSearched(true);
+    
+    // Scroll to results
+    setTimeout(() => {
+      document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
   };
 
   return (
@@ -116,6 +140,7 @@ const ProviderMap = () => {
                         className="pl-12 h-14 border-0 bg-background/50 text-base rounded-xl focus-visible:ring-1 focus-visible:ring-primary/50"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleKeyPress}
                       />
                     </div>
                     <div className="flex-1 relative group">
@@ -125,12 +150,14 @@ const ProviderMap = () => {
                         className="pl-12 h-14 border-0 bg-background/50 text-base rounded-xl focus-visible:ring-1 focus-visible:ring-primary/50"
                         value={locationQuery}
                         onChange={(e) => setLocationQuery(e.target.value)}
+                        onKeyDown={handleKeyPress}
                       />
                     </div>
                     <Button 
                       size="lg" 
                       className="h-14 px-8 rounded-xl bg-accent hover:bg-accent/90 transition-opacity"
                       onClick={handleSearch}
+                      disabled={!searchQuery.trim() && !locationQuery.trim()}
                     >
                       <Search className="h-5 w-5 md:mr-2" />
                       <span className="hidden md:inline">Find Care</span>
@@ -159,6 +186,81 @@ const ProviderMap = () => {
             </div>
           </div>
         </section>
+
+        {/* Search Results Section */}
+        {hasSearched && (
+          <section id="search-results" className="py-16 bg-accent/5 border-y border-accent/20">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground">
+                      {searchResults.length === specialties.length 
+                        ? "All Available Plans" 
+                        : `Results for "${searchQuery}"`}
+                    </h2>
+                    {locationQuery && (
+                      <p className="text-muted-foreground">
+                        Showing providers near <span className="font-medium text-foreground">{locationQuery}</span>
+                      </p>
+                    )}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setHasSearched(false);
+                      setSearchQuery("");
+                      setLocationQuery("");
+                    }}
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {searchResults.map((specialty) => (
+                    <Card 
+                      key={specialty.id}
+                      className="group hover:border-accent/50 hover:shadow-lg transition-all cursor-pointer"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <specialty.icon className="h-6 w-6 text-accent" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">
+                              {specialty.name}
+                            </h3>
+                            <p className="text-accent font-medium text-sm">{specialty.price}</p>
+                            <p className="text-xs text-muted-foreground">{specialty.count} providers</p>
+                          </div>
+                        </div>
+                        <Button className="w-full mt-4 bg-accent hover:bg-accent/90">
+                          View Plans
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {searchResults.length === 0 && (
+                  <Card className="text-center py-12">
+                    <CardContent>
+                      <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No exact matches found</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Try a different search term or browse all available subscription plans below.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* How This Fits - Insurance vs Subscription Explainer */}
         <section className="py-16 bg-muted/30 border-y">

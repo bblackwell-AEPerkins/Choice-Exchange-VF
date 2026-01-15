@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEnrollment } from "@/hooks/useEnrollment";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, Shield, Stethoscope, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,10 +32,27 @@ const METAL_TIER_COLORS: Record<string, string> = {
 
 export default function EnrollPlans() {
   const navigate = useNavigate();
-  const { plan, coverage, updatePlan, setStep } = useEnrollment();
+  const { 
+    plan, 
+    coverage, 
+    updatePlan, 
+    setStep,
+    isLoading: dbLoading,
+    isSaving,
+    canAccessStep,
+    saveToDatabase
+  } = useEnrollmentDB();
+  
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlanDetails, setSelectedPlanDetails] = useState<Plan | null>(null);
+
+  // Step access protection
+  useEffect(() => {
+    if (!dbLoading && !canAccessStep("plans")) {
+      navigate("/enroll");
+    }
+  }, [dbLoading, canAccessStep, navigate]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -58,7 +75,6 @@ export default function EnrollPlans() {
         }
       } catch (error) {
         console.error("Error fetching plans:", error);
-        // Use mock data if fetch fails
         setPlans([]);
       } finally {
         setIsLoading(false);
@@ -88,28 +104,42 @@ export default function EnrollPlans() {
     navigate("/enroll/coverage");
   };
 
+  if (dbLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={6}
+        totalSteps={8}
+        title="Select Your Plan"
+        description="Loading available plans..."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
+
   return (
     <EnrollmentLayout
       currentStep={6}
       totalSteps={8}
       title="Select Your Plan"
       description="Choose the health plan that best fits your needs and budget."
+      onSave={saveToDatabase}
     >
       {/* Selected Plan Summary */}
       {selectedPlanDetails && (
         <Card className="border-primary bg-primary/5">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2">
+          <CardContent className="pt-6 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-primary" />
-                Selected Plan
-              </CardTitle>
+                <span className="font-medium">Selected Plan</span>
+              </div>
               <Badge className={cn("capitalize", METAL_TIER_COLORS[selectedPlanDetails.metal_tier.toLowerCase()])}>
                 {selectedPlanDetails.metal_tier}
               </Badge>
             </div>
-          </CardHeader>
-          <CardContent>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">{selectedPlanDetails.plan_name}</p>
@@ -228,6 +258,7 @@ export default function EnrollPlans() {
         onNext={handleNext}
         disabled={!plan.medicalPlanId}
         nextLabel="Review & Submit"
+        isLoading={isSaving}
       />
     </EnrollmentLayout>
   );

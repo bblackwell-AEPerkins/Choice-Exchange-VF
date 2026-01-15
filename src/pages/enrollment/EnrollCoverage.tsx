@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEnrollment } from "@/hooks/useEnrollment";
-import { Calendar, FileCheck, AlertCircle } from "lucide-react";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { coverageSchema, qualifyingEventSchema, formatZodErrors } from "@/lib/validations/enrollment";
+import { Calendar, FileCheck, AlertCircle, Loader2 } from "lucide-react";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -32,29 +33,52 @@ const QUALIFYING_EVENTS = [
 
 export default function EnrollCoverage() {
   const navigate = useNavigate();
-  const { intent, coverage, about, updateCoverage, setStep } = useEnrollment();
+  const { 
+    intent, 
+    coverage, 
+    about, 
+    updateCoverage, 
+    setStep,
+    isLoading,
+    isSaving,
+    canAccessStep,
+    saveToDatabase
+  } = useEnrollmentDB();
+  
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isQualifyingEvent = intent.enrollmentReason === "qualifying_event";
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  // Step access protection
+  useEffect(() => {
+    if (!isLoading && !canAccessStep("coverage")) {
+      navigate("/enroll");
+    }
+  }, [isLoading, canAccessStep, navigate]);
 
-    if (!coverage.stateOfResidence) {
-      newErrors.stateOfResidence = "State of residence is required";
+  const validateForm = (): boolean => {
+    // Validate base coverage fields
+    const baseResult = coverageSchema.safeParse({
+      stateOfResidence: coverage.stateOfResidence || about.state,
+      desiredStartDate: coverage.desiredStartDate,
+    });
+
+    let newErrors: Record<string, string> = {};
+    
+    if (!baseResult.success) {
+      newErrors = { ...newErrors, ...formatZodErrors(baseResult.error) };
     }
-    if (!coverage.desiredStartDate) {
-      newErrors.desiredStartDate = "Coverage start date is required";
-    }
+
+    // Validate qualifying event fields if applicable
     if (isQualifyingEvent) {
-      if (!coverage.qualifyingEventType) {
-        newErrors.qualifyingEventType = "Qualifying event type is required";
-      }
-      if (!coverage.qualifyingEventDate) {
-        newErrors.qualifyingEventDate = "Event date is required";
-      }
-      if (!coverage.hasDocumentation) {
-        newErrors.hasDocumentation = "You must acknowledge documentation requirements";
+      const qeResult = qualifyingEventSchema.safeParse({
+        qualifyingEventType: coverage.qualifyingEventType,
+        qualifyingEventDate: coverage.qualifyingEventDate,
+        hasDocumentation: coverage.hasDocumentation,
+      });
+
+      if (!qeResult.success) {
+        newErrors = { ...newErrors, ...formatZodErrors(qeResult.error) };
       }
     }
 
@@ -74,12 +98,28 @@ export default function EnrollCoverage() {
     navigate("/enroll/household");
   };
 
+  if (isLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={5}
+        totalSteps={8}
+        title="Coverage Details"
+        description="Loading your information..."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
+
   return (
     <EnrollmentLayout
       currentStep={5}
       totalSteps={8}
       title="Coverage Details"
       description="Let's confirm your coverage timing and any special enrollment circumstances."
+      onSave={saveToDatabase}
     >
       {/* State and Start Date */}
       <Card>
@@ -270,6 +310,7 @@ export default function EnrollCoverage() {
       <EnrollmentNavigation
         onBack={handleBack}
         onNext={handleNext}
+        isLoading={isSaving}
       />
     </EnrollmentLayout>
   );

@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useEnrollment } from "@/hooks/useEnrollment";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { reviewSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle } from "lucide-react";
+import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface PlanDetails {
@@ -20,9 +21,31 @@ interface PlanDetails {
 
 export default function EnrollReview() {
   const navigate = useNavigate();
-  const { account, about, household, coverage, plan, intent, review, updateReview, setStep } = useEnrollment();
+  const { 
+    account, 
+    about, 
+    household, 
+    coverage, 
+    plan, 
+    intent, 
+    review, 
+    updateReview, 
+    setStep,
+    isLoading,
+    isSaving,
+    canAccessStep,
+    saveToDatabase
+  } = useEnrollmentDB();
+  
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Step access protection
+  useEffect(() => {
+    if (!isLoading && !canAccessStep("review")) {
+      navigate("/enroll");
+    }
+  }, [isLoading, canAccessStep, navigate]);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
@@ -42,18 +65,31 @@ export default function EnrollReview() {
     fetchPlanDetails();
   }, [plan.medicalPlanId]);
 
-  const canSubmit = review.informationAccurate && review.electronicConsent && review.hipaaAuthorization;
+  const validateForm = (): boolean => {
+    const result = reviewSchema.safeParse({
+      informationAccurate: review.informationAccurate,
+      electronicConsent: review.electronicConsent,
+      hipaaAuthorization: review.hipaaAuthorization,
+    });
+
+    if (!result.success) {
+      setErrors(formatZodErrors(result.error));
+      return false;
+    }
+
+    setErrors({});
+    return true;
+  };
 
   const handleNext = () => {
-    if (!canSubmit) {
-      setErrors(["Please accept all required attestations to continue."]);
+    if (!validateForm()) {
       return;
     }
     
     // Capture attestation timestamp
     updateReview({
       attestedAt: new Date().toISOString(),
-      ipAddress: "captured-server-side", // In production, get from backend
+      ipAddress: "captured-server-side", // Will be captured on submit
     });
     
     setStep("submit");
@@ -78,12 +114,28 @@ export default function EnrollReview() {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={7}
+        totalSteps={8}
+        title="Review Your Information"
+        description="Loading your information..."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
+
   return (
     <EnrollmentLayout
       currentStep={7}
       totalSteps={8}
       title="Review Your Information"
       description="Please review all information carefully before submitting your enrollment."
+      onSave={saveToDatabase}
     >
       {/* Personal Information */}
       <Card>
@@ -220,14 +272,17 @@ export default function EnrollReview() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {errors.length > 0 && (
+          {(errors.informationAccurate || errors.electronicConsent || errors.hipaaAuthorization) && (
             <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
               <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{errors[0]}</p>
+              <p className="text-sm text-destructive">Please accept all required attestations to continue.</p>
             </div>
           )}
           
-          <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted/50">
+          <div className={cn(
+            "flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/50",
+            errors.informationAccurate ? "border-destructive" : "border-border"
+          )}>
             <Checkbox
               id="accuracy"
               checked={review.informationAccurate}
@@ -245,7 +300,10 @@ export default function EnrollReview() {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted/50">
+          <div className={cn(
+            "flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/50",
+            errors.electronicConsent ? "border-destructive" : "border-border"
+          )}>
             <Checkbox
               id="electronic"
               checked={review.electronicConsent}
@@ -263,7 +321,10 @@ export default function EnrollReview() {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted/50">
+          <div className={cn(
+            "flex items-start gap-3 p-4 rounded-lg border hover:bg-muted/50",
+            errors.hipaaAuthorization ? "border-destructive" : "border-border"
+          )}>
             <Checkbox
               id="hipaa"
               checked={review.hipaaAuthorization}
@@ -287,8 +348,12 @@ export default function EnrollReview() {
         onBack={handleBack}
         onNext={handleNext}
         nextLabel="Continue to Payment"
-        disabled={!canSubmit}
+        isLoading={isSaving}
       />
     </EnrollmentLayout>
   );
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

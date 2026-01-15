@@ -85,13 +85,22 @@ export default function EnrollAccount() {
       if (error) {
         if (error.message.includes("already registered")) {
           // Try to sign in instead
-          const { error: signInError } = await supabase.auth.signInWithPassword({
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: account.email.trim().toLowerCase(),
             password,
           });
           
           if (signInError) {
             setErrors({ email: "This email is already registered. Please check your password or use a different email." });
+            return;
+          }
+          
+          // Sign in succeeded - proceed to next step
+          if (signInData?.user) {
+            updateAccount({ isVerified: true });
+            toast.success("Welcome back! Continuing your enrollment.");
+            setStep("about");
+            navigate("/enroll/about");
             return;
           }
         } else {

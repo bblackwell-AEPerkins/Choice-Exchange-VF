@@ -85,6 +85,7 @@ export interface EnrollmentReview {
 
 export interface EnrollmentState {
   currentStep: EnrollmentStep;
+  userId: string | null;
   intent: EnrollmentIntent;
   account: EnrollmentAccount;
   about: EnrollmentAbout;
@@ -97,6 +98,7 @@ export interface EnrollmentState {
   
   // Actions
   setStep: (step: EnrollmentStep) => void;
+  setUserId: (userId: string | null) => void;
   updateIntent: (data: Partial<EnrollmentIntent>) => void;
   updateAccount: (data: Partial<EnrollmentAccount>) => void;
   updateAbout: (data: Partial<EnrollmentAbout>) => void;
@@ -112,6 +114,7 @@ export interface EnrollmentState {
 
 const initialState = {
   currentStep: "intent" as EnrollmentStep,
+  userId: null as string | null,
   intent: {
     coverageType: null,
     coverageFor: null,
@@ -173,10 +176,20 @@ const initialState = {
 
 export const useEnrollment = create<EnrollmentState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
       setStep: (step) => set({ currentStep: step }),
+
+      setUserId: (userId) => {
+        const currentUserId = get().userId;
+        // If user changed, reset all enrollment data
+        if (currentUserId && currentUserId !== userId) {
+          set({ ...initialState, userId });
+        } else {
+          set({ userId });
+        }
+      },
 
       updateIntent: (data) =>
         set((state) => ({

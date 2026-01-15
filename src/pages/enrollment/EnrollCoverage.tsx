@@ -57,28 +57,35 @@ export default function EnrollCoverage() {
   }, [isLoading, canAccessStep, navigate]);
 
   const validateForm = (): boolean => {
-    // Validate base coverage fields
-    const baseResult = coverageSchema.safeParse({
-      stateOfResidence: coverage.stateOfResidence || about.state,
-      desiredStartDate: coverage.desiredStartDate,
-    });
-
     let newErrors: Record<string, string> = {};
     
-    if (!baseResult.success) {
-      newErrors = { ...newErrors, ...formatZodErrors(baseResult.error) };
+    // Basic required field validation
+    const stateValue = coverage.stateOfResidence || about.state;
+    if (!stateValue || stateValue.length !== 2) {
+      newErrors.stateOfResidence = "Please select a state";
+    }
+    
+    if (!coverage.desiredStartDate) {
+      newErrors.desiredStartDate = "Coverage start date is required";
+    } else {
+      const startDate = new Date(coverage.desiredStartDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (startDate < today) {
+        newErrors.desiredStartDate = "Start date cannot be in the past";
+      }
     }
 
     // Validate qualifying event fields if applicable
     if (isQualifyingEvent) {
-      const qeResult = qualifyingEventSchema.safeParse({
-        qualifyingEventType: coverage.qualifyingEventType,
-        qualifyingEventDate: coverage.qualifyingEventDate,
-        hasDocumentation: coverage.hasDocumentation,
-      });
-
-      if (!qeResult.success) {
-        newErrors = { ...newErrors, ...formatZodErrors(qeResult.error) };
+      if (!coverage.qualifyingEventType) {
+        newErrors.qualifyingEventType = "Event type is required";
+      }
+      if (!coverage.qualifyingEventDate) {
+        newErrors.qualifyingEventDate = "Event date is required";
+      }
+      if (!coverage.hasDocumentation) {
+        newErrors.hasDocumentation = "You must acknowledge documentation requirements";
       }
     }
 

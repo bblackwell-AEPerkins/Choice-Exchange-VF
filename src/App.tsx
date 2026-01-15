@@ -21,6 +21,16 @@ import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import { ChatWidget } from "./components/ChatWidget";
 
+// New Enrollment Flow Pages
+import EnrollIntent from "./pages/enrollment/EnrollIntent";
+import EnrollAccount from "./pages/enrollment/EnrollAccount";
+import EnrollAbout from "./pages/enrollment/EnrollAbout";
+import EnrollHousehold from "./pages/enrollment/EnrollHousehold";
+import EnrollCoverage from "./pages/enrollment/EnrollCoverage";
+import EnrollPlans from "./pages/enrollment/EnrollPlans";
+import EnrollReview from "./pages/enrollment/EnrollReview";
+import EnrollSubmit from "./pages/enrollment/EnrollSubmit";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -45,6 +55,17 @@ const App = () => (
           <Route path="/event/:eventId" element={<EventDetail />} />
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           <Route path="/support" element={<Support />} />
+          
+          {/* New Unified Enrollment Flow */}
+          <Route path="/enroll" element={<EnrollIntent />} />
+          <Route path="/enroll/account" element={<EnrollAccount />} />
+          <Route path="/enroll/about" element={<EnrollAbout />} />
+          <Route path="/enroll/household" element={<EnrollHousehold />} />
+          <Route path="/enroll/coverage" element={<EnrollCoverage />} />
+          <Route path="/enroll/plans" element={<EnrollPlans />} />
+          <Route path="/enroll/review" element={<EnrollReview />} />
+          <Route path="/enroll/submit" element={<EnrollSubmit />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -44,6 +44,7 @@ import { MemberIDCard } from "@/components/MemberIDCard";
 import { useToast } from "@/hooks/use-toast";
 import { ExpandableMetricCard } from "@/components/ExpandableMetricCard";
 import { EventDetailModal, MemberEvent } from "@/components/EventDetailModal";
+import { useEnrollment } from "@/hooks/useEnrollment";
 
 const MemberDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -54,8 +55,10 @@ const MemberDashboard = () => {
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [hasActiveEnrollment, setHasActiveEnrollment] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setUserId, resetEnrollment, currentStep } = useEnrollment();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -82,6 +85,36 @@ const MemberDashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Reset enrollment data when user changes
+  useEffect(() => {
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, [user?.id, setUserId]);
+
+  // Check for active enrollment
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (!user?.id) return;
+      
+      // Check if user has any coverage enrollments
+      const { data, error } = await supabase
+        .from("coverage_enrollments")
+        .select("id")
+        .limit(1);
+      
+      if (!error && data && data.length > 0) {
+        setHasActiveEnrollment(true);
+      } else {
+        setHasActiveEnrollment(false);
+      }
+    };
+    
+    if (user) {
+      checkEnrollment();
+    }
+  }, [user]);
 
   // Fetch member events from database
   useEffect(() => {
@@ -124,18 +157,31 @@ const MemberDashboard = () => {
     navigate("/auth", { replace: true });
   };
 
-  // Use "Brandon Goldstein" as the display name
+  // Get user display name from metadata or email
+  const getUserDisplayName = () => {
+    const firstName = user?.user_metadata?.first_name || user?.user_metadata?.firstName;
+    const lastName = user?.user_metadata?.last_name || user?.user_metadata?.lastName;
+    if (firstName && lastName) {
+      return `${firstName} ${lastName}`;
+    }
+    if (firstName) {
+      return firstName;
+    }
+    // Fallback to email prefix
+    return user?.email?.split("@")[0] || "Member";
+  };
+
   const memberData = {
-    name: "Brandon Goldstein",
-    memberId: "CHX-2024-78392",
-    plan: "ICHRA Plus",
+    name: getUserDisplayName(),
+    memberId: hasActiveEnrollment ? "CHX-2024-78392" : "Not Enrolled",
+    plan: hasActiveEnrollment ? "ICHRA Plus" : "No Active Plan",
     employer: "TechCorp Inc.",
     monthlyAllowance: 800,
-    usedAllowance: 523.45,
+    usedAllowance: hasActiveEnrollment ? 523.45 : 0,
     deductible: 2500,
-    usedDeductible: 1847,
+    usedDeductible: hasActiveEnrollment ? 1847 : 0,
     outOfPocket: 6000,
-    usedOutOfPocket: 2341,
+    usedOutOfPocket: hasActiveEnrollment ? 2341 : 0,
   };
 
   // Filter events by type from real database data - subscriptions and claims
@@ -361,6 +407,35 @@ const MemberDashboard = () => {
               <MemberIDCard memberData={memberData} />
             </div>
           </div>
+
+          {/* Enrollment CTA - Show when user hasn't enrolled */}
+          {!hasActiveEnrollment && (
+            <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+              <CardContent className="py-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-primary/10">
+                      <Heart className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-foreground">Complete Your Enrollment</h2>
+                      <p className="text-muted-foreground mt-1">
+                        You're not enrolled in a health plan yet. Start your enrollment to access your benefits.
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate("/enroll")}
+                    className="shrink-0"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Start Enrollment
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats - Expandable Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

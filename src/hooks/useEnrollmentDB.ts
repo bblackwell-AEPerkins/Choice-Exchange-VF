@@ -135,9 +135,7 @@ export function useEnrollmentDB() {
       .select("*")
       .eq("application_id", app.id);
 
-    // Map to store format
-    enrollmentStore.setStep(app.current_step as EnrollmentStep);
-
+    // Map to store format - load all data first
     if (app.coverage_type || app.coverage_for || app.enrollment_reason) {
       enrollmentStore.updateIntent({
         coverageType: app.coverage_type as "health" | null,
@@ -203,6 +201,37 @@ export function useEnrollmentDB() {
       attestedAt: app.attested_at,
       ipAddress: app.attestation_ip_address,
     });
+
+    // Calculate the correct step based on completed data
+    let calculatedStep: EnrollmentStep = "intent";
+    
+    if (app.coverage_type && app.coverage_for && app.enrollment_reason) {
+      calculatedStep = "account";
+    }
+    // User is logged in, so account is verified
+    if (userId) {
+      calculatedStep = "about";
+    }
+    if (app.date_of_birth && app.legal_sex && app.address1 && app.city && app.state && app.zip_code) {
+      calculatedStep = "household";
+    }
+    if (app.marital_status && app.employment_status) {
+      calculatedStep = "coverage";
+    }
+    if (app.state_of_residence && app.desired_start_date) {
+      calculatedStep = "plans";
+    }
+    if (app.selected_plan_id) {
+      calculatedStep = "review";
+    }
+
+    // Set the calculated step (use the further of saved step or calculated step)
+    const stepOrder: EnrollmentStep[] = ["intent", "account", "about", "household", "coverage", "plans", "review", "submit", "complete"];
+    const savedStepIndex = stepOrder.indexOf(app.current_step as EnrollmentStep);
+    const calculatedStepIndex = stepOrder.indexOf(calculatedStep);
+    
+    const finalStep = calculatedStepIndex > savedStepIndex ? calculatedStep : (app.current_step as EnrollmentStep);
+    enrollmentStore.setStep(finalStep);
   };
 
   // Debounced save to database
@@ -365,25 +394,44 @@ export function useEnrollmentDB() {
     }
   };
 
-  // Check if step is accessible (prevents URL skipping)
+  // Check if step is accessible based on completed data (prevents URL skipping)
   const canAccessStep = (step: EnrollmentStep): boolean => {
-    const stepOrder: EnrollmentStep[] = [
-      "intent",
-      "account",
-      "about",
-      "household",
-      "coverage",
-      "plans",
-      "review",
-      "submit",
-      "complete",
-    ];
-
-    const currentIndex = stepOrder.indexOf(enrollmentStore.currentStep);
-    const targetIndex = stepOrder.indexOf(step);
-
-    // Allow going back or to current step, or one step forward
-    return targetIndex <= currentIndex + 1;
+    const { intent, account, about, household } = enrollmentStore;
+    
+    // Intent is always accessible
+    if (step === "intent") return true;
+    
+    // Account requires intent to be filled
+    if (step === "account") {
+      return !!(intent.coverageType && intent.coverageFor && intent.enrollmentReason);
+    }
+    
+    // About requires account to be verified (user logged in)
+    if (step === "about") {
+      return !!(userId || account.isVerified);
+    }
+    
+    // Household requires about to have basic info
+    if (step === "household") {
+      return !!(about.dateOfBirth && about.legalSex && about.address1 && about.city && about.state && about.zipCode);
+    }
+    
+    // Coverage requires household info
+    if (step === "coverage") {
+      return !!(household.maritalStatus && household.employmentStatus);
+    }
+    
+    // Plans requires coverage info
+    if (step === "plans") {
+      return true; // Allow if user got past coverage
+    }
+    
+    // Review and beyond require plan selection
+    if (step === "review" || step === "submit" || step === "complete") {
+      return true; // Allow navigation - validation happens on the page
+    }
+    
+    return true;
   };
 
   // Force save (for Save & Exit)

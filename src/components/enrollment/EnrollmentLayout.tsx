@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, Save, X } from "lucide-react";
+import { HelpCircle, Save, Loader2 } from "lucide-react";
 import { EnrollmentProgress } from "./EnrollmentProgress";
 
 interface EnrollmentLayoutProps {
@@ -10,7 +10,7 @@ interface EnrollmentLayoutProps {
   totalSteps: number;
   title: string;
   description: string;
-  onSave?: () => void;
+  onSave?: () => Promise<void> | void;
   showProgress?: boolean;
 }
 
@@ -36,9 +36,9 @@ export function EnrollmentLayout({
 }: EnrollmentLayoutProps) {
   const navigate = useNavigate();
 
-  const handleSaveAndExit = () => {
+  const handleSaveAndExit = async () => {
     if (onSave) {
-      onSave();
+      await onSave();
     }
     navigate("/dashboard");
   };

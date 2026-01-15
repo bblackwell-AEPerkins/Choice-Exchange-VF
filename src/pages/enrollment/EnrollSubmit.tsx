@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEnrollment } from "@/hooks/useEnrollment";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { cardPaymentSchema, bankPaymentSchema, formatZodErrors, formatCardNumber, formatExpirationDate } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CreditCard, Building2, CheckCircle2, Loader2, PartyPopper, Download, ArrowRight } from "lucide-react";
+import { CreditCard, Building2, CheckCircle2, Loader2, PartyPopper, Download, ArrowRight, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlanDetails {
@@ -18,14 +19,52 @@ interface PlanDetails {
   monthly_premium: number;
 }
 
+interface PaymentForm {
+  cardNumber: string;
+  expirationDate: string;
+  cvv: string;
+  nameOnCard: string;
+  accountHolderName: string;
+  routingNumber: string;
+  accountNumber: string;
+}
+
 export default function EnrollSubmit() {
   const navigate = useNavigate();
-  const { plan, account, setStep, resetEnrollment } = useEnrollment();
+  const { 
+    plan, 
+    account, 
+    setStep, 
+    resetEnrollment, 
+    submitEnrollment,
+    isLoading,
+    canAccessStep,
+    saveToDatabase
+  } = useEnrollmentDB();
+  
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank">("card");
+  const [paymentForm, setPaymentForm] = useState<PaymentForm>({
+    cardNumber: "",
+    expirationDate: "",
+    cvv: "",
+    nameOnCard: `${account.firstName} ${account.lastName}`,
+    accountHolderName: `${account.firstName} ${account.lastName}`,
+    routingNumber: "",
+    accountNumber: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [confirmationNumber, setConfirmationNumber] = useState("");
+  const submitAttemptRef = useRef(false);
+
+  // Step access protection
+  useEffect(() => {
+    if (!isLoading && !canAccessStep("submit")) {
+      navigate("/enroll");
+    }
+  }, [isLoading, canAccessStep, navigate]);
 
   useEffect(() => {
     const fetchPlanDetails = async () => {
@@ -45,24 +84,64 @@ export default function EnrollSubmit() {
     fetchPlanDetails();
   }, [plan.medicalPlanId]);
 
+  const validatePayment = (): boolean => {
+    if (paymentMethod === "card") {
+      const result = cardPaymentSchema.safeParse({
+        cardNumber: paymentForm.cardNumber,
+        expirationDate: paymentForm.expirationDate,
+        cvv: paymentForm.cvv,
+        nameOnCard: paymentForm.nameOnCard,
+      });
+
+      if (!result.success) {
+        setErrors(formatZodErrors(result.error));
+        return false;
+      }
+    } else {
+      const result = bankPaymentSchema.safeParse({
+        accountHolderName: paymentForm.accountHolderName,
+        routingNumber: paymentForm.routingNumber,
+        accountNumber: paymentForm.accountNumber,
+      });
+
+      if (!result.success) {
+        setErrors(formatZodErrors(result.error));
+        return false;
+      }
+    }
+
+    setErrors({});
+    return true;
+  };
+
   const handleSubmit = async () => {
+    // Prevent double submission
+    if (submitAttemptRef.current || isSubmitting) {
+      return;
+    }
+
+    if (!validatePayment()) {
+      return;
+    }
+
+    submitAttemptRef.current = true;
     setIsSubmitting(true);
     
     try {
-      // Simulate payment processing and enrollment submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const result = await submitEnrollment();
       
-      // Generate confirmation number
-      const confirmation = `CE${Date.now().toString(36).toUpperCase()}`;
-      setConfirmationNumber(confirmation);
-      
-      // Mark enrollment complete
-      setStep("complete");
-      setIsComplete(true);
-      
-      toast.success("Enrollment submitted successfully!");
+      if (result.success && result.confirmationNumber) {
+        setConfirmationNumber(result.confirmationNumber);
+        setStep("complete");
+        setIsComplete(true);
+        toast.success("Enrollment submitted successfully!");
+      } else {
+        toast.error(result.error || "Failed to submit enrollment. Please try again.");
+        submitAttemptRef.current = false;
+      }
     } catch (error) {
       toast.error("Failed to submit enrollment. Please try again.");
+      submitAttemptRef.current = false;
     } finally {
       setIsSubmitting(false);
     }
@@ -72,6 +151,48 @@ export default function EnrollSubmit() {
     resetEnrollment();
     navigate("/dashboard");
   };
+
+  const updatePaymentField = (field: keyof PaymentForm, value: string) => {
+    let formattedValue = value;
+    
+    if (field === "cardNumber") {
+      formattedValue = formatCardNumber(value);
+    } else if (field === "expirationDate") {
+      formattedValue = formatExpirationDate(value);
+    } else if (field === "cvv") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 4);
+    } else if (field === "routingNumber") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 9);
+    } else if (field === "accountNumber") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 17);
+    }
+    
+    setPaymentForm(prev => ({ ...prev, [field]: formattedValue }));
+    
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={8}
+        totalSteps={8}
+        title="Payment & Submit"
+        description="Loading..."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
 
   // Show completion screen
   if (isComplete) {
@@ -175,6 +296,7 @@ export default function EnrollSubmit() {
       totalSteps={8}
       title="Payment & Submit"
       description="Complete your enrollment by setting up your payment method."
+      onSave={saveToDatabase}
     >
       {/* Cost Summary */}
       <Card>
@@ -225,7 +347,10 @@ export default function EnrollSubmit() {
         <CardContent className="space-y-6">
           <RadioGroup
             value={paymentMethod}
-            onValueChange={(value) => setPaymentMethod(value as "card" | "bank")}
+            onValueChange={(value) => {
+              setPaymentMethod(value as "card" | "bank");
+              setErrors({});
+            }}
             className="space-y-3"
           >
             <label
@@ -261,26 +386,66 @@ export default function EnrollSubmit() {
             </label>
           </RadioGroup>
 
+          {Object.keys(errors).length > 0 && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">Please correct the errors below.</p>
+            </div>
+          )}
+
           {/* Card Details Form */}
           {paymentMethod === "card" && (
             <div className="space-y-4 pt-4 border-t border-border">
               <div className="space-y-2">
                 <Label>Card Number</Label>
-                <Input placeholder="1234 5678 9012 3456" />
+                <Input 
+                  placeholder="1234 5678 9012 3456" 
+                  value={paymentForm.cardNumber}
+                  onChange={(e) => updatePaymentField("cardNumber", e.target.value)}
+                  className={errors.cardNumber ? "border-destructive" : ""}
+                />
+                {errors.cardNumber && (
+                  <p className="text-sm text-destructive">{errors.cardNumber}</p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Expiration Date</Label>
-                  <Input placeholder="MM/YY" />
+                  <Input 
+                    placeholder="MM/YY" 
+                    value={paymentForm.expirationDate}
+                    onChange={(e) => updatePaymentField("expirationDate", e.target.value)}
+                    className={errors.expirationDate ? "border-destructive" : ""}
+                  />
+                  {errors.expirationDate && (
+                    <p className="text-sm text-destructive">{errors.expirationDate}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>CVV</Label>
-                  <Input placeholder="123" />
+                  <Input 
+                    placeholder="123" 
+                    type="password"
+                    value={paymentForm.cvv}
+                    onChange={(e) => updatePaymentField("cvv", e.target.value)}
+                    className={errors.cvv ? "border-destructive" : ""}
+                  />
+                  {errors.cvv && (
+                    <p className="text-sm text-destructive">{errors.cvv}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Name on Card</Label>
-                <Input placeholder="John Smith" defaultValue={`${account.firstName} ${account.lastName}`} />
+                <Input 
+                  placeholder="John Smith" 
+                  value={paymentForm.nameOnCard}
+                  onChange={(e) => updatePaymentField("nameOnCard", e.target.value)}
+                  className={errors.nameOnCard ? "border-destructive" : ""}
+                />
+                {errors.nameOnCard && (
+                  <p className="text-sm text-destructive">{errors.nameOnCard}</p>
+                )}
               </div>
             </div>
           )}
@@ -290,15 +455,40 @@ export default function EnrollSubmit() {
             <div className="space-y-4 pt-4 border-t border-border">
               <div className="space-y-2">
                 <Label>Account Holder Name</Label>
-                <Input placeholder="John Smith" defaultValue={`${account.firstName} ${account.lastName}`} />
+                <Input 
+                  placeholder="John Smith" 
+                  value={paymentForm.accountHolderName}
+                  onChange={(e) => updatePaymentField("accountHolderName", e.target.value)}
+                  className={errors.accountHolderName ? "border-destructive" : ""}
+                />
+                {errors.accountHolderName && (
+                  <p className="text-sm text-destructive">{errors.accountHolderName}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Routing Number</Label>
-                <Input placeholder="123456789" />
+                <Input 
+                  placeholder="123456789" 
+                  value={paymentForm.routingNumber}
+                  onChange={(e) => updatePaymentField("routingNumber", e.target.value)}
+                  className={errors.routingNumber ? "border-destructive" : ""}
+                />
+                {errors.routingNumber && (
+                  <p className="text-sm text-destructive">{errors.routingNumber}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Account Number</Label>
-                <Input placeholder="1234567890" />
+                <Input 
+                  placeholder="1234567890" 
+                  type="password"
+                  value={paymentForm.accountNumber}
+                  onChange={(e) => updatePaymentField("accountNumber", e.target.value)}
+                  className={errors.accountNumber ? "border-destructive" : ""}
+                />
+                {errors.accountNumber && (
+                  <p className="text-sm text-destructive">{errors.accountNumber}</p>
+                )}
               </div>
             </div>
           )}

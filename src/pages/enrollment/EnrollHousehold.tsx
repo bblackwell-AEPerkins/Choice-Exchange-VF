@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
@@ -8,52 +8,82 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useEnrollment, EnrollmentDependent } from "@/hooks/useEnrollment";
-import { Plus, Trash2, Users, DollarSign } from "lucide-react";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { EnrollmentDependent } from "@/hooks/useEnrollment";
+import { householdSchema, dependentSchema, formatZodErrors } from "@/lib/validations/enrollment";
+import { Plus, Trash2, Users, DollarSign, Loader2 } from "lucide-react";
 
 export default function EnrollHousehold() {
   const navigate = useNavigate();
-  const { intent, household, updateHousehold, addDependent, removeDependent, setStep } = useEnrollment();
+  const { 
+    intent, 
+    household, 
+    updateHousehold, 
+    addDependent, 
+    removeDependent, 
+    setStep,
+    isLoading,
+    isSaving,
+    canAccessStep,
+    saveToDatabase
+  } = useEnrollmentDB();
+  
   const [showDependentForm, setShowDependentForm] = useState(false);
   const [newDependent, setNewDependent] = useState<Partial<EnrollmentDependent>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [dependentErrors, setDependentErrors] = useState<Record<string, string>>({});
+
+  // Step access protection
+  useEffect(() => {
+    if (!isLoading && !canAccessStep("household")) {
+      navigate("/enroll");
+    }
+  }, [isLoading, canAccessStep, navigate]);
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const result = householdSchema.safeParse({
+      maritalStatus: household.maritalStatus,
+      employmentStatus: household.employmentStatus,
+      employerName: household.employerName,
+      estimatedIncome: household.estimatedIncome,
+    });
 
-    if (!household.maritalStatus) {
-      newErrors.maritalStatus = "Marital status is required";
-    }
-    if (!household.employmentStatus) {
-      newErrors.employmentStatus = "Employment status is required";
-    }
-    if (household.employmentStatus === "employed" && !household.employerName.trim()) {
-      newErrors.employerName = "Employer name is required";
-    }
-    if (household.estimatedIncome <= 0) {
-      newErrors.income = "Estimated income is required";
+    if (!result.success) {
+      setErrors(formatZodErrors(result.error));
+      return false;
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
+  };
+
+  const validateDependent = (): boolean => {
+    const result = dependentSchema.safeParse(newDependent);
+
+    if (!result.success) {
+      setDependentErrors(formatZodErrors(result.error));
+      return false;
+    }
+
+    setDependentErrors({});
+    return true;
   };
 
   const handleAddDependent = () => {
-    if (!newDependent.firstName || !newDependent.lastName || !newDependent.dateOfBirth || !newDependent.relationship) {
-      return;
-    }
+    if (!validateDependent()) return;
 
     addDependent({
       id: crypto.randomUUID(),
-      firstName: newDependent.firstName,
-      lastName: newDependent.lastName,
-      dateOfBirth: newDependent.dateOfBirth,
-      relationship: newDependent.relationship,
+      firstName: newDependent.firstName!,
+      lastName: newDependent.lastName!,
+      dateOfBirth: newDependent.dateOfBirth!,
+      relationship: newDependent.relationship!,
       ssn: newDependent.ssn || "",
     });
 
     setNewDependent({});
     setShowDependentForm(false);
+    setDependentErrors({});
   };
 
   const handleNext = () => {
@@ -68,12 +98,28 @@ export default function EnrollHousehold() {
     navigate("/enroll/about");
   };
 
+  if (isLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={4}
+        totalSteps={8}
+        title="Household & Income"
+        description="Loading your information..."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
+
   return (
     <EnrollmentLayout
       currentStep={4}
       totalSteps={8}
       title="Household & Income"
       description="Tell us about your household to determine eligibility and coverage options."
+      onSave={saveToDatabase}
     >
       {/* Marital Status */}
       <Card>
@@ -169,6 +215,9 @@ export default function EnrollHousehold() {
                       value={newDependent.firstName || ""}
                       onChange={(e) => setNewDependent({ ...newDependent, firstName: e.target.value })}
                     />
+                    {dependentErrors.firstName && (
+                      <p className="text-sm text-destructive">{dependentErrors.firstName}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Last Name</Label>
@@ -177,6 +226,9 @@ export default function EnrollHousehold() {
                       value={newDependent.lastName || ""}
                       onChange={(e) => setNewDependent({ ...newDependent, lastName: e.target.value })}
                     />
+                    {dependentErrors.lastName && (
+                      <p className="text-sm text-destructive">{dependentErrors.lastName}</p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -187,6 +239,9 @@ export default function EnrollHousehold() {
                       value={newDependent.dateOfBirth || ""}
                       onChange={(e) => setNewDependent({ ...newDependent, dateOfBirth: e.target.value })}
                     />
+                    {dependentErrors.dateOfBirth && (
+                      <p className="text-sm text-destructive">{dependentErrors.dateOfBirth}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Relationship</Label>
@@ -203,6 +258,9 @@ export default function EnrollHousehold() {
                         <SelectItem value="domestic_partner">Domestic Partner</SelectItem>
                       </SelectContent>
                     </Select>
+                    {dependentErrors.relationship && (
+                      <p className="text-sm text-destructive">{dependentErrors.relationship}</p>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -217,7 +275,11 @@ export default function EnrollHousehold() {
                   <Button type="button" onClick={handleAddDependent}>
                     Add Dependent
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowDependentForm(false)}>
+                  <Button type="button" variant="outline" onClick={() => {
+                    setShowDependentForm(false);
+                    setDependentErrors({});
+                    setNewDependent({});
+                  }}>
                     Cancel
                   </Button>
                 </div>
@@ -297,8 +359,8 @@ export default function EnrollHousehold() {
                 onChange={(e) => updateHousehold({ estimatedIncome: Number(e.target.value) })}
               />
             </div>
-            {errors.income && (
-              <p className="text-sm text-destructive">{errors.income}</p>
+            {errors.estimatedIncome && (
+              <p className="text-sm text-destructive">{errors.estimatedIncome}</p>
             )}
             <p className="text-xs text-muted-foreground">
               This helps determine if you qualify for premium subsidies or cost-sharing reductions.
@@ -310,6 +372,7 @@ export default function EnrollHousehold() {
       <EnrollmentNavigation
         onBack={handleBack}
         onNext={handleNext}
+        isLoading={isSaving}
       />
     </EnrollmentLayout>
   );

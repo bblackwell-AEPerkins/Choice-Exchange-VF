@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEnrollment } from "@/hooks/useEnrollment";
-import { Shield, AlertCircle } from "lucide-react";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { Shield, Loader2 } from "lucide-react";
+import { formatSSN } from "@/lib/validations/enrollment";
 
 const US_STATES = [
   "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
@@ -20,15 +21,20 @@ const US_STATES = [
 
 export default function EnrollAbout() {
   const navigate = useNavigate();
-  const { about, updateAbout, setStep } = useEnrollment();
+  const { about, updateAbout, setStep, isLoading, canAccessStep, isSaving } = useEnrollmentDB();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const formatSSN = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 9);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
+  // Check step access
+  useEffect(() => {
+    if (!isLoading && !canAccessStep("about")) {
+      navigate("/enroll");
+    }
+  }, [isLoading, canAccessStep, navigate]);
+
+  const handleSSNChange = (value: string) => {
+    updateAbout({ ssn: formatSSN(value) });
   };
+
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};

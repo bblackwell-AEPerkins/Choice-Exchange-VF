@@ -1,15 +1,43 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEnrollment } from "@/hooks/useEnrollment";
-import { Heart, Users, Calendar, AlertCircle } from "lucide-react";
+import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { Heart, Users, Calendar, AlertCircle, Loader2 } from "lucide-react";
 
 export default function EnrollIntent() {
   const navigate = useNavigate();
-  const { intent, updateIntent, setStep } = useEnrollment();
+  const location = useLocation();
+  const { 
+    intent, 
+    updateIntent, 
+    setStep, 
+    isLoading,
+    currentStep,
+    isSaving,
+  } = useEnrollmentDB();
+
+  // Resume from saved step if coming back with resume flag
+  useEffect(() => {
+    if (!isLoading && currentStep !== "intent" && location.state?.resume) {
+      const stepRoutes: Record<string, string> = {
+        account: "/enroll/account",
+        about: "/enroll/about",
+        household: "/enroll/household",
+        coverage: "/enroll/coverage",
+        plans: "/enroll/plans",
+        review: "/enroll/review",
+        submit: "/enroll/submit",
+      };
+      const route = stepRoutes[currentStep];
+      if (route) {
+        navigate(route);
+      }
+    }
+  }, [isLoading, currentStep, location.state, navigate]);
 
   const canProceed =
     intent.coverageType &&
@@ -23,6 +51,21 @@ export default function EnrollIntent() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <EnrollmentLayout
+        currentStep={1}
+        totalSteps={8}
+        title="Loading..."
+        description="Please wait while we load your enrollment."
+      >
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </EnrollmentLayout>
+    );
+  }
+
   return (
     <EnrollmentLayout
       currentStep={1}
@@ -30,6 +73,14 @@ export default function EnrollIntent() {
       title="Let's Get Started"
       description="Tell us a bit about what you're looking for so we can guide you through the right enrollment path."
     >
+      {/* Saving indicator */}
+      {isSaving && (
+        <div className="fixed top-4 right-4 flex items-center gap-2 text-sm text-muted-foreground bg-card border border-border rounded-lg px-3 py-2 shadow-sm z-50">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Saving...
+        </div>
+      )}
+
       {/* Coverage Type */}
       <Card>
         <CardContent className="pt-6">

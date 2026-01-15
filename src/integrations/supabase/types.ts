@@ -176,6 +176,184 @@ export type Database = {
         }
         Relationships: []
       }
+      enrollment_applications: {
+        Row: {
+          address1: string | null
+          address2: string | null
+          attestation_ip_address: string | null
+          attested_at: string | null
+          attested_electronic_consent: boolean | null
+          attested_hipaa_authorization: boolean | null
+          attested_information_accurate: boolean | null
+          citizenship: string | null
+          city: string | null
+          confirmation_number: string | null
+          coverage_for: string | null
+          coverage_type: string | null
+          created_at: string
+          current_step: string
+          date_of_birth: string | null
+          desired_start_date: string | null
+          employer_contribution: number | null
+          employer_name: string | null
+          employment_status: string | null
+          enrollment_reason: string | null
+          estimated_income: number | null
+          has_documentation: boolean | null
+          has_prior_coverage: boolean | null
+          id: string
+          legal_sex: string | null
+          marital_status: string | null
+          monthly_premium: number | null
+          prior_coverage_end_date: string | null
+          qualifying_event_date: string | null
+          qualifying_event_type: string | null
+          selected_plan_id: string | null
+          ssn_encrypted: string | null
+          state: string | null
+          state_of_residence: string | null
+          status: string
+          submitted_at: string | null
+          tobacco_use: boolean | null
+          updated_at: string
+          user_id: string
+          zip_code: string | null
+        }
+        Insert: {
+          address1?: string | null
+          address2?: string | null
+          attestation_ip_address?: string | null
+          attested_at?: string | null
+          attested_electronic_consent?: boolean | null
+          attested_hipaa_authorization?: boolean | null
+          attested_information_accurate?: boolean | null
+          citizenship?: string | null
+          city?: string | null
+          confirmation_number?: string | null
+          coverage_for?: string | null
+          coverage_type?: string | null
+          created_at?: string
+          current_step?: string
+          date_of_birth?: string | null
+          desired_start_date?: string | null
+          employer_contribution?: number | null
+          employer_name?: string | null
+          employment_status?: string | null
+          enrollment_reason?: string | null
+          estimated_income?: number | null
+          has_documentation?: boolean | null
+          has_prior_coverage?: boolean | null
+          id?: string
+          legal_sex?: string | null
+          marital_status?: string | null
+          monthly_premium?: number | null
+          prior_coverage_end_date?: string | null
+          qualifying_event_date?: string | null
+          qualifying_event_type?: string | null
+          selected_plan_id?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          state_of_residence?: string | null
+          status?: string
+          submitted_at?: string | null
+          tobacco_use?: boolean | null
+          updated_at?: string
+          user_id: string
+          zip_code?: string | null
+        }
+        Update: {
+          address1?: string | null
+          address2?: string | null
+          attestation_ip_address?: string | null
+          attested_at?: string | null
+          attested_electronic_consent?: boolean | null
+          attested_hipaa_authorization?: boolean | null
+          attested_information_accurate?: boolean | null
+          citizenship?: string | null
+          city?: string | null
+          confirmation_number?: string | null
+          coverage_for?: string | null
+          coverage_type?: string | null
+          created_at?: string
+          current_step?: string
+          date_of_birth?: string | null
+          desired_start_date?: string | null
+          employer_contribution?: number | null
+          employer_name?: string | null
+          employment_status?: string | null
+          enrollment_reason?: string | null
+          estimated_income?: number | null
+          has_documentation?: boolean | null
+          has_prior_coverage?: boolean | null
+          id?: string
+          legal_sex?: string | null
+          marital_status?: string | null
+          monthly_premium?: number | null
+          prior_coverage_end_date?: string | null
+          qualifying_event_date?: string | null
+          qualifying_event_type?: string | null
+          selected_plan_id?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          state_of_residence?: string | null
+          status?: string
+          submitted_at?: string | null
+          tobacco_use?: boolean | null
+          updated_at?: string
+          user_id?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_applications_selected_plan_id_fkey"
+            columns: ["selected_plan_id"]
+            isOneToOne: false
+            referencedRelation: "ichra_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enrollment_dependents: {
+        Row: {
+          application_id: string
+          created_at: string
+          date_of_birth: string
+          first_name: string
+          id: string
+          last_name: string
+          relationship: string
+          ssn_encrypted: string | null
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          date_of_birth: string
+          first_name: string
+          id?: string
+          last_name: string
+          relationship: string
+          ssn_encrypted?: string | null
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          date_of_birth?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          relationship?: string
+          ssn_encrypted?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrollment_dependents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "enrollment_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           created_at: string

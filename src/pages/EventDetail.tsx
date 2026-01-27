@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { DEMO_MODE, MOCK_MEMBER_EVENTS, simulateDelay } from "@/lib/mockData";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -43,41 +44,66 @@ const EventDetail = () => {
       if (!eventId) return;
 
       try {
-        // Fetch the main event
-        const { data: eventData, error } = await supabase
-          .from("member_events")
-          .select("*")
-          .eq("id", eventId)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (eventData) {
-          setEvent(eventData as MemberEvent);
-
-          // Fetch parent event if exists
-          if (eventData.parent_event_id) {
-            const { data: parentData } = await supabase
-              .from("member_events")
-              .select("*")
-              .eq("id", eventData.parent_event_id)
-              .maybeSingle();
-
-            if (parentData) {
-              setParentEvent(parentData as MemberEvent);
+        if (DEMO_MODE) {
+          // Use mock data in demo mode
+          await simulateDelay(200);
+          
+          const mockEvent = MOCK_MEMBER_EVENTS.find(e => e.id === eventId);
+          if (mockEvent) {
+            setEvent(mockEvent as MemberEvent);
+            
+            // Find parent event if exists
+            if (mockEvent.parent_event_id) {
+              const parent = MOCK_MEMBER_EVENTS.find(e => e.id === mockEvent.parent_event_id);
+              if (parent) {
+                setParentEvent(parent as MemberEvent);
+              }
             }
+            
+            // Find child/related events
+            const children = MOCK_MEMBER_EVENTS
+              .filter(e => e.parent_event_id === eventId)
+              .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+              .slice(0, 10);
+            setRelatedEvents(children as MemberEvent[]);
           }
-
-          // Fetch related/child events
-          const { data: childEvents } = await supabase
+        } else {
+          // Fetch the main event from database
+          const { data: eventData, error } = await supabase
             .from("member_events")
             .select("*")
-            .eq("parent_event_id", eventId)
-            .order("event_date", { ascending: false })
-            .limit(10);
+            .eq("id", eventId)
+            .maybeSingle();
 
-          if (childEvents) {
-            setRelatedEvents(childEvents as MemberEvent[]);
+          if (error) throw error;
+
+          if (eventData) {
+            setEvent(eventData as MemberEvent);
+
+            // Fetch parent event if exists
+            if (eventData.parent_event_id) {
+              const { data: parentData } = await supabase
+                .from("member_events")
+                .select("*")
+                .eq("id", eventData.parent_event_id)
+                .maybeSingle();
+
+              if (parentData) {
+                setParentEvent(parentData as MemberEvent);
+              }
+            }
+
+            // Fetch related/child events
+            const { data: childEvents } = await supabase
+              .from("member_events")
+              .select("*")
+              .eq("parent_event_id", eventId)
+              .order("event_date", { ascending: false })
+              .limit(10);
+
+            if (childEvents) {
+              setRelatedEvents(childEvents as MemberEvent[]);
+            }
           }
         }
       } catch (error) {

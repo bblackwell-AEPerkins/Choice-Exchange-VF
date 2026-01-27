@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { supabase } from "@/integrations/supabase/client";
+import { DEMO_MODE, filterPlansByZip, simulateDelay, type MockICHRAPlan } from "@/lib/mockData";
 import {
   Shield,
   Search,
@@ -112,25 +112,12 @@ const ICHRAPlans = () => {
     setSearchedZip(zip);
 
     try {
-      const { data, error } = await supabase
-        .from("ichra_plans")
-        .select("*")
-        .eq("is_active", true)
-        .contains("coverage_areas", [zip.substring(0, 3)]);
-
-      if (error) throw error;
-
-      // If no plans found for specific area, fetch all active plans as fallback
-      if (!data || data.length === 0) {
-        const { data: allPlans, error: allError } = await supabase
-          .from("ichra_plans")
-          .select("*")
-          .eq("is_active", true);
-
-        if (allError) throw allError;
-        setPlans(allPlans || []);
+      if (DEMO_MODE) {
+        await simulateDelay(400);
+        const filteredPlans = filterPlansByZip(zip);
+        setPlans(filteredPlans as ICHRAPlan[]);
       } else {
-        setPlans(data);
+        setPlans([]);
       }
     } catch (error) {
       console.error("Error fetching plans:", error);

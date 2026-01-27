@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
-import { supabase } from "@/integrations/supabase/client";
+import { DEMO_MODE, MOCK_ICHRA_PLANS, filterPlansByZip, simulateDelay } from "@/lib/mockData";
 import { 
   Check, 
   Shield, 
@@ -171,35 +171,20 @@ export default function EnrollPlans() {
     setSearchedZip(zip);
 
     try {
-      // Try searching by ZIP prefix first
-      const { data, error } = await supabase
-        .from("ichra_plans")
-        .select("*")
-        .eq("is_active", true)
-        .contains("coverage_areas", [zip.substring(0, 3)]);
-
-      if (error) throw error;
-
-      // If no plans found, get all active plans
-      if (!data || data.length === 0) {
-        const { data: allPlans, error: allError } = await supabase
-          .from("ichra_plans")
-          .select("*")
-          .eq("is_active", true);
-
-        if (allError) throw allError;
-        setPlans(allPlans || []);
-      } else {
-        setPlans(data);
-      }
-      
-      // If a plan was previously selected, find its details
-      if (plan.medicalPlanId) {
-        const allData = data && data.length > 0 ? data : [];
-        const selected = allData.find((p: Plan) => p.id === plan.medicalPlanId);
-        if (selected) {
-          setSelectedPlanDetails(selected);
+      if (DEMO_MODE) {
+        await simulateDelay(400);
+        const filteredPlans = filterPlansByZip(zip);
+        setPlans(filteredPlans as Plan[]);
+        
+        // If a plan was previously selected, find its details
+        if (plan.medicalPlanId) {
+          const selected = filteredPlans.find((p) => p.id === plan.medicalPlanId);
+          if (selected) {
+            setSelectedPlanDetails(selected as Plan);
+          }
         }
+      } else {
+        setPlans([]);
       }
     } catch (error) {
       console.error("Error fetching plans:", error);

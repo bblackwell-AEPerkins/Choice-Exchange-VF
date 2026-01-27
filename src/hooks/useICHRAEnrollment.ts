@@ -2,6 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DEMO_MODE,
+  MOCK_MEMBER,
+  MOCK_EMPLOYERS,
+  MOCK_ICHRA_OFFERS,
+  MOCK_ICHRA_PLANS,
+  MOCK_ICHRA_ENROLLMENT,
+  simulateDelay,
+  filterPlansByZip,
+  getEmployerByDomain,
+  type MockICHRAPlan,
+  type MockEmployer,
+  type MockICHRAOffer,
+} from "@/lib/mockData";
 
 export type ICHRAEnrollmentStatus = 
   | "not_started" 
@@ -68,6 +82,8 @@ interface ICHRAEnrollment {
   updated_at: string;
 }
 
+const ICHRA_STORAGE_KEY = "demo_ichra_enrollment";
+
 export function useICHRAEnrollment() {
   const [loading, setLoading] = useState(true);
   const [employer, setEmployer] = useState<Employer | null>(null);
@@ -79,7 +95,7 @@ export function useICHRAEnrollment() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check auth and load user data
+  // Check auth and load data
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -91,19 +107,11 @@ export function useICHRAEnrollment() {
 
       setUser(session.user);
 
-      // Get individual record for this user
-      const { data: individual } = await supabase
-        .from("individuals")
-        .select("id")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (individual) {
-        setIndividualId(individual.id);
-        await loadEnrollmentData(individual.id, session.user.email);
+      if (DEMO_MODE) {
+        await loadDemoData(session.user.email);
       } else {
-        // Try to match employer by email domain
-        await matchEmployerByEmail(session.user.email);
+        setIndividualId(MOCK_MEMBER.id);
+        await loadDemoData(session.user.email);
       }
 
       setLoading(false);
@@ -112,72 +120,50 @@ export function useICHRAEnrollment() {
     checkAuthAndLoadData();
   }, []);
 
-  const matchEmployerByEmail = async (email: string | undefined) => {
-    if (!email) return;
-
-    const domain = email.split("@")[1];
-    if (!domain) return;
-
-    const { data: employerData } = await supabase
-      .from("employers")
-      .select("*")
-      .eq("email_domain", domain)
-      .eq("is_active", true)
-      .single();
-
-    if (employerData) {
-      setEmployer(employerData);
-
-      // Get active offer for this employer
-      const { data: offerData } = await supabase
-        .from("ichra_offers")
-        .select("*")
-        .eq("employer_id", employerData.id)
-        .eq("is_active", true)
-        .single();
-
-      if (offerData) {
-        setOffer({ ...offerData, employer: employerData });
+  const loadDemoData = async (email: string | undefined) => {
+    await simulateDelay(300);
+    
+    // Set individual ID
+    setIndividualId(MOCK_MEMBER.id);
+    
+    // Get employer by email domain (defaults to TechCorp for demo)
+    const matchedEmployer = email ? getEmployerByDomain(email) : MOCK_EMPLOYERS[0];
+    if (matchedEmployer) {
+      setEmployer(matchedEmployer as Employer);
+      
+      // Get active offer for employer
+      const matchedOffer = MOCK_ICHRA_OFFERS.find(
+        o => o.employer_id === matchedEmployer.id && o.is_active
+      );
+      if (matchedOffer) {
+        setOffer({ ...matchedOffer, employer: matchedEmployer } as ICHRAOffer);
       }
     }
-  };
-
-  const loadEnrollmentData = async (indId: string, email: string | undefined) => {
-    // First match employer
-    await matchEmployerByEmail(email);
-
-    // Check for existing enrollment
-    const { data: enrollmentData } = await supabase
-      .from("ichra_enrollments")
-      .select("*")
-      .eq("individual_id", indId)
-      .single();
-
-    if (enrollmentData) {
-      // Type assertion for the status field
-      setEnrollment(enrollmentData as unknown as ICHRAEnrollment);
+    
+    // Load enrollment from localStorage or use mock
+    const storedEnrollment = localStorage.getItem(ICHRA_STORAGE_KEY);
+    if (storedEnrollment) {
+      setEnrollment(JSON.parse(storedEnrollment));
+    } else {
+      // For demo, start with in_progress status for new users
+      const demoEnrollment: ICHRAEnrollment = {
+        ...MOCK_ICHRA_ENROLLMENT,
+        status: "in_progress",
+        selected_plan_id: null,
+        attested_at: null,
+        attested_accurate: false,
+        enrollment_completed_at: null,
+      };
+      setEnrollment(demoEnrollment);
     }
   };
 
   const fetchPlansByZipCode = async (zipCode: string) => {
-    const zipPrefix = zipCode.substring(0, 3);
-
-    const { data, error } = await supabase
-      .from("ichra_plans")
-      .select("*")
-      .eq("is_active", true)
-      .contains("coverage_areas", [zipPrefix]);
-
-    if (error) {
-      toast({
-        title: "Error loading plans",
-        description: "Could not load plans for your area. Please try again.",
-        variant: "destructive",
-      });
-      return;
+    if (DEMO_MODE) {
+      await simulateDelay(400);
+      const filteredPlans = filterPlansByZip(zipCode);
+      setPlans(filteredPlans as ICHRAPlan[]);
     }
-
-    setPlans((data || []) as unknown as ICHRAPlan[]);
   };
 
   const createEnrollment = async (offerId: string) => {
@@ -190,66 +176,59 @@ export function useICHRAEnrollment() {
       return null;
     }
 
-    const { data, error } = await supabase
-      .from("ichra_enrollments")
-      .insert({
+    if (DEMO_MODE) {
+      await simulateDelay(300);
+      
+      const newEnrollment: ICHRAEnrollment = {
+        id: `ichra-enroll-${Date.now()}`,
         individual_id: individualId,
         ichra_offer_id: offerId,
         status: "in_progress",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === "23505") {
-        // Unique constraint violation - enrollment already exists
-        toast({
-          title: "Enrollment Exists",
-          description: "You already have an enrollment for this offer.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Could not start enrollment. Please try again.",
-          variant: "destructive",
-        });
-      }
-      return null;
+        selected_plan_id: null,
+        external_carrier_name: null,
+        external_plan_name: null,
+        external_plan_type: null,
+        external_monthly_premium: null,
+        external_policy_number: null,
+        external_effective_date: null,
+        coverage_zip_code: null,
+        waiver_reason: null,
+        waiver_date: null,
+        attested_at: null,
+        attested_accurate: false,
+        enrollment_completed_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem(ICHRA_STORAGE_KEY, JSON.stringify(newEnrollment));
+      setEnrollment(newEnrollment);
+      return newEnrollment;
     }
-
-    setEnrollment(data as unknown as ICHRAEnrollment);
-    return data;
+    
+    return null;
   };
 
   const selectPlan = async (planId: string, zipCode: string) => {
-    if (!enrollment) return;
+    if (!enrollment) return false;
 
-    const { error } = await supabase
-      .from("ichra_enrollments")
-      .update({
+    if (DEMO_MODE) {
+      await simulateDelay(300);
+      
+      const updated: ICHRAEnrollment = {
+        ...enrollment,
         selected_plan_id: planId,
         coverage_zip_code: zipCode,
         status: "pending_verification",
-      })
-      .eq("id", enrollment.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Could not save plan selection. Please try again.",
-        variant: "destructive",
-      });
-      return false;
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem(ICHRA_STORAGE_KEY, JSON.stringify(updated));
+      setEnrollment(updated);
+      return true;
     }
 
-    setEnrollment((prev) => prev ? {
-      ...prev,
-      selected_plan_id: planId,
-      coverage_zip_code: zipCode,
-      status: "pending_verification",
-    } : null);
-
-    return true;
+    return false;
   };
 
   const submitExternalPlan = async (planDetails: {
@@ -263,9 +242,11 @@ export function useICHRAEnrollment() {
   }) => {
     if (!enrollment) return false;
 
-    const { error } = await supabase
-      .from("ichra_enrollments")
-      .update({
+    if (DEMO_MODE) {
+      await simulateDelay(300);
+      
+      const updated: ICHRAEnrollment = {
+        ...enrollment,
         external_carrier_name: planDetails.carrier_name,
         external_plan_name: planDetails.plan_name,
         external_plan_type: planDetails.plan_type,
@@ -274,101 +255,73 @@ export function useICHRAEnrollment() {
         external_effective_date: planDetails.effective_date,
         coverage_zip_code: planDetails.zip_code,
         status: "pending_verification",
-      })
-      .eq("id", enrollment.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Could not save plan details. Please try again.",
-        variant: "destructive",
-      });
-      return false;
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem(ICHRA_STORAGE_KEY, JSON.stringify(updated));
+      setEnrollment(updated);
+      return true;
     }
 
-    setEnrollment((prev) => prev ? {
-      ...prev,
-      ...planDetails,
-      status: "pending_verification",
-    } : null);
-
-    return true;
+    return false;
   };
 
   const attestEnrollment = async () => {
     if (!enrollment) return false;
 
-    const { error } = await supabase
-      .from("ichra_enrollments")
-      .update({
+    if (DEMO_MODE) {
+      await simulateDelay(400);
+      
+      const updated: ICHRAEnrollment = {
+        ...enrollment,
         attested_at: new Date().toISOString(),
         attested_accurate: true,
         status: "enrolled",
         enrollment_completed_at: new Date().toISOString(),
-      })
-      .eq("id", enrollment.id);
-
-    if (error) {
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem(ICHRA_STORAGE_KEY, JSON.stringify(updated));
+      setEnrollment(updated);
+      
       toast({
-        title: "Error",
-        description: "Could not complete attestation. Please try again.",
-        variant: "destructive",
+        title: "Enrollment Complete!",
+        description: "Your ICHRA enrollment has been successfully submitted.",
       });
-      return false;
+      
+      return true;
     }
 
-    setEnrollment((prev) => prev ? {
-      ...prev,
-      attested_at: new Date().toISOString(),
-      attested_accurate: true,
-      status: "enrolled",
-      enrollment_completed_at: new Date().toISOString(),
-    } : null);
-
-    toast({
-      title: "Enrollment Complete!",
-      description: "Your ICHRA enrollment has been successfully submitted.",
-    });
-
-    return true;
+    return false;
   };
 
   const waiveEnrollment = async (reason: string) => {
     if (!enrollment) return false;
 
-    const { error } = await supabase
-      .from("ichra_enrollments")
-      .update({
+    if (DEMO_MODE) {
+      await simulateDelay(400);
+      
+      const updated: ICHRAEnrollment = {
+        ...enrollment,
         waiver_reason: reason,
         waiver_date: new Date().toISOString(),
         status: "waived",
         enrollment_completed_at: new Date().toISOString(),
-      })
-      .eq("id", enrollment.id);
-
-    if (error) {
+        updated_at: new Date().toISOString(),
+      };
+      
+      localStorage.setItem(ICHRA_STORAGE_KEY, JSON.stringify(updated));
+      setEnrollment(updated);
+      
       toast({
-        title: "Error",
-        description: "Could not process waiver. Please try again.",
-        variant: "destructive",
+        title: "Waiver Submitted",
+        description: "Your ICHRA waiver has been recorded.",
       });
-      return false;
+      
+      return true;
     }
 
-    setEnrollment((prev) => prev ? {
-      ...prev,
-      waiver_reason: reason,
-      waiver_date: new Date().toISOString(),
-      status: "waived",
-      enrollment_completed_at: new Date().toISOString(),
-    } : null);
-
-    toast({
-      title: "Waiver Submitted",
-      description: "Your ICHRA waiver has been recorded.",
-    });
-
-    return true;
+    return false;
   };
 
   return {

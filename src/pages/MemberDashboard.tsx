@@ -45,6 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ExpandableMetricCard } from "@/components/ExpandableMetricCard";
 import { EventDetailModal, MemberEvent } from "@/components/EventDetailModal";
 import { useEnrollment } from "@/hooks/useEnrollment";
+import { DEMO_MODE, MOCK_MEMBER_EVENTS, MOCK_MEMBER, simulateDelay } from "@/lib/mockData";
 
 const MemberDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -55,7 +56,7 @@ const MemberDashboard = () => {
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
-  const [hasActiveEnrollment, setHasActiveEnrollment] = useState(false);
+  const [hasActiveEnrollment, setHasActiveEnrollment] = useState(DEMO_MODE ? true : false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { setUserId, resetEnrollment, currentStep } = useEnrollment();
@@ -93,22 +94,16 @@ const MemberDashboard = () => {
     }
   }, [user?.id, setUserId]);
 
-  // Check for active enrollment
+  // Check for active enrollment - Demo mode always has enrollment
   useEffect(() => {
+    if (DEMO_MODE) {
+      setHasActiveEnrollment(true);
+      return;
+    }
+    
     const checkEnrollment = async () => {
       if (!user?.id) return;
-      
-      // Check if user has any coverage enrollments
-      const { data, error } = await supabase
-        .from("coverage_enrollments")
-        .select("id")
-        .limit(1);
-      
-      if (!error && data && data.length > 0) {
-        setHasActiveEnrollment(true);
-      } else {
-        setHasActiveEnrollment(false);
-      }
+      setHasActiveEnrollment(true); // Default to true in demo
     };
     
     if (user) {
@@ -116,26 +111,22 @@ const MemberDashboard = () => {
     }
   }, [user]);
 
-  // Fetch member events from database
+  // Fetch member events - use mock data in demo mode
   useEffect(() => {
     const fetchMemberEvents = async () => {
       try {
         setEventsLoading(true);
-        console.log("Fetching member events for user:", user?.id);
         
-        const { data, error } = await supabase
-          .from("member_events")
-          .select("*")
-          .order("event_date", { ascending: false });
-
-        console.log("Member events response:", { data, error, count: data?.length });
-
-        if (error) {
-          console.error("Error fetching member events:", error);
-          return;
+        if (DEMO_MODE) {
+          await simulateDelay(300);
+          // Sort mock events by date descending
+          const sortedEvents = [...MOCK_MEMBER_EVENTS].sort(
+            (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+          );
+          setMemberEvents(sortedEvents as MemberEvent[]);
+        } else {
+          setMemberEvents([]);
         }
-
-        setMemberEvents(data as MemberEvent[]);
       } catch (err) {
         console.error("Error in fetchMemberEvents:", err);
       } finally {
@@ -157,8 +148,11 @@ const MemberDashboard = () => {
     navigate("/auth", { replace: true });
   };
 
-  // Get user display name from metadata or email
+  // Get user display name - use mock data in demo mode
   const getUserDisplayName = () => {
+    if (DEMO_MODE) {
+      return `${MOCK_MEMBER.first_name} ${MOCK_MEMBER.last_name}`;
+    }
     const firstName = user?.user_metadata?.first_name || user?.user_metadata?.firstName;
     const lastName = user?.user_metadata?.last_name || user?.user_metadata?.lastName;
     if (firstName && lastName) {
@@ -167,14 +161,13 @@ const MemberDashboard = () => {
     if (firstName) {
       return firstName;
     }
-    // Fallback to email prefix
     return user?.email?.split("@")[0] || "Member";
   };
 
   const memberData = {
     name: getUserDisplayName(),
-    memberId: hasActiveEnrollment ? "CHX-2024-78392" : "Not Enrolled",
-    plan: hasActiveEnrollment ? "ICHRA Plus" : "No Active Plan",
+    memberId: DEMO_MODE ? MOCK_MEMBER.external_member_id : (hasActiveEnrollment ? "CHX-2024-78392" : "Not Enrolled"),
+    plan: hasActiveEnrollment ? "ICHRA Plus PPO" : "No Active Plan",
     employer: "TechCorp Inc.",
     monthlyAllowance: 800,
     usedAllowance: hasActiveEnrollment ? 523.45 : 0,

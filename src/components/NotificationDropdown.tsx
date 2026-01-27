@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { DEMO_MODE, MOCK_MEMBER_EVENTS, simulateDelay } from "@/lib/mockData";
 import { format, formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -43,20 +43,17 @@ export const NotificationDropdown = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        // Fetch recent member_events to use as notifications
-        const { data: events, error } = await supabase
-          .from("member_events")
-          .select("*")
-          .order("event_date", { ascending: false })
-          .limit(10);
-
-        if (error) {
-          console.error("Error fetching notifications:", error);
-          setLoading(false);
-          return;
+        let events: any[] = [];
+        
+        if (DEMO_MODE) {
+          await simulateDelay(200);
+          // Use mock events, sorted by date, limited to 10
+          events = [...MOCK_MEMBER_EVENTS]
+            .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+            .slice(0, 10);
         }
 
-        if (events && events.length > 0) {
+        if (events.length > 0) {
           const mappedNotifications: Notification[] = events.map((event, index) => {
             const eventDate = new Date(event.event_date);
             const isUpcoming = eventDate > new Date();

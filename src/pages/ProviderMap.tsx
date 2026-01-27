@@ -53,10 +53,14 @@ const ProviderMap = () => {
   const handleSearch = () => {
     if (!searchQuery.trim() && !locationQuery.trim()) return;
     
+    const location = locationQuery.trim();
+    const isZipCode = /^\d{5}$/.test(location);
+    
     // Filter providers based on search
     const filtered = filterProviders({
       searchQuery: searchQuery.trim() || undefined,
-      city: locationQuery.trim() || undefined,
+      city: !isZipCode ? location : undefined,
+      zipCode: isZipCode ? location : undefined,
     });
     
     setSearchResults(filtered.slice(0, 50)); // Show first 50 results
@@ -70,9 +74,13 @@ const ProviderMap = () => {
   };
 
   const handleSpecialtyClick = (specialtyId: string) => {
+    const location = locationQuery.trim();
+    const isZipCode = /^\d{5}$/.test(location);
+    
     const providers = filterProviders({
       specialtyId,
-      city: locationQuery.trim() || undefined,
+      city: !isZipCode ? location : undefined,
+      zipCode: isZipCode ? location : undefined,
     });
     setSearchResults(providers.slice(0, 50));
     setSelectedSpecialty(specialtyId);

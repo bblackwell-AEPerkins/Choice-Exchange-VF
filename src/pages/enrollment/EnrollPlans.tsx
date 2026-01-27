@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
 import { DEMO_MODE, MOCK_ICHRA_PLANS, filterPlansByZip, simulateDelay } from "@/lib/mockData";
+import { filterProviders, subscriptionProviders, SubscriptionProvider } from "@/lib/subscriptionProviders";
 import { 
   Check, 
   Shield, 
@@ -33,6 +34,9 @@ import {
   Sparkles,
   SlidersHorizontal,
   AlertCircle,
+  Users,
+  Baby,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -84,66 +88,6 @@ const metalTierIcons: Record<string, React.ReactNode> = {
   gold: <Star className="h-4 w-4" />,
   platinum: <Sparkles className="h-4 w-4" />,
 };
-
-// Subscription care providers matching Member Dashboard style
-const SUBSCRIPTION_PROVIDERS = [
-  {
-    id: "sub-primary",
-    name: "Primary Care Membership",
-    provider: "Dr. Sarah Chen",
-    specialty: "Primary Care",
-    description: "Unlimited same-day visits, messaging, and preventive care",
-    monthlyPrice: 99,
-    rating: 4.9,
-    features: ["Unlimited visits", "Same-day appointments", "24/7 messaging", "Annual wellness exam", "Basic labs included"],
-    icon: Stethoscope,
-    popular: true,
-  },
-  {
-    id: "sub-mental",
-    name: "Mental Health Care",
-    provider: "Dr. Emily Santos",
-    specialty: "Psychiatry",
-    description: "Therapy sessions and mental wellness support",
-    monthlyPrice: 149,
-    rating: 4.8,
-    features: ["Weekly therapy sessions", "Psychiatric consultations", "Crisis support line", "Meditation app access"],
-    icon: Brain,
-  },
-  {
-    id: "sub-telehealth",
-    name: "Telehealth Plus",
-    provider: "VirtualCare Network",
-    specialty: "Virtual Care",
-    description: "Unlimited virtual doctor visits 24/7",
-    monthlyPrice: 29.99,
-    rating: 4.7,
-    features: ["Unlimited video visits", "Prescription delivery", "Specialist referrals", "Health records access"],
-    icon: Phone,
-  },
-  {
-    id: "sub-wellness",
-    name: "Wellness Program",
-    provider: "FitLife Partners",
-    specialty: "Wellness",
-    description: "Gym memberships and fitness coaching",
-    monthlyPrice: 49.99,
-    rating: 4.6,
-    features: ["National gym access", "Personal trainer sessions", "Nutrition coaching", "Wearable sync"],
-    icon: Activity,
-  },
-  {
-    id: "sub-pharmacy",
-    name: "Pharmacy Discount",
-    provider: "RxSaver Network",
-    specialty: "Pharmacy",
-    description: "Save on prescriptions at 60,000+ pharmacies",
-    monthlyPrice: 9.99,
-    rating: 4.5,
-    features: ["Up to 80% savings", "Mail order options", "Price comparison", "Automatic refills"],
-    icon: Pill,
-  },
-];
 
 // Voluntary benefits with detailed plans matching BenefitPlans.tsx structure
 const VOLUNTARY_BENEFITS_DATA: Record<string, {
@@ -271,6 +215,16 @@ export default function EnrollPlans() {
   // Selected plans for each category
   const [selectedSubscriptions, setSelectedSubscriptions] = useState<string[]>([]);
   const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>({});
+  
+  // Subscription search state
+  const [subSearchQuery, setSubSearchQuery] = useState("");
+  const [subLocationQuery, setSubLocationQuery] = useState("");
+  const [subSearchResults, setSubSearchResults] = useState<SubscriptionProvider[]>([]);
+  const [hasSubSearched, setHasSubSearched] = useState(false);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  
+  // Pre-selected recommended providers (top-rated from each specialty in Dallas area)
+  const [preSelectedProviders, setPreSelectedProviders] = useState<SubscriptionProvider[]>([]);
 
   // Step access protection
   useEffect(() => {
@@ -286,6 +240,25 @@ export default function EnrollPlans() {
       fetchPlans(about.zipCode);
     }
   }, [about.zipCode]);
+
+  // Initialize pre-selected subscription providers
+  useEffect(() => {
+    // Get top-rated providers from each specialty for recommended section
+    const specialties = ['primary', 'mental', 'telehealth'];
+    const recommended: SubscriptionProvider[] = [];
+    
+    specialties.forEach(specialty => {
+      const providers = subscriptionProviders[specialty] || [];
+      // Get the top 2 rated providers from Dallas
+      const dallasProviders = providers
+        .filter(p => p.city === "Dallas" && p.acceptingNew)
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 2);
+      recommended.push(...dallasProviders);
+    });
+    
+    setPreSelectedProviders(recommended);
+  }, []);
 
   const fetchPlans = async (zip: string) => {
     if (!zip || zip.length < 5) return;
@@ -369,6 +342,62 @@ export default function EnrollPlans() {
     }));
   };
 
+  // Subscription search handlers
+  const handleSubSearch = () => {
+    if (!subSearchQuery.trim() && !subLocationQuery.trim()) return;
+    
+    const location = subLocationQuery.trim();
+    const isZipCode = /^\d{5}$/.test(location);
+    
+    const filtered = filterProviders({
+      searchQuery: subSearchQuery.trim() || undefined,
+      city: !isZipCode ? location : undefined,
+      zipCode: isZipCode ? location : undefined,
+    });
+    
+    setSubSearchResults(filtered.slice(0, 30));
+    setHasSubSearched(true);
+    setSelectedSpecialty(null);
+  };
+
+  const handleSubKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSubSearch();
+    }
+  };
+
+  const handleSpecialtyClick = (specialtyId: string) => {
+    const location = subLocationQuery.trim();
+    const isZipCode = /^\d{5}$/.test(location);
+    
+    const providers = filterProviders({
+      specialtyId,
+      city: !isZipCode ? location : undefined,
+      zipCode: isZipCode ? location : undefined,
+    });
+    
+    setSubSearchResults(providers.slice(0, 30));
+    setSelectedSpecialty(specialtyId);
+    setHasSubSearched(true);
+  };
+
+  const clearSubSearch = () => {
+    setSubSearchQuery("");
+    setSubLocationQuery("");
+    setSubSearchResults([]);
+    setHasSubSearched(false);
+    setSelectedSpecialty(null);
+  };
+
+  const specialtyCategories = [
+    { id: "primary", name: "Primary Care", icon: Stethoscope, color: "bg-blue-100 text-blue-700" },
+    { id: "mental", name: "Mental Health", icon: Brain, color: "bg-purple-100 text-purple-700" },
+    { id: "telehealth", name: "Telehealth", icon: Phone, color: "bg-green-100 text-green-700" },
+    { id: "pediatrics", name: "Pediatrics", icon: Baby, color: "bg-pink-100 text-pink-700" },
+    { id: "womens", name: "Women's Health", icon: Heart, color: "bg-rose-100 text-rose-700" },
+    { id: "orthopedics", name: "Physical Therapy", icon: Activity, color: "bg-orange-100 text-orange-700" },
+  ];
+
   const handleNext = () => {
     if (activeTab === "ichra") {
       setActiveTab("subscription");
@@ -402,10 +431,15 @@ export default function EnrollPlans() {
     return true; // Subscription and voluntary are optional
   };
 
-  // Calculate total monthly cost
+  // Calculate total monthly cost - now using real provider data
   const subscriptionTotal = selectedSubscriptions.reduce((sum, id) => {
-    const sub = SUBSCRIPTION_PROVIDERS.find(s => s.id === id);
-    return sum + (sub?.monthlyPrice || 0);
+    // Check in pre-selected providers first
+    const preSelected = preSelectedProviders.find(p => p.id === id);
+    if (preSelected) return sum + preSelected.monthlyPrice;
+    // Check in search results
+    const searchResult = subSearchResults.find(p => p.id === id);
+    if (searchResult) return sum + searchResult.monthlyPrice;
+    return sum;
   }, 0);
 
   const voluntaryTotal = Object.entries(selectedVoluntary).reduce((sum, [categoryId, planId]) => {
@@ -796,8 +830,9 @@ export default function EnrollPlans() {
         </TabsContent>
 
         {/* Subscription Tab */}
-        <TabsContent value="subscription" className="space-y-4 mt-0">
-          <div className="rounded-lg border bg-card p-4 mb-4">
+        <TabsContent value="subscription" className="space-y-6 mt-0">
+          {/* Header */}
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-full bg-primary/10">
                 <Heart className="h-5 w-5 text-primary" />
@@ -805,91 +840,257 @@ export default function EnrollPlans() {
               <div>
                 <h3 className="font-semibold text-foreground">Subscription-Based Care</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Add monthly subscriptions for direct access to care. These complement your ICHRA plan 
-                  and provide convenient, transparent pricing.
+                  Add monthly subscriptions for direct access to care. Search for providers or choose from our recommended options.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4">
-            {SUBSCRIPTION_PROVIDERS.map((provider) => {
-              const isSelected = selectedSubscriptions.includes(provider.id);
-              const IconComponent = provider.icon;
-              
-              return (
-                <Card
-                  key={provider.id}
-                  className={cn(
-                    "cursor-pointer transition-all hover:border-primary/50",
-                    isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
-                  )}
-                  onClick={() => toggleSubscription(provider.id)}
+          {/* Search Box */}
+          <Card className="shadow-lg border-2">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1 relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input
+                    placeholder="Primary care, mental health, physical therapy..."
+                    className="pl-12 h-12 text-base"
+                    value={subSearchQuery}
+                    onChange={(e) => setSubSearchQuery(e.target.value)}
+                    onKeyDown={handleSubKeyPress}
+                  />
+                </div>
+                <div className="flex-1 relative group">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input
+                    placeholder="City, State, or ZIP"
+                    className="pl-12 h-12 text-base"
+                    value={subLocationQuery}
+                    onChange={(e) => setSubLocationQuery(e.target.value)}
+                    onKeyDown={handleSubKeyPress}
+                  />
+                </div>
+                <Button 
+                  size="lg" 
+                  className="h-12 px-8"
+                  onClick={handleSubSearch}
+                  disabled={!subSearchQuery.trim() && !subLocationQuery.trim()}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "p-3 rounded-xl shrink-0",
-                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
-                      )}>
-                        <IconComponent className="h-6 w-6" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-foreground">{provider.name}</h4>
-                              {provider.popular && (
-                                <Badge variant="secondary" className="text-xs bg-accent text-accent-foreground">Popular</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">{provider.provider}</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
-                            <p className="text-xs text-muted-foreground">/month</p>
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{provider.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="flex items-center gap-1">
-                            <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                            <span className="text-sm font-medium">{provider.rating}</span>
-                          </div>
-                          <span className="text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground">{provider.specialty}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {provider.features.slice(0, 3).map((feature, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs font-normal">
-                              {feature}
-                            </Badge>
-                          ))}
-                          {provider.features.length > 3 && (
-                            <Badge variant="outline" className="text-xs font-normal">
-                              +{provider.features.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <div className="shrink-0">
-                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                            <Check className="h-4 w-4 text-primary-foreground" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Search className="h-5 w-5 md:mr-2" />
+                  <span className="hidden md:inline">Find Care</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Specialty Quick Filters */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {specialtyCategories.map((specialty) => {
+              const IconComp = specialty.icon;
+              const isActive = selectedSpecialty === specialty.id;
+              return (
+                <button
+                  key={specialty.id}
+                  onClick={() => handleSpecialtyClick(specialty.id)}
+                  className={cn(
+                    "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all",
+                    isActive 
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
+                      : "hover:border-primary/50 hover:bg-muted/50"
+                  )}
+                >
+                  <div className={cn("p-2 rounded-lg", specialty.color)}>
+                    <IconComp className="h-5 w-5" />
+                  </div>
+                  <span className="text-sm font-medium text-center">{specialty.name}</span>
+                </button>
               );
             })}
           </div>
+
+          {/* Search Results */}
+          {hasSubSearched && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">
+                  {selectedSpecialty 
+                    ? `${specialtyCategories.find(s => s.id === selectedSpecialty)?.name || 'Providers'}`
+                    : 'Search Results'
+                  } ({subSearchResults.length} providers)
+                </h3>
+                <Button variant="ghost" size="sm" onClick={clearSubSearch}>
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Search
+                </Button>
+              </div>
+              <div className="grid gap-3">
+                {subSearchResults.map((provider) => {
+                  const isSelected = selectedSubscriptions.includes(provider.id);
+                  return (
+                    <Card
+                      key={provider.id}
+                      className={cn(
+                        "cursor-pointer transition-all hover:border-primary/50",
+                        isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
+                      )}
+                      onClick={() => toggleSubscription(provider.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-foreground">{provider.name}</h4>
+                                  {provider.acceptingNew && (
+                                    <Badge variant="secondary" className="text-xs bg-accent/10 text-accent">Accepting New</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
+                                <p className="text-xs text-muted-foreground">/month</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                              <MapPin className="h-3.5 w-3.5" />
+                              <span>{provider.city}, {provider.state} {provider.zipCode}</span>
+                              <span className="text-muted-foreground">•</span>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                                <span className="font-medium">{provider.rating}</span>
+                                <span>({provider.reviewCount} reviews)</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {provider.certifications.slice(0, 2).map((cert, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs font-normal">
+                                  {cert}
+                                </Badge>
+                              ))}
+                              <Badge variant="outline" className="text-xs font-normal">
+                                {provider.languages.join(", ")}
+                              </Badge>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="shrink-0">
+                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                <Check className="h-4 w-4 text-primary-foreground" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Pre-selected Recommended Providers */}
+          {!hasSubSearched && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Recommended for You</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Top-rated providers in your area. Select any to add to your plan.
+              </p>
+              <div className="grid gap-3">
+                {preSelectedProviders.map((provider) => {
+                  const isSelected = selectedSubscriptions.includes(provider.id);
+                  const specialty = specialtyCategories.find(s => s.id === provider.specialtyId);
+                  const IconComp = specialty?.icon || Stethoscope;
+                  
+                  return (
+                    <Card
+                      key={provider.id}
+                      className={cn(
+                        "cursor-pointer transition-all hover:border-primary/50",
+                        isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
+                      )}
+                      onClick={() => toggleSubscription(provider.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          <div className={cn(
+                            "p-3 rounded-xl shrink-0",
+                            isSelected ? "bg-primary text-primary-foreground" : specialty?.color || "bg-muted"
+                          )}>
+                            <IconComp className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold text-foreground">{provider.name}</h4>
+                                  {provider.acceptingNew && (
+                                    <Badge variant="secondary" className="text-xs bg-accent/10 text-accent">Accepting New</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
+                                <p className="text-xs text-muted-foreground">/month</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                              <MapPin className="h-3.5 w-3.5" />
+                              <span>{provider.city}, {provider.state}</span>
+                              <span className="text-muted-foreground">•</span>
+                              <div className="flex items-center gap-1">
+                                <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                                <span className="font-medium">{provider.rating}</span>
+                                <span>({provider.reviewCount} reviews)</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                              {provider.certifications.slice(0, 2).map((cert, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs font-normal">
+                                  {cert}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="shrink-0">
+                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                                <Check className="h-4 w-4 text-primary-foreground" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {selectedSubscriptions.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-4">
               Subscriptions are optional. Click "Continue" to skip or select any that interest you.
             </p>
+          )}
+
+          {selectedSubscriptions.length > 0 && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <span className="font-medium">{selectedSubscriptions.length} subscription{selectedSubscriptions.length > 1 ? 's' : ''} selected</span>
+                  </div>
+                  <p className="font-bold text-primary">${subscriptionTotal.toFixed(2)}/mo</p>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 

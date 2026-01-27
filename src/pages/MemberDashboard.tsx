@@ -557,7 +557,7 @@ const MemberDashboard = () => {
                       </CardTitle>
                     </div>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to="/providers">Book New</Link>
+                      <Link to="/schedule-redirect?provider=your%20provider">Book New</Link>
                     </Button>
                   </CardHeader>
                   <CardContent>
@@ -755,7 +755,7 @@ const MemberDashboard = () => {
                               </div>
                             ) : (
                               <Button variant="outline" size="sm" asChild>
-                                <Link to="/providers">Book Visit</Link>
+                                <Link to={`/schedule-redirect?provider=${encodeURIComponent(provider.name)}`}>Book Visit</Link>
                               </Button>
                             )}
                           </div>

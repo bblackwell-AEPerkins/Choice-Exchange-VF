@@ -18,6 +18,7 @@ import ComparePlans from "./pages/ComparePlans";
 import EventDetail from "./pages/EventDetail";
 import BenefitPlans from "./pages/BenefitPlans";
 import Support from "./pages/Support";
+import ScheduleRedirect from "./pages/ScheduleRedirect";
 import NotFound from "./pages/NotFound";
 import { ChatWidget } from "./components/ChatWidget";
 
@@ -55,7 +56,7 @@ const App = () => (
           <Route path="/event/:eventId" element={<EventDetail />} />
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           <Route path="/support" element={<Support />} />
-          
+          <Route path="/schedule-redirect" element={<ScheduleRedirect />} />
           {/* New Unified Enrollment Flow */}
           <Route path="/enroll" element={<EnrollIntent />} />
           <Route path="/enroll/account" element={<EnrollAccount />} />

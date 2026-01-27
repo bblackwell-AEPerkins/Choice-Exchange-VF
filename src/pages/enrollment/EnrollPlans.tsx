@@ -22,7 +22,12 @@ import {
   CreditCard,
   ArrowRight,
   Building2,
-  Scale
+  Scale,
+  Star,
+  Pill,
+  Phone,
+  Activity,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -48,7 +53,7 @@ interface Plan {
   plan_type: string;
 }
 
-type PlanCategory = "insurance" | "subscription" | "voluntary";
+type PlanCategory = "ichra" | "subscription" | "voluntary";
 
 const METAL_TIER_COLORS: Record<string, string> = {
   bronze: "bg-amber-100 text-amber-800 border-amber-300",
@@ -57,66 +62,159 @@ const METAL_TIER_COLORS: Record<string, string> = {
   platinum: "bg-purple-100 text-purple-800 border-purple-300",
 };
 
-// Mock subscription and voluntary plans - replace with real data
-const SUBSCRIPTION_PLANS = [
+// Subscription care providers matching Member Dashboard style
+const SUBSCRIPTION_PROVIDERS = [
+  {
+    id: "sub-primary",
+    name: "Primary Care Membership",
+    provider: "Dr. Sarah Chen",
+    specialty: "Primary Care",
+    description: "Unlimited same-day visits, messaging, and preventive care",
+    monthlyPrice: 99,
+    rating: 4.9,
+    features: ["Unlimited visits", "Same-day appointments", "24/7 messaging", "Annual wellness exam", "Basic labs included"],
+    icon: Stethoscope,
+    popular: true,
+  },
+  {
+    id: "sub-mental",
+    name: "Mental Health Care",
+    provider: "Dr. Emily Santos",
+    specialty: "Psychiatry",
+    description: "Therapy sessions and mental wellness support",
+    monthlyPrice: 149,
+    rating: 4.8,
+    features: ["Weekly therapy sessions", "Psychiatric consultations", "Crisis support line", "Meditation app access"],
+    icon: Brain,
+  },
   {
     id: "sub-telehealth",
     name: "Telehealth Plus",
+    provider: "VirtualCare Network",
+    specialty: "Virtual Care",
     description: "Unlimited virtual doctor visits 24/7",
     monthlyPrice: 29.99,
-    features: ["Unlimited video visits", "Mental health support", "Prescription delivery"],
-    icon: Stethoscope,
+    rating: 4.7,
+    features: ["Unlimited video visits", "Prescription delivery", "Specialist referrals", "Health records access"],
+    icon: Phone,
   },
   {
     id: "sub-wellness",
     name: "Wellness Program",
-    description: "Gym memberships and fitness tracking",
-    monthlyPrice: 19.99,
-    features: ["National gym access", "Fitness app premium", "Health coaching"],
-    icon: Heart,
+    provider: "FitLife Partners",
+    specialty: "Wellness",
+    description: "Gym memberships and fitness coaching",
+    monthlyPrice: 49.99,
+    rating: 4.6,
+    features: ["National gym access", "Personal trainer sessions", "Nutrition coaching", "Wearable sync"],
+    icon: Activity,
   },
   {
     id: "sub-pharmacy",
     name: "Pharmacy Discount",
+    provider: "RxSaver Network",
+    specialty: "Pharmacy",
     description: "Save on prescriptions at 60,000+ pharmacies",
     monthlyPrice: 9.99,
-    features: ["Up to 80% savings", "Mail order options", "Price comparison"],
-    icon: CreditCard,
+    rating: 4.5,
+    features: ["Up to 80% savings", "Mail order options", "Price comparison", "Automatic refills"],
+    icon: Pill,
   },
 ];
 
-const VOLUNTARY_PLANS = [
+// Voluntary benefits with carrier options (3x3 grid style)
+const VOLUNTARY_CATEGORIES = [
   {
-    id: "vol-dental",
+    id: "dental",
     name: "Dental Coverage",
+    icon: "🦷",
     description: "Comprehensive dental care",
-    monthlyPrice: 35.00,
-    features: ["Preventive care 100%", "Basic services 80%", "Major services 50%"],
-    icon: Stethoscope,
+    carriers: [
+      { name: "Choice Exchange", plans: [
+        { id: "dental-basic", tier: "Basic", price: 25 },
+        { id: "dental-standard", tier: "Standard", price: 45, popular: true },
+        { id: "dental-premium", tier: "Premium", price: 75 },
+      ]},
+      { name: "Delta Dental", plans: [
+        { id: "delta-basic", tier: "Basic", price: 28 },
+        { id: "delta-standard", tier: "Standard", price: 52 },
+        { id: "delta-premium", tier: "Premium", price: 82 },
+      ]},
+      { name: "MetLife", plans: [
+        { id: "metlife-dental-basic", tier: "Basic", price: 22 },
+        { id: "metlife-dental-standard", tier: "Standard", price: 48 },
+        { id: "metlife-dental-premium", tier: "Premium", price: 78 },
+      ]},
+    ],
   },
   {
-    id: "vol-vision",
+    id: "vision",
     name: "Vision Coverage",
+    icon: "👁️",
     description: "Eye exams, glasses, and contacts",
-    monthlyPrice: 12.00,
-    features: ["Annual eye exam", "$150 frame allowance", "Contact lens coverage"],
-    icon: Eye,
+    carriers: [
+      { name: "Choice Exchange", plans: [
+        { id: "vision-basic", tier: "Basic", price: 10 },
+        { id: "vision-standard", tier: "Standard", price: 15, popular: true },
+        { id: "vision-premium", tier: "Premium", price: 25 },
+      ]},
+      { name: "VSP", plans: [
+        { id: "vsp-basic", tier: "Basic", price: 12 },
+        { id: "vsp-standard", tier: "Standard", price: 18 },
+        { id: "vsp-premium", tier: "Premium", price: 28 },
+      ]},
+      { name: "EyeMed", plans: [
+        { id: "eyemed-basic", tier: "Basic", price: 9 },
+        { id: "eyemed-standard", tier: "Standard", price: 16 },
+        { id: "eyemed-premium", tier: "Premium", price: 26 },
+      ]},
+    ],
   },
   {
-    id: "vol-life",
+    id: "life",
     name: "Life Insurance",
+    icon: "🛡️",
     description: "Term life coverage for peace of mind",
-    monthlyPrice: 25.00,
-    features: ["$50,000 coverage", "Accidental death benefit", "Portable coverage"],
-    icon: Umbrella,
+    carriers: [
+      { name: "Choice Exchange", plans: [
+        { id: "life-basic", tier: "Basic", price: 15 },
+        { id: "life-standard", tier: "Standard", price: 25, popular: true },
+        { id: "life-premium", tier: "Premium", price: 45 },
+      ]},
+      { name: "MetLife", plans: [
+        { id: "metlife-life-basic", tier: "Basic", price: 14 },
+        { id: "metlife-life-standard", tier: "Standard", price: 28 },
+        { id: "metlife-life-premium", tier: "Premium", price: 52 },
+      ]},
+      { name: "Prudential", plans: [
+        { id: "prudential-basic", tier: "Basic", price: 16 },
+        { id: "prudential-standard", tier: "Standard", price: 30 },
+        { id: "prudential-premium", tier: "Premium", price: 55 },
+      ]},
+    ],
   },
   {
-    id: "vol-disability",
+    id: "disability",
     name: "Short-Term Disability",
+    icon: "💼",
     description: "Income protection if you can't work",
-    monthlyPrice: 22.00,
-    features: ["60% income replacement", "90-day benefit period", "14-day waiting period"],
-    icon: Shield,
+    carriers: [
+      { name: "Choice Exchange", plans: [
+        { id: "std-basic", tier: "Basic", price: 20 },
+        { id: "std-standard", tier: "Standard", price: 35, popular: true },
+        { id: "std-premium", tier: "Premium", price: 55 },
+      ]},
+      { name: "Unum", plans: [
+        { id: "unum-basic", tier: "Basic", price: 22 },
+        { id: "unum-standard", tier: "Standard", price: 38 },
+        { id: "unum-premium", tier: "Premium", price: 60 },
+      ]},
+      { name: "Lincoln Financial", plans: [
+        { id: "lincoln-basic", tier: "Basic", price: 18 },
+        { id: "lincoln-standard", tier: "Standard", price: 32 },
+        { id: "lincoln-premium", tier: "Premium", price: 50 },
+      ]},
+    ],
   },
 ];
 
@@ -134,7 +232,7 @@ export default function EnrollPlans() {
     saveToDatabase
   } = useEnrollmentDB();
   
-  const [activeTab, setActiveTab] = useState<PlanCategory>("insurance");
+  const [activeTab, setActiveTab] = useState<PlanCategory>("ichra");
   const [zipCode, setZipCode] = useState(coverage.stateOfResidence ? "" : about.zipCode || "");
   const [searchedZip, setSearchedZip] = useState("");
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -146,7 +244,7 @@ export default function EnrollPlans() {
   
   // Selected plans for each category
   const [selectedSubscriptions, setSelectedSubscriptions] = useState<string[]>([]);
-  const [selectedVoluntary, setSelectedVoluntary] = useState<string[]>([]);
+  const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>({});
 
   // Step access protection
   useEffect(() => {
@@ -226,14 +324,15 @@ export default function EnrollPlans() {
     );
   };
 
-  const toggleVoluntary = (id: string) => {
-    setSelectedVoluntary(prev => 
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    );
+  const selectVoluntaryPlan = (categoryId: string, planId: string) => {
+    setSelectedVoluntary(prev => ({
+      ...prev,
+      [categoryId]: prev[categoryId] === planId ? "" : planId,
+    }));
   };
 
   const handleNext = () => {
-    if (activeTab === "insurance" && plan.medicalPlanId) {
+    if (activeTab === "ichra") {
       setActiveTab("subscription");
     } else if (activeTab === "subscription") {
       setActiveTab("voluntary");
@@ -247,7 +346,7 @@ export default function EnrollPlans() {
     if (activeTab === "voluntary") {
       setActiveTab("subscription");
     } else if (activeTab === "subscription") {
-      setActiveTab("insurance");
+      setActiveTab("ichra");
     } else {
       setStep("coverage");
       navigate("/enroll/coverage");
@@ -255,25 +354,31 @@ export default function EnrollPlans() {
   };
 
   const getNextLabel = () => {
-    if (activeTab === "insurance") return "Continue to Subscriptions";
+    if (activeTab === "ichra") return "Continue to Subscriptions";
     if (activeTab === "subscription") return "Continue to Voluntary";
     return "Review & Submit";
   };
 
   const canProceed = () => {
-    if (activeTab === "insurance") return !!plan.medicalPlanId;
+    if (activeTab === "ichra") return !!plan.medicalPlanId;
     return true; // Subscription and voluntary are optional
   };
 
   // Calculate total monthly cost
   const subscriptionTotal = selectedSubscriptions.reduce((sum, id) => {
-    const sub = SUBSCRIPTION_PLANS.find(s => s.id === id);
+    const sub = SUBSCRIPTION_PROVIDERS.find(s => s.id === id);
     return sum + (sub?.monthlyPrice || 0);
   }, 0);
 
-  const voluntaryTotal = selectedVoluntary.reduce((sum, id) => {
-    const vol = VOLUNTARY_PLANS.find(v => v.id === id);
-    return sum + (vol?.monthlyPrice || 0);
+  const voluntaryTotal = Object.entries(selectedVoluntary).reduce((sum, [categoryId, planId]) => {
+    if (!planId) return sum;
+    const category = VOLUNTARY_CATEGORIES.find(c => c.id === categoryId);
+    if (!category) return sum;
+    for (const carrier of category.carriers) {
+      const plan = carrier.plans.find(p => p.id === planId);
+      if (plan) return sum + plan.price;
+    }
+    return sum;
   }, 0);
 
   const totalMonthly = (plan.monthlyPremium || 0) + subscriptionTotal + voluntaryTotal;
@@ -302,18 +407,18 @@ export default function EnrollPlans() {
       onSave={saveToDatabase}
     >
       {/* Monthly Cost Summary */}
-      {(plan.medicalPlanId || selectedSubscriptions.length > 0 || selectedVoluntary.length > 0) && (
-        <Card className="border-primary/30 bg-primary/5">
+      {(plan.medicalPlanId || selectedSubscriptions.length > 0 || Object.values(selectedVoluntary).some(v => v)) && (
+        <Card className="border-primary/30 bg-primary/5 mb-6">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Estimated Monthly Total</p>
                 <p className="text-2xl font-bold text-primary">${totalMonthly.toFixed(2)}/mo</p>
               </div>
-              <div className="text-right text-sm">
-                {plan.medicalPlanId && <p>Insurance: ${plan.monthlyPremium?.toFixed(2)}</p>}
-                {subscriptionTotal > 0 && <p>Subscriptions: ${subscriptionTotal.toFixed(2)}</p>}
-                {voluntaryTotal > 0 && <p>Voluntary: ${voluntaryTotal.toFixed(2)}</p>}
+              <div className="text-right text-sm space-y-0.5">
+                {plan.medicalPlanId && <p className="text-muted-foreground">ICHRA Plan: <span className="text-foreground font-medium">${plan.monthlyPremium?.toFixed(2)}</span></p>}
+                {subscriptionTotal > 0 && <p className="text-muted-foreground">Subscriptions: <span className="text-foreground font-medium">${subscriptionTotal.toFixed(2)}</span></p>}
+                {voluntaryTotal > 0 && <p className="text-muted-foreground">Voluntary: <span className="text-foreground font-medium">${voluntaryTotal.toFixed(2)}</span></p>}
               </div>
             </div>
           </CardContent>
@@ -321,35 +426,53 @@ export default function EnrollPlans() {
       )}
 
       {/* Plan Category Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PlanCategory)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="insurance" className="flex items-center gap-2">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PlanCategory)} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsTrigger value="ichra" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Insurance</span>
-            {plan.medicalPlanId && <Check className="h-3 w-3 text-accent" />}
+            <span className="hidden sm:inline">ICHRA Plans</span>
+            <span className="sm:hidden">ICHRA</span>
+            {plan.medicalPlanId && <Check className="h-3 w-3" />}
           </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Subscriptions</span>
+          <TabsTrigger value="subscription" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Heart className="h-4 w-4" />
+            <span className="hidden sm:inline">Subscription</span>
+            <span className="sm:hidden">Sub</span>
             {selectedSubscriptions.length > 0 && (
-              <Badge variant="secondary" className="h-5 w-5 p-0 justify-center">
+              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 justify-center text-xs">
                 {selectedSubscriptions.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="voluntary" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
+          <TabsTrigger value="voluntary" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Umbrella className="h-4 w-4" />
             <span className="hidden sm:inline">Voluntary</span>
-            {selectedVoluntary.length > 0 && (
-              <Badge variant="secondary" className="h-5 w-5 p-0 justify-center">
-                {selectedVoluntary.length}
+            <span className="sm:hidden">Vol</span>
+            {Object.values(selectedVoluntary).filter(v => v).length > 0 && (
+              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 justify-center text-xs">
+                {Object.values(selectedVoluntary).filter(v => v).length}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
-        {/* Insurance Plans Tab */}
-        <TabsContent value="insurance" className="space-y-4 mt-4">
+        {/* ICHRA Plans Tab */}
+        <TabsContent value="ichra" className="space-y-4 mt-0">
+          <div className="rounded-lg border bg-card p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Shield className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Individual Health Plan (Empowered by ICHRA)</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Your employer provides a monthly allowance to help cover the cost of individual health insurance. 
+                  Select a plan that fits your needs.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* ZIP Code Search */}
           <Card>
             <CardContent className="pt-6">
@@ -473,7 +596,7 @@ export default function EnrollPlans() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filteredPlans.map((p) => {
                 const isSelected = plan.medicalPlanId === p.id;
                 
@@ -486,60 +609,33 @@ export default function EnrollPlans() {
                     )}
                     onClick={() => handleSelectInsurancePlan(p)}
                   >
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                        <div className="flex-1">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge className={cn("capitalize", METAL_TIER_COLORS[p.metal_tier.toLowerCase()])}>
+                            <Badge className={cn("capitalize text-xs", METAL_TIER_COLORS[p.metal_tier.toLowerCase()])}>
                               {p.metal_tier}
                             </Badge>
-                            <Badge variant="outline">{p.plan_type}</Badge>
                             {p.is_hsa_eligible && (
-                              <Badge variant="outline" className="text-accent border-accent">
-                                HSA Eligible
-                              </Badge>
+                              <Badge variant="outline" className="text-xs">HSA</Badge>
                             )}
                           </div>
-                          <h3 className="font-semibold text-lg">{p.plan_name}</h3>
-                          <p className="text-sm text-muted-foreground">{p.carrier_name}</p>
-                          
-                          <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Deductible</p>
-                              <p className="font-medium">${p.deductible.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Out-of-Pocket Max</p>
-                              <p className="font-medium">${p.out_of_pocket_max.toLocaleString()}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Primary Care</p>
-                              <p className="font-medium">
-                                {p.copay_primary ? `$${p.copay_primary}` : "See plan"}
-                              </p>
-                            </div>
+                          <p className="font-semibold text-foreground">{p.plan_name}</p>
+                          <p className="text-sm text-muted-foreground">{p.carrier_name} • {p.plan_type}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                            <span>Deductible: ${p.deductible.toLocaleString()}</span>
+                            <span>OOP Max: ${p.out_of_pocket_max.toLocaleString()}</span>
                           </div>
                         </div>
-                        
-                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
-                          <div className="text-right">
-                            <p className="text-2xl font-bold">${p.monthly_premium.toFixed(2)}</p>
-                            <p className="text-xs text-muted-foreground">per month</p>
-                          </div>
-                          <Button
-                            variant={isSelected ? "default" : "outline"}
-                            size="sm"
-                            className="min-w-[100px]"
-                          >
-                            {isSelected ? (
-                              <>
-                                <Check className="h-4 w-4 mr-1" />
-                                Selected
-                              </>
-                            ) : (
-                              "Select Plan"
-                            )}
-                          </Button>
+                        <div className="text-right shrink-0">
+                          <p className="text-xl font-bold text-primary">${p.monthly_premium.toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">/month</p>
+                          {isSelected && (
+                            <div className="mt-2 flex items-center justify-end gap-1 text-primary">
+                              <Check className="h-4 w-4" />
+                              <span className="text-xs font-medium">Selected</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -550,122 +646,188 @@ export default function EnrollPlans() {
           )}
         </TabsContent>
 
-        {/* Subscription Plans Tab */}
-        <TabsContent value="subscription" className="space-y-4 mt-4">
-          <Card className="bg-muted/30">
-            <CardContent className="py-4">
-              <p className="text-sm text-muted-foreground">
-                <strong>Optional:</strong> Add subscription-based health services to enhance your coverage.
-                These are billed monthly and can be canceled anytime.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Subscription Tab */}
+        <TabsContent value="subscription" className="space-y-4 mt-0">
+          <div className="rounded-lg border bg-card p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Heart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Subscription-Based Care</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Add monthly subscriptions for direct access to care. These complement your ICHRA plan 
+                  and provide convenient, transparent pricing.
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {SUBSCRIPTION_PLANS.map((sub) => {
-              const isSelected = selectedSubscriptions.includes(sub.id);
-              const Icon = sub.icon;
+          <div className="grid gap-4">
+            {SUBSCRIPTION_PROVIDERS.map((provider) => {
+              const isSelected = selectedSubscriptions.includes(provider.id);
+              const IconComponent = provider.icon;
               
               return (
                 <Card
-                  key={sub.id}
+                  key={provider.id}
                   className={cn(
                     "cursor-pointer transition-all hover:border-primary/50",
-                    isSelected && "border-primary ring-2 ring-primary/20"
+                    isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
                   )}
-                  onClick={() => toggleSubscription(sub.id)}
+                  onClick={() => toggleSubscription(provider.id)}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Icon className="h-5 w-5 text-primary" />
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "p-3 rounded-xl shrink-0",
+                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted"
+                      )}>
+                        <IconComponent className="h-6 w-6" />
                       </div>
-                      {isSelected && <Check className="h-5 w-5 text-primary" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-foreground">{provider.name}</h4>
+                              {provider.popular && (
+                                <Badge variant="secondary" className="text-xs bg-accent text-accent-foreground">Popular</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{provider.provider}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
+                            <p className="text-xs text-muted-foreground">/month</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{provider.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                            <span className="text-sm font-medium">{provider.rating}</span>
+                          </div>
+                          <span className="text-muted-foreground">•</span>
+                          <span className="text-xs text-muted-foreground">{provider.specialty}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {provider.features.slice(0, 3).map((feature, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs font-normal">
+                              {feature}
+                            </Badge>
+                          ))}
+                          {provider.features.length > 3 && (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              +{provider.features.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="shrink-0">
+                          <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="h-4 w-4 text-primary-foreground" />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <CardTitle className="text-lg">{sub.name}</CardTitle>
-                    <CardDescription>{sub.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold text-primary mb-3">
-                      ${sub.monthlyPrice.toFixed(2)}<span className="text-sm font-normal text-muted-foreground">/mo</span>
-                    </p>
-                    <ul className="space-y-1">
-                      {sub.features.map((feature, i) => (
-                        <li key={i} className="text-sm flex items-center gap-2">
-                          <Check className="h-3 w-3 text-accent" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
+
+          {selectedSubscriptions.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-4">
+              Subscriptions are optional. Click "Continue" to skip or select any that interest you.
+            </p>
+          )}
         </TabsContent>
 
-        {/* Voluntary Benefits Tab */}
-        <TabsContent value="voluntary" className="space-y-4 mt-4">
-          <Card className="bg-muted/30">
-            <CardContent className="py-4">
-              <p className="text-sm text-muted-foreground">
-                <strong>Optional:</strong> Add voluntary benefits for additional protection.
-                Dental and vision coverage, life insurance, and disability protection.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {VOLUNTARY_PLANS.map((vol) => {
-              const isSelected = selectedVoluntary.includes(vol.id);
-              const Icon = vol.icon;
-              
-              return (
-                <Card
-                  key={vol.id}
-                  className={cn(
-                    "cursor-pointer transition-all hover:border-primary/50",
-                    isSelected && "border-primary ring-2 ring-primary/20"
-                  )}
-                  onClick={() => toggleVoluntary(vol.id)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Icon className="h-5 w-5 text-primary" />
-                      </div>
-                      {isSelected && <Check className="h-5 w-5 text-primary" />}
-                    </div>
-                    <CardTitle className="text-lg">{vol.name}</CardTitle>
-                    <CardDescription>{vol.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold text-primary mb-3">
-                      ${vol.monthlyPrice.toFixed(2)}<span className="text-sm font-normal text-muted-foreground">/mo</span>
-                    </p>
-                    <ul className="space-y-1">
-                      {vol.features.map((feature, i) => (
-                        <li key={i} className="text-sm flex items-center gap-2">
-                          <Check className="h-3 w-3 text-accent" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              );
-            })}
+        {/* Voluntary Tab */}
+        <TabsContent value="voluntary" className="space-y-6 mt-0">
+          <div className="rounded-lg border bg-card p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Umbrella className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">Voluntary Benefits</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Add dental, vision, life insurance, and more. Choose from multiple carriers and 
+                  coverage levels.
+                </p>
+              </div>
+            </div>
           </div>
+
+          {VOLUNTARY_CATEGORIES.map((category) => (
+            <div key={category.id} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{category.icon}</span>
+                <div>
+                  <h4 className="font-semibold text-foreground">{category.name}</h4>
+                  <p className="text-sm text-muted-foreground">{category.description}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {category.carriers.map((carrier) => (
+                  <div key={carrier.name} className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground px-1">{carrier.name}</p>
+                    <div className="space-y-2">
+                      {carrier.plans.map((tierPlan) => {
+                        const isSelected = selectedVoluntary[category.id] === tierPlan.id;
+                        
+                        return (
+                          <Card
+                            key={tierPlan.id}
+                            className={cn(
+                              "cursor-pointer transition-all hover:border-primary/50",
+                              isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
+                            )}
+                            onClick={() => selectVoluntaryPlan(category.id, tierPlan.id)}
+                          >
+                            <CardContent className="p-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">{tierPlan.tier}</span>
+                                  {tierPlan.popular && (
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Popular</Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-primary">${tierPlan.price}</span>
+                                  {isSelected && <Check className="h-4 w-4 text-primary" />}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {Object.values(selectedVoluntary).filter(v => v).length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-4">
+              Voluntary benefits are optional. Click "Review & Submit" to proceed or select any that interest you.
+            </p>
+          )}
         </TabsContent>
       </Tabs>
 
+      {/* Navigation */}
       <EnrollmentNavigation
         onBack={handleBack}
         onNext={handleNext}
-        disabled={!canProceed()}
         nextLabel={getNextLabel()}
-        backLabel={activeTab === "insurance" ? "Back" : "Previous"}
+        disabled={activeTab === "ichra" && !canProceed()}
         isLoading={isSaving}
+        showBack={true}
       />
     </EnrollmentLayout>
   );

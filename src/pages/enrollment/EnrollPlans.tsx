@@ -46,6 +46,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface Plan {
   id: string;
@@ -1094,7 +1100,7 @@ export default function EnrollPlans() {
           )}
         </TabsContent>
 
-        {/* Voluntary Tab - Matching BenefitPlans.tsx styling */}
+        {/* Voluntary Tab - Using Accordions for each category */}
         <TabsContent value="voluntary" className="mt-0">
           <div className="rounded-lg border bg-card p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -1104,124 +1110,142 @@ export default function EnrollPlans() {
               <div>
                 <h3 className="font-semibold text-foreground">Voluntary Benefits</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Add dental, vision, life insurance, and more. Choose from multiple carriers and 
-                  coverage levels.
+                  Add dental, vision, life insurance, and more. Click on a category to view plans.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Full-width benefit categories */}
-          <div className="space-y-10">
+          {/* Accordion for each benefit category */}
+          <Accordion type="multiple" className="space-y-4">
             {Object.values(VOLUNTARY_BENEFITS_DATA).map((benefitData) => {
               const carriers = [...new Set(benefitData.plans.map(p => p.carrier))];
+              const selectedPlanId = selectedVoluntary[benefitData.id];
+              const selectedPlan = benefitData.plans.find(p => p.id === selectedPlanId);
               
               return (
-                <div key={benefitData.id} className="space-y-6">
-                  {/* Benefit Header */}
-                  <div className="text-center pb-4 border-b border-border">
-                    <span className="text-4xl mb-2 block">{benefitData.icon}</span>
-                    <h3 className="text-xl font-bold text-foreground">{benefitData.name}</h3>
-                    <p className="text-sm text-muted-foreground">{benefitData.description}</p>
-                  </div>
-
-                  {/* Plans Grid - 3 rows of 3 by carrier */}
-                  <div className="space-y-6">
-                    {carriers.map((carrier, carrierIndex) => {
-                      const carrierPlans = benefitData.plans.filter(p => p.carrier === carrier);
-                      
-                      return (
-                        <div key={carrier} className="space-y-3">
-                          {/* Carrier Header */}
-                          <div className="flex items-center gap-3 pb-2 border-b border-border/50">
-                            <div className={cn(
-                              "h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold",
-                              carrierIndex === 0 ? "bg-primary/10 text-primary" :
-                              carrierIndex === 1 ? "bg-accent/10 text-accent" :
-                              "bg-muted text-muted-foreground"
-                            )}>
-                              {carrier.charAt(0)}
-                            </div>
-                            <h4 className="text-base font-semibold text-foreground">{carrier}</h4>
-                            {carrierIndex === 0 && (
-                              <Badge variant="outline" className="text-xs">Our Plans</Badge>
-                            )}
-                          </div>
-                          
-                          {/* Plans Row */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {carrierPlans.map((volPlan) => {
-                              const isSelected = selectedVoluntary[benefitData.id] === volPlan.id;
-                              
-                              return (
-                                <Card 
-                                  key={volPlan.id}
-                                  className={cn(
-                                    "relative cursor-pointer transition-all hover:shadow-lg",
-                                    volPlan.popular ? "border-2 border-primary shadow-md" : "border",
-                                    isSelected && "ring-2 ring-accent bg-accent/5"
-                                  )}
-                                  onClick={() => selectVoluntaryPlan(benefitData.id, volPlan.id)}
-                                >
-                                  {volPlan.popular && (
-                                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-                                      <Star className="h-3 w-3 mr-1" /> Most Popular
-                                    </Badge>
-                                  )}
-                                  <CardHeader className="text-center pb-2 pt-4">
-                                    <Badge 
-                                      variant="outline" 
-                                      className={cn(
-                                        "w-fit mx-auto mb-2",
-                                        volPlan.tier === "Basic" ? "border-muted-foreground text-muted-foreground" :
-                                        volPlan.tier === "Standard" ? "border-primary text-primary" :
-                                        "border-accent text-accent"
-                                      )}
-                                    >
-                                      {volPlan.tier}
-                                    </Badge>
-                                    <CardTitle className="text-base">{volPlan.name}</CardTitle>
-                                    <div className="mt-2">
-                                      <span className="text-2xl font-bold text-foreground">${volPlan.monthlyPremium}</span>
-                                      <span className="text-muted-foreground text-sm">/mo</span>
-                                    </div>
-                                  </CardHeader>
-                                  <CardContent className="pt-2 pb-4">
-                                    <ul className="space-y-1.5 mb-4">
-                                      {volPlan.features.slice(0, 4).map((feature, index) => (
-                                        <li key={index} className="flex items-start gap-2 text-xs">
-                                          <CheckCircle2 className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
-                                          <span className="text-muted-foreground">{feature}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                    <Button 
-                                      className={cn("w-full gap-2", isSelected && "bg-accent hover:bg-accent/90")}
-                                      size="sm"
-                                      variant={isSelected ? "default" : volPlan.popular ? "default" : "outline"}
-                                    >
-                                      {isSelected ? (
-                                        <>
-                                          <Check className="h-3.5 w-3.5" />
-                                          Selected
-                                        </>
-                                      ) : (
-                                        "Select Plan"
-                                      )}
-                                    </Button>
-                                  </CardContent>
-                                </Card>
-                              );
-                            })}
-                          </div>
+                <AccordionItem 
+                  key={benefitData.id} 
+                  value={benefitData.id}
+                  className="border rounded-lg overflow-hidden bg-card"
+                >
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-muted/50">
+                    <div className="flex items-center gap-4 w-full">
+                      <span className="text-3xl">{benefitData.icon}</span>
+                      <div className="flex-1 text-left">
+                        <h3 className="text-lg font-semibold text-foreground">{benefitData.name}</h3>
+                        <p className="text-sm text-muted-foreground">{benefitData.description}</p>
+                      </div>
+                      {selectedPlan && (
+                        <div className="flex items-center gap-2 mr-4">
+                          <Badge className="bg-accent text-accent-foreground">
+                            <Check className="h-3 w-3 mr-1" />
+                            {selectedPlan.name}
+                          </Badge>
+                          <span className="text-sm font-semibold text-primary">${selectedPlan.monthlyPremium}/mo</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    {/* Plans Grid - 3 rows of 3 by carrier */}
+                    <div className="space-y-6 pt-4">
+                      {carriers.map((carrier, carrierIndex) => {
+                        const carrierPlans = benefitData.plans.filter(p => p.carrier === carrier);
+                        
+                        return (
+                          <div key={carrier} className="space-y-3">
+                            {/* Carrier Header */}
+                            <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+                              <div className={cn(
+                                "h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold",
+                                carrierIndex === 0 ? "bg-primary/10 text-primary" :
+                                carrierIndex === 1 ? "bg-accent/10 text-accent" :
+                                "bg-muted text-muted-foreground"
+                              )}>
+                                {carrier.charAt(0)}
+                              </div>
+                              <h4 className="text-base font-semibold text-foreground">{carrier}</h4>
+                              {carrierIndex === 0 && (
+                                <Badge variant="outline" className="text-xs">Our Plans</Badge>
+                              )}
+                            </div>
+                            
+                            {/* Plans Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {carrierPlans.map((volPlan) => {
+                                const isSelected = selectedVoluntary[benefitData.id] === volPlan.id;
+                                
+                                return (
+                                  <Card 
+                                    key={volPlan.id}
+                                    className={cn(
+                                      "relative cursor-pointer transition-all hover:shadow-lg",
+                                      volPlan.popular ? "border-2 border-primary shadow-md" : "border",
+                                      isSelected && "ring-2 ring-accent bg-accent/5"
+                                    )}
+                                    onClick={() => selectVoluntaryPlan(benefitData.id, volPlan.id)}
+                                  >
+                                    {volPlan.popular && (
+                                      <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                                        <Star className="h-3 w-3 mr-1" /> Most Popular
+                                      </Badge>
+                                    )}
+                                    <CardHeader className="text-center pb-2 pt-4">
+                                      <Badge 
+                                        variant="outline" 
+                                        className={cn(
+                                          "w-fit mx-auto mb-2",
+                                          volPlan.tier === "Basic" ? "border-muted-foreground text-muted-foreground" :
+                                          volPlan.tier === "Standard" ? "border-primary text-primary" :
+                                          "border-accent text-accent"
+                                        )}
+                                      >
+                                        {volPlan.tier}
+                                      </Badge>
+                                      <CardTitle className="text-base">{volPlan.name}</CardTitle>
+                                      <div className="mt-2">
+                                        <span className="text-2xl font-bold text-foreground">${volPlan.monthlyPremium}</span>
+                                        <span className="text-muted-foreground text-sm">/mo</span>
+                                      </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-2 pb-4">
+                                      <ul className="space-y-1.5 mb-4">
+                                        {volPlan.features.slice(0, 4).map((feature, index) => (
+                                          <li key={index} className="flex items-start gap-2 text-xs">
+                                            <CheckCircle2 className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+                                            <span className="text-muted-foreground">{feature}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                      <Button 
+                                        className={cn("w-full gap-2", isSelected && "bg-accent hover:bg-accent/90")}
+                                        size="sm"
+                                        variant={isSelected ? "default" : volPlan.popular ? "default" : "outline"}
+                                      >
+                                        {isSelected ? (
+                                          <>
+                                            <Check className="h-3.5 w-3.5" />
+                                            Selected
+                                          </>
+                                        ) : (
+                                          "Select Plan"
+                                        )}
+                                      </Button>
+                                    </CardContent>
+                                  </Card>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
               );
             })}
-          </div>
+          </Accordion>
 
           {Object.values(selectedVoluntary).filter(v => v).length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-6">

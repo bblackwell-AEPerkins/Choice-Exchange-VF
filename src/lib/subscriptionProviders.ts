@@ -161,8 +161,8 @@ function generateProvider(specialty: string, index: number): SubscriptionProvide
   };
 }
 
-// Generate 200+ providers per specialty
-const PROVIDERS_PER_SPECIALTY = 250;
+// Generate 500+ providers per specialty (3000+ total)
+const PROVIDERS_PER_SPECIALTY = 500;
 
 export const subscriptionProviders: Record<string, SubscriptionProvider[]> = {
   primary: Array.from({ length: PROVIDERS_PER_SPECIALTY }, (_, i) => generateProvider('primary', i)),

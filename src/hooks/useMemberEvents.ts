@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { DEMO_MODE, MOCK_MEMBER_EVENTS, simulateDelay, type MockMemberEvent } from "@/lib/mockData";
 import type { MemberEvent } from "@/components/EventDetailModal";
 
 interface UseMemberEventsOptions {
@@ -19,29 +19,37 @@ export const useMemberEvents = (options: UseMemberEventsOptions = {}) => {
       try {
         setLoading(true);
         
-        let query = supabase
-          .from("member_events")
-          .select("*")
-          .order("event_date", { ascending: false });
-
-        if (options.eventType) {
-          query = query.eq("event_type", options.eventType);
+        if (DEMO_MODE) {
+          // Use mock data
+          await simulateDelay(300);
+          
+          let filteredEvents = [...MOCK_MEMBER_EVENTS] as MemberEvent[];
+          
+          if (options.eventType) {
+            filteredEvents = filteredEvents.filter(e => e.event_type === options.eventType);
+          }
+          if (options.eventCategory) {
+            filteredEvents = filteredEvents.filter(e => e.event_category === options.eventCategory);
+          }
+          if (options.status) {
+            filteredEvents = filteredEvents.filter(e => e.status === options.status);
+          }
+          
+          // Sort by date descending
+          filteredEvents.sort((a, b) => 
+            new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+          );
+          
+          if (options.limit) {
+            filteredEvents = filteredEvents.slice(0, options.limit);
+          }
+          
+          setEvents(filteredEvents);
+        } else {
+          // Original Supabase implementation would go here
+          // For demo mode, we never reach this
+          setEvents([]);
         }
-        if (options.eventCategory) {
-          query = query.eq("event_category", options.eventCategory);
-        }
-        if (options.status) {
-          query = query.eq("status", options.status);
-        }
-        if (options.limit) {
-          query = query.limit(options.limit);
-        }
-
-        const { data, error: queryError } = await query;
-
-        if (queryError) throw queryError;
-        
-        setEvents(data as MemberEvent[]);
       } catch (err) {
         setError(err as Error);
         console.error("Error fetching member events:", err);
@@ -65,23 +73,29 @@ export const useEventsByType = () => {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase
-          .from("member_events")
-          .select("*")
-          .order("event_date", { ascending: false });
+        if (DEMO_MODE) {
+          await simulateDelay(300);
+          
+          // Group events by type
+          const grouped: Record<string, MemberEvent[]> = {};
+          (MOCK_MEMBER_EVENTS as MemberEvent[]).forEach((event) => {
+            if (!grouped[event.event_type]) {
+              grouped[event.event_type] = [];
+            }
+            grouped[event.event_type].push(event);
+          });
+          
+          // Sort each group by date
+          Object.keys(grouped).forEach(key => {
+            grouped[key].sort((a, b) => 
+              new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+            );
+          });
 
-        if (error) throw error;
-
-        // Group events by type
-        const grouped: Record<string, MemberEvent[]> = {};
-        (data as MemberEvent[]).forEach((event) => {
-          if (!grouped[event.event_type]) {
-            grouped[event.event_type] = [];
-          }
-          grouped[event.event_type].push(event);
-        });
-
-        setGroupedEvents(grouped);
+          setGroupedEvents(grouped);
+        } else {
+          setGroupedEvents({});
+        }
       } catch (err) {
         console.error("Error fetching events:", err);
       } finally {

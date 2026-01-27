@@ -145,101 +145,103 @@ const SUBSCRIPTION_PROVIDERS = [
   },
 ];
 
-// Voluntary benefits with carrier options (3x3 grid style)
-const VOLUNTARY_CATEGORIES = [
-  {
+// Voluntary benefits with detailed plans matching BenefitPlans.tsx structure
+const VOLUNTARY_BENEFITS_DATA: Record<string, {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  plans: {
+    id: string;
+    name: string;
+    carrier: string;
+    tier: "Basic" | "Standard" | "Premium";
+    monthlyPremium: number;
+    features: string[];
+    popular?: boolean;
+  }[];
+}> = {
+  dental: {
     id: "dental",
     name: "Dental Coverage",
     icon: "🦷",
-    description: "Comprehensive dental care",
-    carriers: [
-      { name: "Choice Exchange", plans: [
-        { id: "dental-basic", tier: "Basic", price: 25 },
-        { id: "dental-standard", tier: "Standard", price: 45, popular: true },
-        { id: "dental-premium", tier: "Premium", price: 75 },
-      ]},
-      { name: "Delta Dental", plans: [
-        { id: "delta-basic", tier: "Basic", price: 28 },
-        { id: "delta-standard", tier: "Standard", price: 52 },
-        { id: "delta-premium", tier: "Premium", price: 82 },
-      ]},
-      { name: "MetLife", plans: [
-        { id: "metlife-dental-basic", tier: "Basic", price: 22 },
-        { id: "metlife-dental-standard", tier: "Standard", price: 48 },
-        { id: "metlife-dental-premium", tier: "Premium", price: 78 },
-      ]},
+    description: "Choose a dental plan that fits your needs",
+    plans: [
+      // Choice Exchange Row
+      { id: "dental-basic", name: "Dental Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 25, features: ["2 preventive visits per year", "Basic cleanings & X-rays", "50% coverage on fillings", "No coverage for major work"] },
+      { id: "dental-standard", name: "Dental Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 45, features: ["2 preventive visits per year", "Full cleanings & X-rays", "80% coverage on fillings", "50% coverage on crowns & root canals"], popular: true },
+      { id: "dental-premium", name: "Dental Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 75, features: ["Unlimited preventive visits", "100% cleanings & X-rays", "100% coverage on fillings", "80% coverage on crowns"] },
+      // Delta Dental Row
+      { id: "delta-dental-basic", name: "Delta Care Basic", carrier: "Delta Dental", tier: "Basic", monthlyPremium: 28, features: ["2 preventive visits per year", "100% cleanings covered", "60% coverage on fillings", "Large network of dentists"] },
+      { id: "delta-dental-standard", name: "Delta PPO Plus", carrier: "Delta Dental", tier: "Standard", monthlyPremium: 52, features: ["2 preventive visits per year", "100% cleanings & X-rays", "80% coverage on fillings", "60% coverage on major work"] },
+      { id: "delta-dental-premium", name: "Delta Premier", carrier: "Delta Dental", tier: "Premium", monthlyPremium: 82, features: ["Unlimited preventive visits", "100% cleanings & X-rays", "100% coverage on fillings", "80% coverage on major work"] },
+      // MetLife Row
+      { id: "metlife-dental-basic", name: "MetLife Dental Essential", carrier: "MetLife", tier: "Basic", monthlyPremium: 22, features: ["2 preventive visits per year", "100% preventive coverage", "50% basic procedures", "Nationwide network"] },
+      { id: "metlife-dental-standard", name: "MetLife Dental Preferred", carrier: "MetLife", tier: "Standard", monthlyPremium: 48, features: ["2 preventive visits per year", "100% preventive coverage", "80% basic procedures", "50% major procedures"] },
+      { id: "metlife-dental-premium", name: "MetLife Dental Elite", carrier: "MetLife", tier: "Premium", monthlyPremium: 78, features: ["Unlimited preventive visits", "100% preventive coverage", "100% basic procedures", "80% major procedures"] },
     ],
   },
-  {
+  vision: {
     id: "vision",
     name: "Vision Coverage",
     icon: "👁️",
-    description: "Eye exams, glasses, and contacts",
-    carriers: [
-      { name: "Choice Exchange", plans: [
-        { id: "vision-basic", tier: "Basic", price: 10 },
-        { id: "vision-standard", tier: "Standard", price: 15, popular: true },
-        { id: "vision-premium", tier: "Premium", price: 25 },
-      ]},
-      { name: "VSP", plans: [
-        { id: "vsp-basic", tier: "Basic", price: 12 },
-        { id: "vsp-standard", tier: "Standard", price: 18 },
-        { id: "vsp-premium", tier: "Premium", price: 28 },
-      ]},
-      { name: "EyeMed", plans: [
-        { id: "eyemed-basic", tier: "Basic", price: 9 },
-        { id: "eyemed-standard", tier: "Standard", price: 16 },
-        { id: "eyemed-premium", tier: "Premium", price: 26 },
-      ]},
+    description: "Find the right vision plan for your eye care needs",
+    plans: [
+      // Choice Exchange Row
+      { id: "vision-basic", name: "Vision Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 10, features: ["Annual eye exam covered", "$100 frames allowance", "Standard lenses included", "20% off contact lenses"] },
+      { id: "vision-standard", name: "Vision Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 15, features: ["Annual eye exam covered", "$150 frames allowance", "Progressive lenses included", "$150 contact lens allowance"], popular: true },
+      { id: "vision-premium", name: "Vision Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 25, features: ["2 eye exams per year", "$250 frames allowance", "All lens types included", "$250 contact lens allowance"] },
+      // VSP Row
+      { id: "vsp-vision-basic", name: "VSP Basic", carrier: "VSP", tier: "Basic", monthlyPremium: 12, features: ["Annual WellVision exam", "$120 frames allowance", "Single vision lenses", "15% off lens options"] },
+      { id: "vsp-vision-standard", name: "VSP Choice", carrier: "VSP", tier: "Standard", monthlyPremium: 18, features: ["Annual WellVision exam", "$180 frames allowance", "Progressive lenses included", "$180 contact lens allowance"] },
+      { id: "vsp-vision-premium", name: "VSP Premier", carrier: "VSP", tier: "Premium", monthlyPremium: 28, features: ["Annual WellVision exam", "$300 frames allowance", "Premium progressives", "$300 contact lens allowance"] },
+      // EyeMed Row
+      { id: "eyemed-vision-basic", name: "EyeMed Access", carrier: "EyeMed", tier: "Basic", monthlyPremium: 9, features: ["Annual eye exam covered", "$100 frames allowance", "Standard plastic lenses", "40% off lens upgrades"] },
+      { id: "eyemed-vision-standard", name: "EyeMed Select", carrier: "EyeMed", tier: "Standard", monthlyPremium: 16, features: ["Annual eye exam covered", "$150 frames allowance", "Progressive lenses", "$150 contact lens allowance"] },
+      { id: "eyemed-vision-premium", name: "EyeMed Complete", carrier: "EyeMed", tier: "Premium", monthlyPremium: 26, features: ["2 eye exams per year", "$275 frames allowance", "All lens options", "$275 contact lens allowance"] },
     ],
   },
-  {
+  life: {
     id: "life",
     name: "Life Insurance",
     icon: "🛡️",
-    description: "Term life coverage for peace of mind",
-    carriers: [
-      { name: "Choice Exchange", plans: [
-        { id: "life-basic", tier: "Basic", price: 15 },
-        { id: "life-standard", tier: "Standard", price: 25, popular: true },
-        { id: "life-premium", tier: "Premium", price: 45 },
-      ]},
-      { name: "MetLife", plans: [
-        { id: "metlife-life-basic", tier: "Basic", price: 14 },
-        { id: "metlife-life-standard", tier: "Standard", price: 28 },
-        { id: "metlife-life-premium", tier: "Premium", price: 52 },
-      ]},
-      { name: "Prudential", plans: [
-        { id: "prudential-basic", tier: "Basic", price: 16 },
-        { id: "prudential-standard", tier: "Standard", price: 30 },
-        { id: "prudential-premium", tier: "Premium", price: 55 },
-      ]},
+    description: "Protect your loved ones with the right coverage",
+    plans: [
+      // Choice Exchange Row
+      { id: "life-basic", name: "Term Life Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 15, features: ["$50,000 death benefit", "Accidental death coverage", "No medical exam required", "Guaranteed acceptance"] },
+      { id: "life-standard", name: "Term Life Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 25, features: ["$100,000 death benefit", "Accidental death & dismemberment", "Living benefits included", "Spouse coverage available"], popular: true },
+      { id: "life-premium", name: "Term Life Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 45, features: ["$250,000 death benefit", "Full AD&D coverage", "Critical illness rider", "Family coverage included"] },
+      // MetLife Row
+      { id: "metlife-life-basic", name: "MetLife Term Essential", carrier: "MetLife", tier: "Basic", monthlyPremium: 14, features: ["$50,000 death benefit", "Accidental death benefit", "Guaranteed issue", "24/7 claims support"] },
+      { id: "metlife-life-standard", name: "MetLife Term Plus", carrier: "MetLife", tier: "Standard", monthlyPremium: 28, features: ["$150,000 death benefit", "AD&D included", "Accelerated death benefit", "Spouse coverage"] },
+      { id: "metlife-life-premium", name: "MetLife Term Premier", carrier: "MetLife", tier: "Premium", monthlyPremium: 52, features: ["$300,000 death benefit", "Comprehensive AD&D", "Critical illness rider", "Child coverage included"] },
+      // Prudential Row
+      { id: "prudential-life-basic", name: "Prudential Simple Term", carrier: "Prudential", tier: "Basic", monthlyPremium: 16, features: ["$75,000 death benefit", "Accidental death benefit", "Simplified underwriting", "Online account access"] },
+      { id: "prudential-life-standard", name: "Prudential Term Flex", carrier: "Prudential", tier: "Standard", monthlyPremium: 30, features: ["$200,000 death benefit", "Full AD&D coverage", "Terminal illness benefit", "Portable coverage"] },
+      { id: "prudential-life-premium", name: "Prudential Term Max", carrier: "Prudential", tier: "Premium", monthlyPremium: 55, features: ["$500,000 death benefit", "Enhanced AD&D", "Living benefits package", "Spouse & child coverage"] },
     ],
   },
-  {
+  disability: {
     id: "disability",
     name: "Short-Term Disability",
     icon: "💼",
-    description: "Income protection if you can't work",
-    carriers: [
-      { name: "Choice Exchange", plans: [
-        { id: "std-basic", tier: "Basic", price: 20 },
-        { id: "std-standard", tier: "Standard", price: 35, popular: true },
-        { id: "std-premium", tier: "Premium", price: 55 },
-      ]},
-      { name: "Unum", plans: [
-        { id: "unum-basic", tier: "Basic", price: 22 },
-        { id: "unum-standard", tier: "Standard", price: 38 },
-        { id: "unum-premium", tier: "Premium", price: 60 },
-      ]},
-      { name: "Lincoln Financial", plans: [
-        { id: "lincoln-basic", tier: "Basic", price: 18 },
-        { id: "lincoln-standard", tier: "Standard", price: 32 },
-        { id: "lincoln-premium", tier: "Premium", price: 50 },
-      ]},
+    description: "Income protection when you need it most",
+    plans: [
+      // Choice Exchange Row
+      { id: "disability-basic", name: "STD Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 20, features: ["50% income replacement", "Up to 12 weeks coverage", "14-day waiting period", "Injury & illness covered"] },
+      { id: "disability-standard", name: "STD Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 35, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Mental health coverage"], popular: true },
+      { id: "disability-premium", name: "STD Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 55, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident waiting period", "Pregnancy coverage"] },
+      // Unum Row
+      { id: "unum-disability-basic", name: "Unum STD Core", carrier: "Unum", tier: "Basic", monthlyPremium: 22, features: ["50% income replacement", "Up to 13 weeks coverage", "14-day waiting period", "Leave management support"] },
+      { id: "unum-disability-standard", name: "Unum STD Plus", carrier: "Unum", tier: "Standard", monthlyPremium: 38, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Return-to-work support"] },
+      { id: "unum-disability-premium", name: "Unum STD Premier", carrier: "Unum", tier: "Premium", monthlyPremium: 60, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident wait", "Comprehensive coverage"] },
+      // Lincoln Financial Row
+      { id: "lincoln-disability-basic", name: "Lincoln STD Essential", carrier: "Lincoln Financial", tier: "Basic", monthlyPremium: 18, features: ["50% income replacement", "Up to 11 weeks coverage", "14-day waiting period", "Online claims"] },
+      { id: "lincoln-disability-standard", name: "Lincoln STD Select", carrier: "Lincoln Financial", tier: "Standard", monthlyPremium: 32, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Rehabilitation support"] },
+      { id: "lincoln-disability-premium", name: "Lincoln STD Complete", carrier: "Lincoln Financial", tier: "Premium", monthlyPremium: 50, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident wait", "Family leave coverage"] },
     ],
   },
-];
+};
 
 export default function EnrollPlans() {
   const navigate = useNavigate();
@@ -408,12 +410,10 @@ export default function EnrollPlans() {
 
   const voluntaryTotal = Object.entries(selectedVoluntary).reduce((sum, [categoryId, planId]) => {
     if (!planId) return sum;
-    const category = VOLUNTARY_CATEGORIES.find(c => c.id === categoryId);
-    if (!category) return sum;
-    for (const carrier of category.carriers) {
-      const plan = carrier.plans.find(p => p.id === planId);
-      if (plan) return sum + plan.price;
-    }
+    const benefitData = VOLUNTARY_BENEFITS_DATA[categoryId];
+    if (!benefitData) return sum;
+    const plan = benefitData.plans.find(p => p.id === planId);
+    if (plan) return sum + plan.monthlyPremium;
     return sum;
   }, 0);
 
@@ -441,6 +441,7 @@ export default function EnrollPlans() {
       title="Select Your Plans"
       description="Choose your health insurance, subscriptions, and voluntary benefits."
       onSave={saveToDatabase}
+      wide={true}
     >
       {/* Monthly Cost Summary */}
       {(plan.medicalPlanId || selectedSubscriptions.length > 0 || Object.values(selectedVoluntary).some(v => v)) && (
@@ -892,9 +893,9 @@ export default function EnrollPlans() {
           )}
         </TabsContent>
 
-        {/* Voluntary Tab */}
-        <TabsContent value="voluntary" className="space-y-6 mt-0">
-          <div className="rounded-lg border bg-card p-4 mb-4">
+        {/* Voluntary Tab - Matching BenefitPlans.tsx styling */}
+        <TabsContent value="voluntary" className="mt-0">
+          <div className="rounded-lg border bg-card p-4 mb-6">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-full bg-primary/10">
                 <Umbrella className="h-5 w-5 text-primary" />
@@ -909,59 +910,120 @@ export default function EnrollPlans() {
             </div>
           </div>
 
-          {VOLUNTARY_CATEGORIES.map((category) => (
-            <div key={category.id} className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{category.icon}</span>
-                <div>
-                  <h4 className="font-semibold text-foreground">{category.name}</h4>
-                  <p className="text-sm text-muted-foreground">{category.description}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {category.carriers.map((carrier) => (
-                  <div key={carrier.name} className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground px-1">{carrier.name}</p>
-                    <div className="space-y-2">
-                      {carrier.plans.map((tierPlan) => {
-                        const isSelected = selectedVoluntary[category.id] === tierPlan.id;
-                        
-                        return (
-                          <Card
-                            key={tierPlan.id}
-                            className={cn(
-                              "cursor-pointer transition-all hover:border-primary/50",
-                              isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
-                            )}
-                            onClick={() => selectVoluntaryPlan(category.id, tierPlan.id)}
-                          >
-                            <CardContent className="p-3">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium">{tierPlan.tier}</span>
-                                  {tierPlan.popular && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Popular</Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-primary">${tierPlan.price}</span>
-                                  {isSelected && <Check className="h-4 w-4 text-primary" />}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
+          {/* Full-width benefit categories */}
+          <div className="space-y-10">
+            {Object.values(VOLUNTARY_BENEFITS_DATA).map((benefitData) => {
+              const carriers = [...new Set(benefitData.plans.map(p => p.carrier))];
+              
+              return (
+                <div key={benefitData.id} className="space-y-6">
+                  {/* Benefit Header */}
+                  <div className="text-center pb-4 border-b border-border">
+                    <span className="text-4xl mb-2 block">{benefitData.icon}</span>
+                    <h3 className="text-xl font-bold text-foreground">{benefitData.name}</h3>
+                    <p className="text-sm text-muted-foreground">{benefitData.description}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+
+                  {/* Plans Grid - 3 rows of 3 by carrier */}
+                  <div className="space-y-6">
+                    {carriers.map((carrier, carrierIndex) => {
+                      const carrierPlans = benefitData.plans.filter(p => p.carrier === carrier);
+                      
+                      return (
+                        <div key={carrier} className="space-y-3">
+                          {/* Carrier Header */}
+                          <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+                            <div className={cn(
+                              "h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold",
+                              carrierIndex === 0 ? "bg-primary/10 text-primary" :
+                              carrierIndex === 1 ? "bg-accent/10 text-accent" :
+                              "bg-muted text-muted-foreground"
+                            )}>
+                              {carrier.charAt(0)}
+                            </div>
+                            <h4 className="text-base font-semibold text-foreground">{carrier}</h4>
+                            {carrierIndex === 0 && (
+                              <Badge variant="outline" className="text-xs">Our Plans</Badge>
+                            )}
+                          </div>
+                          
+                          {/* Plans Row */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {carrierPlans.map((volPlan) => {
+                              const isSelected = selectedVoluntary[benefitData.id] === volPlan.id;
+                              
+                              return (
+                                <Card 
+                                  key={volPlan.id}
+                                  className={cn(
+                                    "relative cursor-pointer transition-all hover:shadow-lg",
+                                    volPlan.popular ? "border-2 border-primary shadow-md" : "border",
+                                    isSelected && "ring-2 ring-accent bg-accent/5"
+                                  )}
+                                  onClick={() => selectVoluntaryPlan(benefitData.id, volPlan.id)}
+                                >
+                                  {volPlan.popular && (
+                                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                                      <Star className="h-3 w-3 mr-1" /> Most Popular
+                                    </Badge>
+                                  )}
+                                  <CardHeader className="text-center pb-2 pt-4">
+                                    <Badge 
+                                      variant="outline" 
+                                      className={cn(
+                                        "w-fit mx-auto mb-2",
+                                        volPlan.tier === "Basic" ? "border-muted-foreground text-muted-foreground" :
+                                        volPlan.tier === "Standard" ? "border-primary text-primary" :
+                                        "border-accent text-accent"
+                                      )}
+                                    >
+                                      {volPlan.tier}
+                                    </Badge>
+                                    <CardTitle className="text-base">{volPlan.name}</CardTitle>
+                                    <div className="mt-2">
+                                      <span className="text-2xl font-bold text-foreground">${volPlan.monthlyPremium}</span>
+                                      <span className="text-muted-foreground text-sm">/mo</span>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent className="pt-2 pb-4">
+                                    <ul className="space-y-1.5 mb-4">
+                                      {volPlan.features.slice(0, 4).map((feature, index) => (
+                                        <li key={index} className="flex items-start gap-2 text-xs">
+                                          <CheckCircle2 className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+                                          <span className="text-muted-foreground">{feature}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    <Button 
+                                      className={cn("w-full gap-2", isSelected && "bg-accent hover:bg-accent/90")}
+                                      size="sm"
+                                      variant={isSelected ? "default" : volPlan.popular ? "default" : "outline"}
+                                    >
+                                      {isSelected ? (
+                                        <>
+                                          <Check className="h-3.5 w-3.5" />
+                                          Selected
+                                        </>
+                                      ) : (
+                                        "Select Plan"
+                                      )}
+                                    </Button>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           {Object.values(selectedVoluntary).filter(v => v).length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-4">
+            <p className="text-center text-sm text-muted-foreground py-6">
               Voluntary benefits are optional. Click "Review & Submit" to proceed or select any that interest you.
             </p>
           )}

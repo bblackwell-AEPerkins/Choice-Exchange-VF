@@ -12,6 +12,7 @@ interface EnrollmentLayoutProps {
   description: string;
   onSave?: () => Promise<void> | void;
   showProgress?: boolean;
+  wide?: boolean;
 }
 
 const STEP_LABELS = [
@@ -33,6 +34,7 @@ export function EnrollmentLayout({
   description,
   onSave,
   showProgress = true,
+  wide = false,
 }: EnrollmentLayoutProps) {
   const navigate = useNavigate();
 
@@ -92,7 +94,7 @@ export function EnrollmentLayout({
 
       {/* Main Content */}
       <main className="flex-1 py-8 md:py-12">
-        <div className="max-w-2xl mx-auto px-4">
+        <div className={wide ? "max-w-6xl mx-auto px-4" : "max-w-2xl mx-auto px-4"}>
           {/* Page Header */}
           <div className="mb-8 text-center">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">

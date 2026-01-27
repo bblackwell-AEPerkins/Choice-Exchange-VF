@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -21,39 +21,63 @@ import {
   Shield,
   Calendar,
   AlertCircle,
-  CreditCard
+  CreditCard,
+  Star,
+  Phone,
+  CheckCircle
 } from "lucide-react";
+import { subscriptionProviders, filterProviders, getSpecialtyStats, type SubscriptionProvider } from "@/lib/subscriptionProviders";
 
-const specialties = [
-  { id: "primary", name: "Primary Care", icon: Stethoscope, count: "12.4k", price: "From $75/mo" },
-  { id: "mental", name: "Mental Health", icon: Brain, count: "8.3k", price: "From $99/mo" },
-  { id: "telehealth", name: "Telehealth", icon: Eye, count: "6.7k", price: "From $49/mo" },
-  { id: "pediatrics", name: "Pediatrics", icon: Baby, count: "9.4k", price: "From $85/mo" },
-  { id: "womens", name: "Women's Health", icon: Heart, count: "5.8k", price: "From $79/mo" },
-  { id: "orthopedics", name: "Physical Therapy", icon: Bone, count: "7.1k", price: "From $120/mo" },
-];
+// Get actual counts from provider data
+const getSpecialtyData = () => {
+  return [
+    { id: "primary", name: "Primary Care", icon: Stethoscope, ...getSpecialtyStats("primary") },
+    { id: "mental", name: "Mental Health", icon: Brain, ...getSpecialtyStats("mental") },
+    { id: "telehealth", name: "Telehealth", icon: Eye, ...getSpecialtyStats("telehealth") },
+    { id: "pediatrics", name: "Pediatrics", icon: Baby, ...getSpecialtyStats("pediatrics") },
+    { id: "womens", name: "Women's Health", icon: Heart, ...getSpecialtyStats("womens") },
+    { id: "orthopedics", name: "Physical Therapy", icon: Bone, ...getSpecialtyStats("orthopedics") },
+  ];
+};
 
 const ProviderMap = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
-  const [searchResults, setSearchResults] = useState<typeof specialties>([]);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<SubscriptionProvider[]>([]);
+
+  // Get specialty data with real counts
+  const specialties = useMemo(() => getSpecialtyData(), []);
 
   const handleSearch = () => {
     if (!searchQuery.trim() && !locationQuery.trim()) return;
     
-    // Filter specialties based on search query
-    const query = searchQuery.toLowerCase();
-    const filtered = specialties.filter(specialty => 
-      specialty.name.toLowerCase().includes(query) ||
-      specialty.id.toLowerCase().includes(query)
-    );
+    // Filter providers based on search
+    const filtered = filterProviders({
+      searchQuery: searchQuery.trim() || undefined,
+      city: locationQuery.trim() || undefined,
+    });
     
-    // If no specific matches, show all as suggestions
-    setSearchResults(filtered.length > 0 ? filtered : specialties);
+    setSearchResults(filtered.slice(0, 50)); // Show first 50 results
     setHasSearched(true);
+    setSelectedSpecialty(null);
     
     // Scroll to results
+    setTimeout(() => {
+      document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleSpecialtyClick = (specialtyId: string) => {
+    const providers = filterProviders({
+      specialtyId,
+      city: locationQuery.trim() || undefined,
+    });
+    setSearchResults(providers.slice(0, 50));
+    setSelectedSpecialty(specialtyId);
+    setHasSearched(true);
+    
     setTimeout(() => {
       document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -64,6 +88,8 @@ const ProviderMap = () => {
       handleSearch();
     }
   };
+
+  const selectedSpecialtyData = specialties.find(s => s.id === selectedSpecialty);
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,19 +217,20 @@ const ProviderMap = () => {
         {hasSearched && (
           <section id="search-results" className="py-16 bg-accent/5 border-y border-accent/20">
             <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-foreground">
-                      {searchResults.length === specialties.length 
-                        ? "All Available Plans" 
-                        : `Results for "${searchQuery}"`}
+                      {selectedSpecialtyData 
+                        ? `${selectedSpecialtyData.name} Providers` 
+                        : searchQuery 
+                          ? `Results for "${searchQuery}"` 
+                          : `Providers near "${locationQuery}"`}
                     </h2>
-                    {locationQuery && (
-                      <p className="text-muted-foreground">
-                        Showing providers near <span className="font-medium text-foreground">{locationQuery}</span>
-                      </p>
-                    )}
+                    <p className="text-muted-foreground">
+                      {searchResults.length} providers found
+                      {locationQuery && ` near ${locationQuery}`}
+                    </p>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -212,6 +239,8 @@ const ProviderMap = () => {
                       setHasSearched(false);
                       setSearchQuery("");
                       setLocationQuery("");
+                      setSelectedSpecialty(null);
+                      setSearchResults([]);
                     }}
                   >
                     Clear Search
@@ -219,28 +248,54 @@ const ProviderMap = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {searchResults.map((specialty) => (
+                  {searchResults.map((provider) => (
                     <Card 
-                      key={specialty.id}
+                      key={provider.id}
                       className="group hover:border-accent/50 hover:shadow-lg transition-all cursor-pointer"
                     >
-                      <CardContent className="p-6">
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <specialty.icon className="h-6 w-6 text-accent" />
-                          </div>
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">
-                              {specialty.name}
+                              {provider.name}
                             </h3>
-                            <p className="text-accent font-medium text-sm">{specialty.price}</p>
-                            <p className="text-xs text-muted-foreground">{specialty.count} providers</p>
+                            <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            <span className="font-medium">{provider.rating}</span>
+                            <span className="text-muted-foreground">({provider.reviewCount})</span>
                           </div>
                         </div>
-                        <Button className="w-full mt-4 bg-accent hover:bg-accent/90">
-                          View Plans
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
+                        
+                        <div className="space-y-2 text-sm mb-4">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5" />
+                            <span>{provider.city}, {provider.state} {provider.zipCode}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Phone className="h-3.5 w-3.5" />
+                            <span>{provider.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-3.5 w-3.5 text-accent" />
+                            <span className="text-accent font-medium">${provider.monthlyPrice}/mo</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t">
+                          {provider.acceptingNew ? (
+                            <span className="flex items-center gap-1 text-xs text-green-600">
+                              <CheckCircle className="h-3.5 w-3.5" />
+                              Accepting New Patients
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">Waitlist Only</span>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            Next: {provider.nextAvailable}
+                          </span>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -250,12 +305,18 @@ const ProviderMap = () => {
                   <Card className="text-center py-12">
                     <CardContent>
                       <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold mb-2">No exact matches found</h3>
+                      <h3 className="text-xl font-semibold mb-2">No providers found</h3>
                       <p className="text-muted-foreground mb-4">
                         Try a different search term or browse all available subscription plans below.
                       </p>
                     </CardContent>
                   </Card>
+                )}
+
+                {searchResults.length >= 50 && (
+                  <p className="text-center text-sm text-muted-foreground mt-6">
+                    Showing first 50 results. Refine your search for more specific results.
+                  </p>
                 )}
               </div>
             </div>
@@ -378,6 +439,7 @@ const ProviderMap = () => {
               {specialties.map((specialty, index) => (
                 <button
                   key={specialty.id}
+                  onClick={() => handleSpecialtyClick(specialty.id)}
                   className="group relative p-6 rounded-2xl border border-border/50 bg-card/50 hover:bg-card hover:border-accent/30 transition-all duration-300 text-left overflow-hidden"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
@@ -392,10 +454,13 @@ const ProviderMap = () => {
                       {specialty.name}
                     </div>
                     <div className="text-xs text-accent font-medium mb-1">
-                      {specialty.price}
+                      From ${specialty.minPrice}/mo
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {specialty.count} providers
+                      {specialty.totalCount.toLocaleString()} providers
+                    </div>
+                    <div className="text-xs text-muted-foreground/70 mt-1">
+                      {specialty.dallasCount} in Dallas
                     </div>
                   </div>
                   

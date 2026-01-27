@@ -28,6 +28,11 @@ import {
   Phone,
   Activity,
   Brain,
+  CheckCircle2,
+  Leaf,
+  Sparkles,
+  SlidersHorizontal,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -48,6 +53,7 @@ interface Plan {
   out_of_pocket_max: number;
   copay_primary: number | null;
   copay_specialist: number | null;
+  copay_emergency?: number | null;
   is_hsa_eligible: boolean;
   features: string[] | null;
   plan_type: string;
@@ -55,11 +61,28 @@ interface Plan {
 
 type PlanCategory = "ichra" | "subscription" | "voluntary";
 
-const METAL_TIER_COLORS: Record<string, string> = {
+const metalTierColors: Record<string, string> = {
+  Bronze: "bg-amber-100 text-amber-800 border-amber-300",
+  Silver: "bg-slate-100 text-slate-700 border-slate-300",
+  Gold: "bg-yellow-100 text-yellow-800 border-yellow-300",
+  Platinum: "bg-purple-100 text-purple-800 border-purple-300",
+  Catastrophic: "bg-gray-100 text-gray-700 border-gray-300",
   bronze: "bg-amber-100 text-amber-800 border-amber-300",
   silver: "bg-slate-100 text-slate-700 border-slate-300",
   gold: "bg-yellow-100 text-yellow-800 border-yellow-300",
   platinum: "bg-purple-100 text-purple-800 border-purple-300",
+};
+
+const metalTierIcons: Record<string, React.ReactNode> = {
+  Bronze: <Shield className="h-4 w-4" />,
+  Silver: <Shield className="h-4 w-4" />,
+  Gold: <Star className="h-4 w-4" />,
+  Platinum: <Sparkles className="h-4 w-4" />,
+  Catastrophic: <Heart className="h-4 w-4" />,
+  bronze: <Shield className="h-4 w-4" />,
+  silver: <Shield className="h-4 w-4" />,
+  gold: <Star className="h-4 w-4" />,
+  platinum: <Sparkles className="h-4 w-4" />,
 };
 
 // Subscription care providers matching Member Dashboard style
@@ -240,6 +263,7 @@ export default function EnrollPlans() {
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedPlanDetails, setSelectedPlanDetails] = useState<Plan | null>(null);
   const [metalFilter, setMetalFilter] = useState<string>("all");
+  const [planTypeFilter, setPlanTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("premium-low");
   
   // Selected plans for each category
@@ -296,19 +320,31 @@ export default function EnrollPlans() {
     fetchPlans(zipCode);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   // Filter and sort plans
   const filteredPlans = plans
-    .filter((p) => metalFilter === "all" || p.metal_tier.toLowerCase() === metalFilter.toLowerCase())
+    .filter((p) => {
+      if (metalFilter !== "all" && p.metal_tier !== metalFilter) return false;
+      if (planTypeFilter !== "all" && p.plan_type !== planTypeFilter) return false;
+      return true;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case "premium-low": return a.monthly_premium - b.monthly_premium;
         case "premium-high": return b.monthly_premium - a.monthly_premium;
         case "deductible-low": return a.deductible - b.deductible;
+        case "oop-low": return a.out_of_pocket_max - b.out_of_pocket_max;
         default: return 0;
       }
     });
 
   const uniqueMetalTiers = [...new Set(plans.map((p) => p.metal_tier))];
+  const uniquePlanTypes = [...new Set(plans.map((p) => p.plan_type))];
 
   const handleSelectInsurancePlan = (selectedPlan: Plan) => {
     updatePlan({
@@ -456,127 +492,297 @@ export default function EnrollPlans() {
           </TabsTrigger>
         </TabsList>
 
-        {/* ICHRA Plans Tab */}
-        <TabsContent value="ichra" className="space-y-4 mt-0">
-          <div className="rounded-lg border bg-card p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Shield className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Individual Health Plan (Empowered by ICHRA)</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your employer provides a monthly allowance to help cover the cost of individual health insurance. 
-                  Select a plan that fits your needs.
-                </p>
-              </div>
-            </div>
+        {/* ICHRA Plans Tab - Matching ICHRAPlans.tsx styling */}
+        <TabsContent value="ichra" className="space-y-6 mt-0">
+          {/* Header with badge */}
+          <div className="text-center">
+            <Badge className="mb-3 bg-primary/10 text-primary border-primary/20">
+              <Shield className="h-3 w-3 mr-1" />
+              ICHRA-Compatible Plans
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              Browse individual health insurance plans that work with your employer's ICHRA benefit.
+            </p>
           </div>
 
-          {/* ZIP Code Search */}
-          <Card>
-            <CardContent className="pt-6">
+          {/* Search Box */}
+          <Card className="shadow-lg border-2">
+            <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                     type="text"
-                    placeholder="Enter ZIP code to find plans"
+                    placeholder="Enter your ZIP code"
                     value={zipCode}
                     onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="pl-10"
+                    onKeyPress={handleKeyPress}
+                    className="pl-10 h-12 text-lg"
                     maxLength={5}
                   />
                 </div>
                 <Button 
                   onClick={handleSearch}
                   disabled={zipCode.length < 5 || isLoading}
+                  className="h-12 px-8"
                 >
                   {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
+                      <Search className="h-5 w-5 mr-2" />
+                      Search Plans
                     </>
                   )}
                 </Button>
               </div>
+
+              <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4 text-accent" />
+                  Compare options
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4 text-accent" />
+                  ICHRA-eligible plans
+                </span>
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4 text-accent" />
+                  Employer allowance applied
+                </span>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Selected Plan Summary */}
-          {selectedPlanDetails && (
-            <Card className="border-primary bg-primary/5">
-              <CardContent className="pt-6 pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Selected Plan</span>
-                  </div>
-                  <Badge className={cn("capitalize", METAL_TIER_COLORS[selectedPlanDetails.metal_tier.toLowerCase()])}>
-                    {selectedPlanDetails.metal_tier}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{selectedPlanDetails.plan_name}</p>
-                    <p className="text-sm text-muted-foreground">{selectedPlanDetails.carrier_name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">
-                      ${selectedPlanDetails.monthly_premium.toFixed(2)}
+          {/* Results Section */}
+          {hasSearched && (
+            <div className="space-y-4">
+              {/* Results Header with Filters */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {isLoading ? "Searching..." : `${filteredPlans.length} Plans Available`}
+                  </h3>
+                  {searchedZip && !isLoading && (
+                    <p className="text-sm text-muted-foreground">
+                      Showing plans available in ZIP code {searchedZip}
                     </p>
-                    <p className="text-xs text-muted-foreground">per month</p>
-                  </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Filters */}
-          {hasSearched && plans.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3">
-              <Select value={metalFilter} onValueChange={setMetalFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Metal Tier" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tiers</SelectItem>
-                  {uniqueMetalTiers.map((tier) => (
-                    <SelectItem key={tier} value={tier.toLowerCase()}>
-                      {tier}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {/* Filters */}
+                {plans.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Select value={metalFilter} onValueChange={setMetalFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Metal Tier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Tiers</SelectItem>
+                        {uniqueMetalTiers.map((tier) => (
+                          <SelectItem key={tier} value={tier}>
+                            {tier}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <Scale className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="premium-low">Premium: Low to High</SelectItem>
-                  <SelectItem value="premium-high">Premium: High to Low</SelectItem>
-                  <SelectItem value="deductible-low">Deductible: Low to High</SelectItem>
-                </SelectContent>
-              </Select>
+                    <Select value={planTypeFilter} onValueChange={setPlanTypeFilter}>
+                      <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Plan Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        {uniquePlanTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-              <p className="text-sm text-muted-foreground ml-auto">
-                {filteredPlans.length} plans in {searchedZip || "your area"}
-              </p>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-[180px]">
+                        <SlidersHorizontal className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="premium-low">Premium: Low to High</SelectItem>
+                        <SelectItem value="premium-high">Premium: High to Low</SelectItem>
+                        <SelectItem value="deductible-low">Deductible: Low to High</SelectItem>
+                        <SelectItem value="oop-low">Out-of-Pocket: Low to High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              {/* Loading State */}
+              {isLoading && (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                  <p className="text-muted-foreground">Searching for plans in your area...</p>
+                </div>
+              )}
+
+              {/* No Results */}
+              {!isLoading && plans.length === 0 && (
+                <Card className="max-w-lg mx-auto">
+                  <CardContent className="py-12 text-center">
+                    <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-foreground mb-2">No Plans Found</h3>
+                    <p className="text-muted-foreground">
+                      We couldn't find any plans for ZIP code {searchedZip}. 
+                      Try a different ZIP code.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Plan Cards Grid - matching ICHRAPlans.tsx */}
+              {!isLoading && filteredPlans.length > 0 && (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {filteredPlans.map((p) => {
+                    const isSelected = plan.medicalPlanId === p.id;
+                    const tierKey = p.metal_tier.charAt(0).toUpperCase() + p.metal_tier.slice(1).toLowerCase();
+                    
+                    return (
+                      <Card 
+                        key={p.id} 
+                        className={cn(
+                          "cursor-pointer transition-all duration-300 hover:shadow-lg",
+                          isSelected 
+                            ? "border-primary ring-2 ring-primary/20" 
+                            : "hover:border-primary/50"
+                        )}
+                        onClick={() => handleSelectInsurancePlan(p)}
+                      >
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-medium text-muted-foreground">{p.carrier_name}</p>
+                              <CardTitle className="text-lg mt-1">{p.plan_name}</CardTitle>
+                            </div>
+                            <Badge className={cn("flex items-center gap-1 flex-shrink-0", metalTierColors[tierKey] || metalTierColors[p.metal_tier] || "bg-muted")}>
+                              {metalTierIcons[tierKey] || metalTierIcons[p.metal_tier]}
+                              {p.metal_tier}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs">
+                              {p.plan_type}
+                            </Badge>
+                            {p.is_hsa_eligible && (
+                              <Badge variant="outline" className="text-xs border-accent text-accent">
+                                <Leaf className="h-3 w-3 mr-1" />
+                                HSA Eligible
+                              </Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                          {/* Premium */}
+                          <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5">
+                            <span className="text-sm text-muted-foreground">Monthly Premium</span>
+                            <span className="text-2xl font-bold text-primary">
+                              ${p.monthly_premium.toLocaleString()}
+                            </span>
+                          </div>
+
+                          {/* Key Details */}
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div className="p-2 rounded bg-muted/50">
+                              <p className="text-xs text-muted-foreground">Deductible</p>
+                              <p className="font-semibold">${p.deductible.toLocaleString()}</p>
+                            </div>
+                            <div className="p-2 rounded bg-muted/50">
+                              <p className="text-xs text-muted-foreground">Out-of-Pocket Max</p>
+                              <p className="font-semibold">${p.out_of_pocket_max.toLocaleString()}</p>
+                            </div>
+                          </div>
+
+                          {/* Copays */}
+                          <div className="space-y-2 text-sm">
+                            {p.copay_primary !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-2">
+                                  <Stethoscope className="h-4 w-4" />
+                                  Primary Care
+                                </span>
+                                <span className="font-medium">${p.copay_primary} copay</span>
+                              </div>
+                            )}
+                            {p.copay_specialist !== null && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-2">
+                                  <Building2 className="h-4 w-4" />
+                                  Specialist
+                                </span>
+                                <span className="font-medium">${p.copay_specialist} copay</span>
+                              </div>
+                            )}
+                            {p.copay_emergency !== null && p.copay_emergency !== undefined && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground flex items-center gap-2">
+                                  <Heart className="h-4 w-4" />
+                                  Emergency
+                                </span>
+                                <span className="font-medium">${p.copay_emergency} copay</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Features */}
+                          {p.features && p.features.length > 0 && (
+                            <div className="pt-3 border-t">
+                              <div className="flex flex-wrap gap-1.5">
+                                {p.features.slice(0, 3).map((feature, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent"
+                                  >
+                                    {feature}
+                                  </span>
+                                ))}
+                                {p.features.length > 3 && (
+                                  <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                                    +{p.features.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Select Button */}
+                          <Button 
+                            variant={isSelected ? "default" : "outline"}
+                            className={cn("w-full", isSelected && "bg-primary")}
+                          >
+                            {isSelected ? (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                Selected
+                              </>
+                            ) : (
+                              <>
+                                Select Plan
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Plan List */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : !hasSearched ? (
-            <Card>
+          {/* Initial State - No search yet */}
+          {!hasSearched && (
+            <Card className="max-w-md mx-auto">
               <CardContent className="py-12 text-center">
                 <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-lg font-medium">Enter your ZIP code</p>
@@ -585,64 +791,6 @@ export default function EnrollPlans() {
                 </p>
               </CardContent>
             </Card>
-          ) : filteredPlans.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Stethoscope className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">No plans available</p>
-                <p className="text-muted-foreground">
-                  We couldn't find plans for your area. Try a different ZIP code.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {filteredPlans.map((p) => {
-                const isSelected = plan.medicalPlanId === p.id;
-                
-                return (
-                  <Card
-                    key={p.id}
-                    className={cn(
-                      "cursor-pointer transition-all hover:border-primary/50",
-                      isSelected && "border-primary ring-2 ring-primary/20"
-                    )}
-                    onClick={() => handleSelectInsurancePlan(p)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge className={cn("capitalize text-xs", METAL_TIER_COLORS[p.metal_tier.toLowerCase()])}>
-                              {p.metal_tier}
-                            </Badge>
-                            {p.is_hsa_eligible && (
-                              <Badge variant="outline" className="text-xs">HSA</Badge>
-                            )}
-                          </div>
-                          <p className="font-semibold text-foreground">{p.plan_name}</p>
-                          <p className="text-sm text-muted-foreground">{p.carrier_name} • {p.plan_type}</p>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
-                            <span>Deductible: ${p.deductible.toLocaleString()}</span>
-                            <span>OOP Max: ${p.out_of_pocket_max.toLocaleString()}</span>
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xl font-bold text-primary">${p.monthly_premium.toFixed(2)}</p>
-                          <p className="text-xs text-muted-foreground">/month</p>
-                          {isSelected && (
-                            <div className="mt-2 flex items-center justify-end gap-1 text-primary">
-                              <Check className="h-4 w-4" />
-                              <span className="text-xs font-medium">Selected</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
           )}
         </TabsContent>
 

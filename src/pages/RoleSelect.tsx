@@ -123,11 +123,6 @@ export default function RoleSelect() {
                       <h2 className={`font-semibold text-foreground ${role.primary ? "text-lg md:text-xl" : "text-base md:text-lg"}`}>
                         {role.title}
                       </h2>
-                      {role.primary && (
-                        <Badge variant="secondary" className="text-xs font-normal">
-                          Primary workflow
-                        </Badge>
-                      )}
                     </div>
                     <p className="text-muted-foreground text-sm">
                       {role.description}

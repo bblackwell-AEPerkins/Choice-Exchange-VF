@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { format } from "date-fns";
 import { useBrokerEnrollment } from "@/hooks/useBrokerEnrollment";
 import { BrokerEnrollmentLayout } from "@/components/broker/BrokerEnrollmentLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { ArrowRight } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowRight, CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function BrokerEnrollStep1() {
   const {
@@ -83,13 +87,31 @@ export default function BrokerEnrollStep1() {
 
           {/* DOB */}
           <div className="space-y-2">
-            <Label htmlFor="dob">Date of Birth</Label>
-            <Input
-              id="dob"
-              type="date"
-              value={data.dateOfBirth}
-              onChange={(e) => updateData({ dateOfBirth: e.target.value })}
-            />
+            <Label>Date of Birth</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !data.dateOfBirth && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {data.dateOfBirth ? format(new Date(data.dateOfBirth), "PPP") : <span>Select date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={data.dateOfBirth ? new Date(data.dateOfBirth) : undefined}
+                  onSelect={(date) => updateData({ dateOfBirth: date ? format(date, "yyyy-MM-dd") : "" })}
+                  disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Contact */}

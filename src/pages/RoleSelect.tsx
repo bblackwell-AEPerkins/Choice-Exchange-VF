@@ -63,11 +63,23 @@ export default function RoleSelect() {
       {/* Header */}
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="h-4 w-4 text-primary-foreground" />
+          <div className="flex items-center gap-3">
+            {/* Power unlock logo */}
+            <div className="relative group">
+              {/* Outer glow ring */}
+              <div className="absolute inset-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-primary opacity-75 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-500" />
+              {/* Inner container */}
+              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25">
+                {/* Shield with spark effect */}
+                <Shield className="h-5 w-5 text-primary-foreground drop-shadow-sm" />
+                {/* Corner spark */}
+                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full opacity-80 animate-pulse" />
+              </div>
             </div>
-            <span className="text-lg font-semibold text-foreground">Choice Exchange</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">Choice Exchange</span>
+              <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 -mt-0.5">Powered Benefits</span>
+            </div>
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/auth">Sign in</Link>

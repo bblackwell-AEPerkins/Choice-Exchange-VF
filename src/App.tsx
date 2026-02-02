@@ -35,6 +35,7 @@ import IndividualLanding from "./pages/landing/IndividualLanding";
 
 // Role-Specific Home Pages (Dashboards)
 import BrokerHome from "./pages/broker/BrokerHome";
+import BrokerEnrollNew from "./pages/broker/enroll/BrokerEnrollNew";
 import EmployerHome from "./pages/employer/EmployerHome";
 import IndividualHome from "./pages/individual/IndividualHome";
 
@@ -76,6 +77,8 @@ const App = () => (
           <Route path="/broker/home" element={<BrokerHome />} />
           <Route path="/broker/groups" element={<BrokerHome />} />
           <Route path="/broker/reporting" element={<BrokerHome />} />
+          <Route path="/broker/enroll/new" element={<BrokerEnrollNew />} />
+          <Route path="/broker/enroll/:enrollmentId" element={<BrokerEnrollNew />} />
           
           <Route path="/employer/home" element={<EmployerHome />} />
           <Route path="/employer/contributions" element={<EmployerHome />} />

@@ -12,7 +12,7 @@ const roles = [
     title: "Broker",
     description: "Start enrollments, set contributions, attach voluntary benefits, track earnings.",
     icon: Briefcase,
-    href: "/broker/intake",
+    href: "/broker",
     primary: true,
   },
   {
@@ -20,7 +20,7 @@ const roles = [
     title: "Employer",
     description: "Control offerings, set contributions, launch enrollment, view spend reporting.",
     icon: Building2,
-    href: "/employer/intake",
+    href: "/employer",
     primary: false,
   },
   {
@@ -28,7 +28,7 @@ const roles = [
     title: "Individual",
     description: "Enter your invite code, pick coverage, activate your wallet and card.",
     icon: User,
-    href: "/individual/intake",
+    href: "/individual",
     primary: false,
   },
 ];

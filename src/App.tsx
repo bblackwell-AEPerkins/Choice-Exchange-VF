@@ -8,7 +8,6 @@ import ProviderMap from "./pages/ProviderMap";
 import MemberDashboard from "./pages/MemberDashboard";
 import EmployerAdmin from "./pages/EmployerAdmin";
 import EmployerSignup from "./pages/EmployerSignup";
-import EmployerLanding from "./pages/EmployerLanding";
 import Auth from "./pages/Auth";
 import ICHRACompare from "./pages/ICHRACompare";
 import ICHRA from "./pages/ICHRA";
@@ -29,7 +28,12 @@ import EmployerIntake from "./pages/intake/EmployerIntake";
 import IndividualIntake from "./pages/intake/IndividualIntake";
 import RequestAccess from "./pages/RequestAccess";
 
-// Role-Specific Home Pages
+// Role-Specific Landing Pages
+import BrokerLanding from "./pages/landing/BrokerLanding";
+import EmployerLanding from "./pages/landing/EmployerLanding";
+import IndividualLanding from "./pages/landing/IndividualLanding";
+
+// Role-Specific Home Pages (Dashboards)
 import BrokerHome from "./pages/broker/BrokerHome";
 import EmployerHome from "./pages/employer/EmployerHome";
 import IndividualHome from "./pages/individual/IndividualHome";
@@ -57,13 +61,18 @@ const App = () => (
           <Route path="/" element={<RoleSelect />} />
           <Route path="/select-role" element={<RoleSelect />} />
           
+          {/* Role-Specific Landing Pages */}
+          <Route path="/broker" element={<BrokerLanding />} />
+          <Route path="/employer" element={<EmployerLanding />} />
+          <Route path="/individual" element={<IndividualLanding />} />
+          
           {/* Intake Forms */}
           <Route path="/broker/intake" element={<BrokerIntake />} />
           <Route path="/employer/intake" element={<EmployerIntake />} />
           <Route path="/individual/intake" element={<IndividualIntake />} />
           <Route path="/request-access" element={<RequestAccess />} />
           
-          {/* Role-Specific Shells */}
+          {/* Role-Specific Shells (Dashboards) */}
           <Route path="/broker/home" element={<BrokerHome />} />
           <Route path="/broker/groups" element={<BrokerHome />} />
           <Route path="/broker/reporting" element={<BrokerHome />} />
@@ -81,7 +90,6 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/providers" element={<ProviderMap />} />
           <Route path="/dashboard" element={<MemberDashboard />} />
-          <Route path="/employer" element={<EmployerLanding />} />
           <Route path="/employer/admin" element={<EmployerAdmin />} />
           <Route path="/employer/signup" element={<EmployerSignup />} />
           <Route path="/compare-ichra" element={<ICHRACompare />} />

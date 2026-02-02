@@ -22,6 +22,18 @@ import ScheduleRedirect from "./pages/ScheduleRedirect";
 import NotFound from "./pages/NotFound";
 import { ChatWidget } from "./components/ChatWidget";
 
+// Role-Based Entry Module
+import RoleSelect from "./pages/RoleSelect";
+import BrokerIntake from "./pages/intake/BrokerIntake";
+import EmployerIntake from "./pages/intake/EmployerIntake";
+import IndividualIntake from "./pages/intake/IndividualIntake";
+import RequestAccess from "./pages/RequestAccess";
+
+// Role-Specific Home Pages
+import BrokerHome from "./pages/broker/BrokerHome";
+import EmployerHome from "./pages/employer/EmployerHome";
+import IndividualHome from "./pages/individual/IndividualHome";
+
 // New Enrollment Flow Pages
 import EnrollIntent from "./pages/enrollment/EnrollIntent";
 import EnrollAccount from "./pages/enrollment/EnrollAccount";
@@ -41,7 +53,31 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* Role-Based Entry Module */}
+          <Route path="/" element={<RoleSelect />} />
+          <Route path="/select-role" element={<RoleSelect />} />
+          
+          {/* Intake Forms */}
+          <Route path="/broker/intake" element={<BrokerIntake />} />
+          <Route path="/employer/intake" element={<EmployerIntake />} />
+          <Route path="/individual/intake" element={<IndividualIntake />} />
+          <Route path="/request-access" element={<RequestAccess />} />
+          
+          {/* Role-Specific Shells */}
+          <Route path="/broker/home" element={<BrokerHome />} />
+          <Route path="/broker/groups" element={<BrokerHome />} />
+          <Route path="/broker/reporting" element={<BrokerHome />} />
+          
+          <Route path="/employer/home" element={<EmployerHome />} />
+          <Route path="/employer/contributions" element={<EmployerHome />} />
+          <Route path="/employer/reporting" element={<EmployerHome />} />
+          
+          <Route path="/individual/home" element={<IndividualHome />} />
+          <Route path="/individual/wallet" element={<IndividualHome />} />
+          <Route path="/individual/benefits" element={<IndividualHome />} />
+          
+          {/* Legacy Routes (marketplace) */}
+          <Route path="/marketplace" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/providers" element={<ProviderMap />} />
           <Route path="/dashboard" element={<MemberDashboard />} />
@@ -57,7 +93,8 @@ const App = () => (
           <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
           <Route path="/support" element={<Support />} />
           <Route path="/schedule-redirect" element={<ScheduleRedirect />} />
-          {/* New Unified Enrollment Flow */}
+          
+          {/* Unified Enrollment Flow */}
           <Route path="/enroll" element={<EnrollIntent />} />
           <Route path="/enroll/account" element={<EnrollAccount />} />
           <Route path="/enroll/about" element={<EnrollAbout />} />

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRoleStore, UserRole } from "@/stores/roleStore";
+import { RollingBanner } from "@/components/RollingBanner";
 
 const roles = [
   {
@@ -86,6 +87,9 @@ export default function RoleSelect() {
           </Button>
         </div>
       </header>
+
+      {/* Cinematic rolling banner */}
+      <RollingBanner />
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-16">

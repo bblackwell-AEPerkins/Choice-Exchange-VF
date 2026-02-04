@@ -11,40 +11,61 @@ const healthcareImages = [
 
 export const RollingBanner = () => {
   return (
-    <div className="relative w-full h-28 md:h-36 lg:h-44 overflow-hidden bg-muted/30">
-      {/* Blue tint overlay */}
+    <div className="relative w-full py-6 bg-background overflow-hidden">
+      {/* Floating frame container */}
       <div 
-        className="absolute inset-0 z-10 pointer-events-none"
-        style={{ backgroundColor: "hsl(217 91% 60% / 0.15)" }}
-      />
-      
-      {/* Left fade */}
-      <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-background to-transparent z-20" />
-      {/* Right fade */}
-      <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-background to-transparent z-20" />
-      
-      {/* Scrolling track */}
-      <div className="flex h-full animate-banner-scroll">
-        {/* First set */}
-        {healthcareImages.map((src, i) => (
-          <div key={`a-${i}`} className="flex-shrink-0 h-full w-44 md:w-56 lg:w-64 mx-1">
-            <img
-              src={src}
-              alt=""
-              className="w-full h-full object-cover grayscale opacity-80"
-            />
-          </div>
-        ))}
-        {/* Duplicate for seamless loop */}
-        {healthcareImages.map((src, i) => (
-          <div key={`b-${i}`} className="flex-shrink-0 h-full w-44 md:w-56 lg:w-64 mx-1">
-            <img
-              src={src}
-              alt=""
-              className="w-full h-full object-cover grayscale opacity-80"
-            />
-          </div>
-        ))}
+        className="relative mx-auto max-w-6xl h-32 md:h-40 lg:h-48 rounded-xl overflow-hidden"
+        style={{
+          boxShadow: `
+            0 25px 50px -12px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(0, 0, 0, 0.05),
+            inset 0 2px 4px 0 rgba(255, 255, 255, 0.1)
+          `,
+        }}
+      >
+        {/* Inner shadow for depth */}
+        <div 
+          className="absolute inset-0 z-30 pointer-events-none rounded-xl"
+          style={{
+            boxShadow: "inset 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 -4px 20px rgba(0, 0, 0, 0.2)"
+          }}
+        />
+        
+        {/* Blue tint overlay */}
+        <div 
+          className="absolute inset-0 z-20 pointer-events-none"
+          style={{ backgroundColor: "hsl(217 91% 60% / 0.2)" }}
+        />
+        
+        {/* Vignette edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 md:w-40 bg-gradient-to-r from-black/50 to-transparent z-20" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 md:w-40 bg-gradient-to-l from-black/50 to-transparent z-20" />
+        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/30 to-transparent z-20" />
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/30 to-transparent z-20" />
+        
+        {/* Scrolling track - pushed back */}
+        <div className="flex h-full animate-banner-scroll" style={{ transform: "translateZ(-10px)" }}>
+          {/* First set */}
+          {healthcareImages.map((src, i) => (
+            <div key={`a-${i}`} className="flex-shrink-0 h-full w-48 md:w-60 lg:w-72 mx-0.5">
+              <img
+                src={src}
+                alt=""
+                className="w-full h-full object-cover grayscale brightness-75"
+              />
+            </div>
+          ))}
+          {/* Duplicate for seamless loop */}
+          {healthcareImages.map((src, i) => (
+            <div key={`b-${i}`} className="flex-shrink-0 h-full w-48 md:w-60 lg:w-72 mx-0.5">
+              <img
+                src={src}
+                alt=""
+                className="w-full h-full object-cover grayscale brightness-75"
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

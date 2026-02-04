@@ -76,24 +76,24 @@ export default function RoleSelect() {
         </div>
       </header>
 
+      {/* Hero text - above banner */}
+      <div className="text-center px-4 pt-10 pb-6 md:pt-12 md:pb-8">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-2">
+          ICHRA enrollment + voluntary benefits
+        </h1>
+        <p className="text-sm md:text-base text-muted-foreground">
+          Enroll faster, manage contributions, activate your benefits card.
+        </p>
+      </div>
+
       {/* Main content with banner behind */}
-      <main className="flex-1 flex items-center justify-center px-4 py-10 md:py-14 relative">
+      <main className="flex-1 flex items-center justify-center px-4 pb-10 md:pb-14 relative">
         {/* Banner positioned behind content */}
         <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
           <RollingBanner />
         </div>
         
         <div className="w-full max-w-xl relative z-10">
-          {/* Hero text */}
-          <div className="text-center mb-8">
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-2">
-              ICHRA enrollment + voluntary benefits
-            </h1>
-            <p className="text-sm md:text-base text-muted-foreground">
-              Enroll faster, manage contributions, activate your benefits card.
-            </p>
-          </div>
-
           {/* Role tiles */}
           <div className="space-y-2.5 mb-8">
             {roles.map((role) => (

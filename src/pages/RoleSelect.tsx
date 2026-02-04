@@ -77,11 +77,14 @@ export default function RoleSelect() {
 
       {/* Hero section */}
       <div className="text-center px-4 pt-12 pb-4 md:pt-16 md:pb-6">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-2">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground/60 mb-3">
+          Secure platform entry
+        </p>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-3">
           ICHRA enrollment + voluntary benefits
         </h1>
-        <p className="text-sm text-muted-foreground/70 mb-1">
-          Secure platform entry
+        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Defined contribution health coverage, voluntary benefit attachments, and benefits card activation—managed through a single enrollment system.
         </p>
       </div>
 

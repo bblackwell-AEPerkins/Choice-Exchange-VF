@@ -317,17 +317,17 @@ const MemberDashboard = () => {
 
   const [enrolledBenefits, setEnrolledBenefits] = useState<string[]>(["dental", "vision"]);
   const [comparePlans, setComparePlans] = useState<string[]>([]);
-  // Subscription care plan costs (aligned with My Providers)
-  const subscriptionPlans = [
-    { id: "primary", name: "Primary Care", provider: "Dr. Sarah Chen", monthlyPremium: 99 },
-    { id: "cardiology", name: "Cardiology", provider: "Dr. Michael Roberts", monthlyPremium: 149 },
-    { id: "orthopedics", name: "Orthopedics", provider: "Dr. James Morrison", monthlyPremium: 129 },
+  // Voluntary benefit plans (renamed from subscription care)
+  const voluntaryPlans = [
+    { id: "dental", name: "Dental Plus", provider: "Delta Dental", monthlyPremium: 45 },
+    { id: "vision", name: "Vision Standard", provider: "VSP", monthlyPremium: 15 },
+    { id: "life", name: "Term Life Plus", provider: "MetLife", monthlyPremium: 25 },
   ];
   
   const monthlyBudget = memberData.monthlyAllowance; // ICHRA allowance ($800/month)
 
-  const getSubscriptionTotal = () => {
-    return subscriptionPlans.reduce((sum, p) => sum + p.monthlyPremium, 0);
+  const getVoluntaryTotal = () => {
+    return voluntaryPlans.reduce((sum, p) => sum + p.monthlyPremium, 0);
   };
 
   const getSupplementalTotal = () => {
@@ -341,7 +341,7 @@ const MemberDashboard = () => {
   };
 
   const getTotalEnrolledCost = () => {
-    return getSubscriptionTotal() + getSupplementalTotal();
+    return getVoluntaryTotal() + getSupplementalTotal();
   };
 
   const getRemainingBudget = () => {
@@ -713,9 +713,9 @@ const MemberDashboard = () => {
                     <CardDescription>Your saved and preferred healthcare providers</CardDescription>
                   </div>
                   <Button asChild>
-                    <Link to="/providers">
+                    <Link to="/plans">
                       <Plus className="h-4 w-4 mr-2" />
-                      Find Providers
+                      Browse Plans
                     </Link>
                   </Button>
                 </CardHeader>
@@ -779,7 +779,7 @@ const MemberDashboard = () => {
                         <span className="font-medium">Comparing {comparePlans.length} plan{comparePlans.length > 1 ? 's' : ''}</span>
                         <div className="flex gap-2">
                           {comparePlans.map(planId => {
-                            const plan = subscriptionPlans.find(p => p.id === planId);
+                            const plan = voluntaryPlans.find(p => p.id === planId);
                             return plan ? (
                               <Badge key={planId} variant="secondary" className="flex items-center gap-1">
                                 {plan.name}
@@ -899,22 +899,22 @@ const MemberDashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Subscription-Based Care Plans */}
+              {/* Voluntary Benefits */}
               <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Stethoscope className="h-5 w-5 text-primary" />
-                      Subscription-Based Care Plans
+                      Voluntary Benefits
                     </CardTitle>
                     <CardDescription>
-                      Direct access to your provider groups with predictable monthly pricing. These complement your ICHRA health plan.
+                      Additional coverage options including dental, vision, and life insurance.
                     </CardDescription>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link to="/providers" className="flex items-center gap-2">
+                    <Link to="/plans" className="flex items-center gap-2">
                       <Search className="h-4 w-4" />
-                      Find New Plans
+                      Browse Options
                     </Link>
                   </Button>
                 </CardHeader>
@@ -1175,8 +1175,8 @@ const MemberDashboard = () => {
                         />
                         <div className="text-xs text-muted-foreground mt-3 space-y-1">
                           <div className="flex justify-between">
-                            <span>Subscription Plans:</span>
-                            <span className="font-medium">${getSubscriptionTotal()}/mo</span>
+                            <span>Voluntary Benefits:</span>
+                            <span className="font-medium">${getVoluntaryTotal()}/mo</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Supplemental Benefits:</span>
@@ -1198,21 +1198,21 @@ const MemberDashboard = () => {
                         <Shield className="h-5 w-5 text-primary" />
                         My Plan Stack
                       </CardTitle>
-                      <CardDescription>Subscription plans + supplemental benefits</CardDescription>
+                      <CardDescription>Voluntary benefits + supplemental coverage</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {/* Subscription Plans Section */}
+                      {/* Voluntary Plans Section */}
                       <div className="mb-3">
-                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Subscription Plans</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Voluntary Benefits</p>
                         <div className="space-y-0">
-                          {subscriptionPlans.map((plan, index) => (
+                          {voluntaryPlans.map((plan, index) => (
                             <div 
                               key={plan.id}
                               className={`relative p-3 bg-gradient-to-r from-primary/15 to-primary/5 border-2 border-primary/40 
                                 ${index === 0 ? "rounded-t-lg" : ""} 
-                                ${index === subscriptionPlans.length - 1 ? "rounded-b-lg" : "border-b-0"}`}
+                                ${index === voluntaryPlans.length - 1 ? "rounded-b-lg" : "border-b-0"}`}
                               style={{ 
-                                zIndex: subscriptionPlans.length - index,
+                                zIndex: voluntaryPlans.length - index,
                                 marginTop: index > 0 ? "-4px" : "0"
                               }}
                             >

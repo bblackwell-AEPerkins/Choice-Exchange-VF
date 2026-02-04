@@ -7,9 +7,9 @@ const footerLinks = {
   solutions: {
     title: "Solutions",
     links: [
-      { name: "For Individuals", path: "/auth" },
+      { name: "For Individuals", path: "/individual" },
       { name: "For Employers", path: "/employer" },
-      { name: "Provider Network", path: "/providers" },
+      { name: "For Brokers", path: "/broker" },
       { name: "Compare Plans", path: "/compare-ichra" },
     ],
   },
@@ -28,7 +28,7 @@ const footerLinks = {
       { name: "About Us", path: "/support" },
       { name: "Contact", path: "/support" },
       { name: "For Employers", path: "/employer" },
-      { name: "For Providers", path: "/providers" },
+      { name: "For Brokers", path: "/broker" },
     ],
   },
   legal: {

@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
 import { DEMO_MODE, MOCK_ICHRA_PLANS, filterPlansByZip, simulateDelay } from "@/lib/mockData";
-import { filterProviders, subscriptionProviders, SubscriptionProvider } from "@/lib/subscriptionProviders";
 import { 
   Check, 
   Shield, 
@@ -20,23 +19,14 @@ import {
   Heart,
   Eye,
   Umbrella,
-  CreditCard,
   ArrowRight,
   Building2,
-  Scale,
   Star,
-  Pill,
-  Phone,
-  Activity,
-  Brain,
   CheckCircle2,
   Leaf,
   Sparkles,
   SlidersHorizontal,
   AlertCircle,
-  Users,
-  Baby,
-  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -69,7 +59,7 @@ interface Plan {
   plan_type: string;
 }
 
-type PlanCategory = "ichra" | "subscription" | "voluntary";
+type PlanCategory = "ichra" | "voluntary";
 
 const metalTierColors: Record<string, string> = {
   Bronze: "bg-amber-100 text-amber-800 border-amber-300",
@@ -95,7 +85,7 @@ const metalTierIcons: Record<string, React.ReactNode> = {
   platinum: <Sparkles className="h-4 w-4" />,
 };
 
-// Voluntary benefits with detailed plans matching BenefitPlans.tsx structure
+// Voluntary benefits with detailed plans
 const VOLUNTARY_BENEFITS_DATA: Record<string, {
   id: string;
   name: string;
@@ -117,15 +107,12 @@ const VOLUNTARY_BENEFITS_DATA: Record<string, {
     icon: "🦷",
     description: "Choose a dental plan that fits your needs",
     plans: [
-      // Choice Exchange Row
       { id: "dental-basic", name: "Dental Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 25, features: ["2 preventive visits per year", "Basic cleanings & X-rays", "50% coverage on fillings", "No coverage for major work"] },
       { id: "dental-standard", name: "Dental Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 45, features: ["2 preventive visits per year", "Full cleanings & X-rays", "80% coverage on fillings", "50% coverage on crowns & root canals"], popular: true },
       { id: "dental-premium", name: "Dental Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 75, features: ["Unlimited preventive visits", "100% cleanings & X-rays", "100% coverage on fillings", "80% coverage on crowns"] },
-      // Delta Dental Row
       { id: "delta-dental-basic", name: "Delta Care Basic", carrier: "Delta Dental", tier: "Basic", monthlyPremium: 28, features: ["2 preventive visits per year", "100% cleanings covered", "60% coverage on fillings", "Large network of dentists"] },
       { id: "delta-dental-standard", name: "Delta PPO Plus", carrier: "Delta Dental", tier: "Standard", monthlyPremium: 52, features: ["2 preventive visits per year", "100% cleanings & X-rays", "80% coverage on fillings", "60% coverage on major work"] },
       { id: "delta-dental-premium", name: "Delta Premier", carrier: "Delta Dental", tier: "Premium", monthlyPremium: 82, features: ["Unlimited preventive visits", "100% cleanings & X-rays", "100% coverage on fillings", "80% coverage on major work"] },
-      // MetLife Row
       { id: "metlife-dental-basic", name: "MetLife Dental Essential", carrier: "MetLife", tier: "Basic", monthlyPremium: 22, features: ["2 preventive visits per year", "100% preventive coverage", "50% basic procedures", "Nationwide network"] },
       { id: "metlife-dental-standard", name: "MetLife Dental Preferred", carrier: "MetLife", tier: "Standard", monthlyPremium: 48, features: ["2 preventive visits per year", "100% preventive coverage", "80% basic procedures", "50% major procedures"] },
       { id: "metlife-dental-premium", name: "MetLife Dental Elite", carrier: "MetLife", tier: "Premium", monthlyPremium: 78, features: ["Unlimited preventive visits", "100% preventive coverage", "100% basic procedures", "80% major procedures"] },
@@ -137,15 +124,12 @@ const VOLUNTARY_BENEFITS_DATA: Record<string, {
     icon: "👁️",
     description: "Find the right vision plan for your eye care needs",
     plans: [
-      // Choice Exchange Row
       { id: "vision-basic", name: "Vision Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 10, features: ["Annual eye exam covered", "$100 frames allowance", "Standard lenses included", "20% off contact lenses"] },
       { id: "vision-standard", name: "Vision Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 15, features: ["Annual eye exam covered", "$150 frames allowance", "Progressive lenses included", "$150 contact lens allowance"], popular: true },
       { id: "vision-premium", name: "Vision Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 25, features: ["2 eye exams per year", "$250 frames allowance", "All lens types included", "$250 contact lens allowance"] },
-      // VSP Row
       { id: "vsp-vision-basic", name: "VSP Basic", carrier: "VSP", tier: "Basic", monthlyPremium: 12, features: ["Annual WellVision exam", "$120 frames allowance", "Single vision lenses", "15% off lens options"] },
       { id: "vsp-vision-standard", name: "VSP Choice", carrier: "VSP", tier: "Standard", monthlyPremium: 18, features: ["Annual WellVision exam", "$180 frames allowance", "Progressive lenses included", "$180 contact lens allowance"] },
       { id: "vsp-vision-premium", name: "VSP Premier", carrier: "VSP", tier: "Premium", monthlyPremium: 28, features: ["Annual WellVision exam", "$300 frames allowance", "Premium progressives", "$300 contact lens allowance"] },
-      // EyeMed Row
       { id: "eyemed-vision-basic", name: "EyeMed Access", carrier: "EyeMed", tier: "Basic", monthlyPremium: 9, features: ["Annual eye exam covered", "$100 frames allowance", "Standard plastic lenses", "40% off lens upgrades"] },
       { id: "eyemed-vision-standard", name: "EyeMed Select", carrier: "EyeMed", tier: "Standard", monthlyPremium: 16, features: ["Annual eye exam covered", "$150 frames allowance", "Progressive lenses", "$150 contact lens allowance"] },
       { id: "eyemed-vision-premium", name: "EyeMed Complete", carrier: "EyeMed", tier: "Premium", monthlyPremium: 26, features: ["2 eye exams per year", "$275 frames allowance", "All lens options", "$275 contact lens allowance"] },
@@ -157,15 +141,12 @@ const VOLUNTARY_BENEFITS_DATA: Record<string, {
     icon: "🛡️",
     description: "Protect your loved ones with the right coverage",
     plans: [
-      // Choice Exchange Row
       { id: "life-basic", name: "Term Life Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 15, features: ["$50,000 death benefit", "Accidental death coverage", "No medical exam required", "Guaranteed acceptance"] },
       { id: "life-standard", name: "Term Life Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 25, features: ["$100,000 death benefit", "Accidental death & dismemberment", "Living benefits included", "Spouse coverage available"], popular: true },
       { id: "life-premium", name: "Term Life Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 45, features: ["$250,000 death benefit", "Full AD&D coverage", "Critical illness rider", "Family coverage included"] },
-      // MetLife Row
       { id: "metlife-life-basic", name: "MetLife Term Essential", carrier: "MetLife", tier: "Basic", monthlyPremium: 14, features: ["$50,000 death benefit", "Accidental death benefit", "Guaranteed issue", "24/7 claims support"] },
       { id: "metlife-life-standard", name: "MetLife Term Plus", carrier: "MetLife", tier: "Standard", monthlyPremium: 28, features: ["$150,000 death benefit", "AD&D included", "Accelerated death benefit", "Spouse coverage"] },
       { id: "metlife-life-premium", name: "MetLife Term Premier", carrier: "MetLife", tier: "Premium", monthlyPremium: 52, features: ["$300,000 death benefit", "Comprehensive AD&D", "Critical illness rider", "Child coverage included"] },
-      // Prudential Row
       { id: "prudential-life-basic", name: "Prudential Simple Term", carrier: "Prudential", tier: "Basic", monthlyPremium: 16, features: ["$75,000 death benefit", "Accidental death benefit", "Simplified underwriting", "Online account access"] },
       { id: "prudential-life-standard", name: "Prudential Term Flex", carrier: "Prudential", tier: "Standard", monthlyPremium: 30, features: ["$200,000 death benefit", "Full AD&D coverage", "Terminal illness benefit", "Portable coverage"] },
       { id: "prudential-life-premium", name: "Prudential Term Max", carrier: "Prudential", tier: "Premium", monthlyPremium: 55, features: ["$500,000 death benefit", "Enhanced AD&D", "Living benefits package", "Spouse & child coverage"] },
@@ -177,15 +158,12 @@ const VOLUNTARY_BENEFITS_DATA: Record<string, {
     icon: "💼",
     description: "Income protection when you need it most",
     plans: [
-      // Choice Exchange Row
       { id: "disability-basic", name: "STD Basic", carrier: "Choice Exchange", tier: "Basic", monthlyPremium: 20, features: ["50% income replacement", "Up to 12 weeks coverage", "14-day waiting period", "Injury & illness covered"] },
       { id: "disability-standard", name: "STD Plus", carrier: "Choice Exchange", tier: "Standard", monthlyPremium: 35, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Mental health coverage"], popular: true },
       { id: "disability-premium", name: "STD Premium", carrier: "Choice Exchange", tier: "Premium", monthlyPremium: 55, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident waiting period", "Pregnancy coverage"] },
-      // Unum Row
       { id: "unum-disability-basic", name: "Unum STD Core", carrier: "Unum", tier: "Basic", monthlyPremium: 22, features: ["50% income replacement", "Up to 13 weeks coverage", "14-day waiting period", "Leave management support"] },
       { id: "unum-disability-standard", name: "Unum STD Plus", carrier: "Unum", tier: "Standard", monthlyPremium: 38, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Return-to-work support"] },
       { id: "unum-disability-premium", name: "Unum STD Premier", carrier: "Unum", tier: "Premium", monthlyPremium: 60, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident wait", "Comprehensive coverage"] },
-      // Lincoln Financial Row
       { id: "lincoln-disability-basic", name: "Lincoln STD Essential", carrier: "Lincoln Financial", tier: "Basic", monthlyPremium: 18, features: ["50% income replacement", "Up to 11 weeks coverage", "14-day waiting period", "Online claims"] },
       { id: "lincoln-disability-standard", name: "Lincoln STD Select", carrier: "Lincoln Financial", tier: "Standard", monthlyPremium: 32, features: ["60% income replacement", "Up to 26 weeks coverage", "7-day waiting period", "Rehabilitation support"] },
       { id: "lincoln-disability-premium", name: "Lincoln STD Complete", carrier: "Lincoln Financial", tier: "Premium", monthlyPremium: 50, features: ["70% income replacement", "Up to 52 weeks coverage", "0-day accident wait", "Family leave coverage"] },
@@ -218,19 +196,8 @@ export default function EnrollPlans() {
   const [planTypeFilter, setPlanTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("premium-low");
   
-  // Selected plans for each category
-  const [selectedSubscriptions, setSelectedSubscriptions] = useState<string[]>([]);
+  // Selected plans for voluntary
   const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>({});
-  
-  // Subscription search state
-  const [subSearchQuery, setSubSearchQuery] = useState("");
-  const [subLocationQuery, setSubLocationQuery] = useState("");
-  const [subSearchResults, setSubSearchResults] = useState<SubscriptionProvider[]>([]);
-  const [hasSubSearched, setHasSubSearched] = useState(false);
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
-  
-  // Pre-selected recommended providers (top-rated from each specialty in Dallas area)
-  const [preSelectedProviders, setPreSelectedProviders] = useState<SubscriptionProvider[]>([]);
 
   // Step access protection
   useEffect(() => {
@@ -246,25 +213,6 @@ export default function EnrollPlans() {
       fetchPlans(about.zipCode);
     }
   }, [about.zipCode]);
-
-  // Initialize pre-selected subscription providers
-  useEffect(() => {
-    // Get top-rated providers from each specialty for recommended section
-    const specialties = ['primary', 'mental', 'telehealth'];
-    const recommended: SubscriptionProvider[] = [];
-    
-    specialties.forEach(specialty => {
-      const providers = subscriptionProviders[specialty] || [];
-      // Get the top 2 rated providers from Dallas
-      const dallasProviders = providers
-        .filter(p => p.city === "Dallas" && p.acceptingNew)
-        .sort((a, b) => b.rating - a.rating)
-        .slice(0, 2);
-      recommended.push(...dallasProviders);
-    });
-    
-    setPreSelectedProviders(recommended);
-  }, []);
 
   const fetchPlans = async (zip: string) => {
     if (!zip || zip.length < 5) return;
@@ -335,12 +283,6 @@ export default function EnrollPlans() {
     setSelectedPlanDetails(selectedPlan);
   };
 
-  const toggleSubscription = (id: string) => {
-    setSelectedSubscriptions(prev => 
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    );
-  };
-
   const selectVoluntaryPlan = (categoryId: string, planId: string) => {
     setSelectedVoluntary(prev => ({
       ...prev,
@@ -348,66 +290,8 @@ export default function EnrollPlans() {
     }));
   };
 
-  // Subscription search handlers
-  const handleSubSearch = () => {
-    if (!subSearchQuery.trim() && !subLocationQuery.trim()) return;
-    
-    const location = subLocationQuery.trim();
-    const isZipCode = /^\d{5}$/.test(location);
-    
-    const filtered = filterProviders({
-      searchQuery: subSearchQuery.trim() || undefined,
-      city: !isZipCode ? location : undefined,
-      zipCode: isZipCode ? location : undefined,
-    });
-    
-    setSubSearchResults(filtered.slice(0, 30));
-    setHasSubSearched(true);
-    setSelectedSpecialty(null);
-  };
-
-  const handleSubKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSubSearch();
-    }
-  };
-
-  const handleSpecialtyClick = (specialtyId: string) => {
-    const location = subLocationQuery.trim();
-    const isZipCode = /^\d{5}$/.test(location);
-    
-    const providers = filterProviders({
-      specialtyId,
-      city: !isZipCode ? location : undefined,
-      zipCode: isZipCode ? location : undefined,
-    });
-    
-    setSubSearchResults(providers.slice(0, 30));
-    setSelectedSpecialty(specialtyId);
-    setHasSubSearched(true);
-  };
-
-  const clearSubSearch = () => {
-    setSubSearchQuery("");
-    setSubLocationQuery("");
-    setSubSearchResults([]);
-    setHasSubSearched(false);
-    setSelectedSpecialty(null);
-  };
-
-  const specialtyCategories = [
-    { id: "primary", name: "Primary Care", icon: Stethoscope, color: "bg-blue-100 text-blue-700" },
-    { id: "mental", name: "Mental Health", icon: Brain, color: "bg-purple-100 text-purple-700" },
-    { id: "telehealth", name: "Telehealth", icon: Phone, color: "bg-green-100 text-green-700" },
-    { id: "pediatrics", name: "Pediatrics", icon: Baby, color: "bg-pink-100 text-pink-700" },
-    { id: "womens", name: "Women's Health", icon: Heart, color: "bg-rose-100 text-rose-700" },
-    { id: "orthopedics", name: "Physical Therapy", icon: Activity, color: "bg-orange-100 text-orange-700" },
-  ];
-
   const handleNext = () => {
     if (activeTab === "ichra") {
-      setActiveTab("subscription");
-    } else if (activeTab === "subscription") {
       setActiveTab("voluntary");
     } else if (activeTab === "voluntary") {
       setStep("review");
@@ -417,8 +301,6 @@ export default function EnrollPlans() {
 
   const handleBack = () => {
     if (activeTab === "voluntary") {
-      setActiveTab("subscription");
-    } else if (activeTab === "subscription") {
       setActiveTab("ichra");
     } else {
       setStep("coverage");
@@ -427,37 +309,25 @@ export default function EnrollPlans() {
   };
 
   const getNextLabel = () => {
-    if (activeTab === "ichra") return "Continue to Subscriptions";
-    if (activeTab === "subscription") return "Continue to Voluntary";
+    if (activeTab === "ichra") return "Continue to Voluntary Benefits";
     return "Review & Submit";
   };
 
   const canProceed = () => {
     if (activeTab === "ichra") return !!plan.medicalPlanId;
-    return true; // Subscription and voluntary are optional
+    return true; // Voluntary is optional
   };
-
-  // Calculate total monthly cost - now using real provider data
-  const subscriptionTotal = selectedSubscriptions.reduce((sum, id) => {
-    // Check in pre-selected providers first
-    const preSelected = preSelectedProviders.find(p => p.id === id);
-    if (preSelected) return sum + preSelected.monthlyPrice;
-    // Check in search results
-    const searchResult = subSearchResults.find(p => p.id === id);
-    if (searchResult) return sum + searchResult.monthlyPrice;
-    return sum;
-  }, 0);
 
   const voluntaryTotal = Object.entries(selectedVoluntary).reduce((sum, [categoryId, planId]) => {
     if (!planId) return sum;
     const benefitData = VOLUNTARY_BENEFITS_DATA[categoryId];
     if (!benefitData) return sum;
-    const plan = benefitData.plans.find(p => p.id === planId);
-    if (plan) return sum + plan.monthlyPremium;
+    const benefitPlan = benefitData.plans.find(p => p.id === planId);
+    if (benefitPlan) return sum + benefitPlan.monthlyPremium;
     return sum;
   }, 0);
 
-  const totalMonthly = (plan.monthlyPremium || 0) + subscriptionTotal + voluntaryTotal;
+  const totalMonthly = (plan.monthlyPremium || 0) + voluntaryTotal;
 
   if (dbLoading) {
     return (
@@ -479,12 +349,12 @@ export default function EnrollPlans() {
       currentStep={6}
       totalSteps={8}
       title="Select Your Plans"
-      description="Choose your health insurance, subscriptions, and voluntary benefits."
+      description="Choose your health insurance and voluntary benefits."
       onSave={saveToDatabase}
       wide={true}
     >
       {/* Monthly Cost Summary */}
-      {(plan.medicalPlanId || selectedSubscriptions.length > 0 || Object.values(selectedVoluntary).some(v => v)) && (
+      {(plan.medicalPlanId || Object.values(selectedVoluntary).some(v => v)) && (
         <Card className="border-primary/30 bg-primary/5 mb-6">
           <CardContent className="py-4">
             <div className="flex items-center justify-between">
@@ -494,7 +364,6 @@ export default function EnrollPlans() {
               </div>
               <div className="text-right text-sm space-y-0.5">
                 {plan.medicalPlanId && <p className="text-muted-foreground">ICHRA Plan: <span className="text-foreground font-medium">${plan.monthlyPremium?.toFixed(2)}</span></p>}
-                {subscriptionTotal > 0 && <p className="text-muted-foreground">Subscriptions: <span className="text-foreground font-medium">${subscriptionTotal.toFixed(2)}</span></p>}
                 {voluntaryTotal > 0 && <p className="text-muted-foreground">Voluntary: <span className="text-foreground font-medium">${voluntaryTotal.toFixed(2)}</span></p>}
               </div>
             </div>
@@ -504,27 +373,17 @@ export default function EnrollPlans() {
 
       {/* Plan Category Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as PlanCategory)} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-2 h-auto p-1">
           <TabsTrigger value="ichra" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Shield className="h-4 w-4" />
             <span className="hidden sm:inline">ICHRA Plans</span>
             <span className="sm:hidden">ICHRA</span>
             {plan.medicalPlanId && <Check className="h-3 w-3" />}
           </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-            <Heart className="h-4 w-4" />
-            <span className="hidden sm:inline">Subscription</span>
-            <span className="sm:hidden">Sub</span>
-            {selectedSubscriptions.length > 0 && (
-              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 justify-center text-xs">
-                {selectedSubscriptions.length}
-              </Badge>
-            )}
-          </TabsTrigger>
           <TabsTrigger value="voluntary" className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Umbrella className="h-4 w-4" />
-            <span className="hidden sm:inline">Voluntary</span>
-            <span className="sm:hidden">Vol</span>
+            <span className="hidden sm:inline">Voluntary Benefits</span>
+            <span className="sm:hidden">Voluntary</span>
             {Object.values(selectedVoluntary).filter(v => v).length > 0 && (
               <Badge variant="secondary" className="h-5 min-w-5 px-1.5 justify-center text-xs">
                 {Object.values(selectedVoluntary).filter(v => v).length}
@@ -533,7 +392,7 @@ export default function EnrollPlans() {
           </TabsTrigger>
         </TabsList>
 
-        {/* ICHRA Plans Tab - Matching ICHRAPlans.tsx styling */}
+        {/* ICHRA Plans Tab */}
         <TabsContent value="ichra" className="space-y-6 mt-0">
           {/* Header with badge */}
           <div className="text-center">
@@ -680,7 +539,7 @@ export default function EnrollPlans() {
                 </Card>
               )}
 
-              {/* Plan Cards Grid - matching ICHRAPlans.tsx */}
+              {/* Plan Cards Grid */}
               {!isLoading && filteredPlans.length > 0 && (
                 <div className="grid md:grid-cols-2 gap-4">
                   {filteredPlans.map((p) => {
@@ -835,272 +694,7 @@ export default function EnrollPlans() {
           )}
         </TabsContent>
 
-        {/* Subscription Tab */}
-        <TabsContent value="subscription" className="space-y-6 mt-0">
-          {/* Header */}
-          <div className="rounded-lg border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Heart className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground">Subscription-Based Care</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Add monthly subscriptions for direct access to care. Search for providers or choose from our recommended options.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Search Box */}
-          <Card className="shadow-lg border-2">
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1 relative group">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input
-                    placeholder="Primary care, mental health, physical therapy..."
-                    className="pl-12 h-12 text-base"
-                    value={subSearchQuery}
-                    onChange={(e) => setSubSearchQuery(e.target.value)}
-                    onKeyDown={handleSubKeyPress}
-                  />
-                </div>
-                <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input
-                    placeholder="City, State, or ZIP"
-                    className="pl-12 h-12 text-base"
-                    value={subLocationQuery}
-                    onChange={(e) => setSubLocationQuery(e.target.value)}
-                    onKeyDown={handleSubKeyPress}
-                  />
-                </div>
-                <Button 
-                  size="lg" 
-                  className="h-12 px-8"
-                  onClick={handleSubSearch}
-                  disabled={!subSearchQuery.trim() && !subLocationQuery.trim()}
-                >
-                  <Search className="h-5 w-5 md:mr-2" />
-                  <span className="hidden md:inline">Find Care</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Specialty Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {specialtyCategories.map((specialty) => {
-              const IconComp = specialty.icon;
-              const isActive = selectedSpecialty === specialty.id;
-              return (
-                <button
-                  key={specialty.id}
-                  onClick={() => handleSpecialtyClick(specialty.id)}
-                  className={cn(
-                    "flex flex-col items-center gap-2 p-4 rounded-xl border transition-all",
-                    isActive 
-                      ? "border-primary bg-primary/5 ring-2 ring-primary/20" 
-                      : "hover:border-primary/50 hover:bg-muted/50"
-                  )}
-                >
-                  <div className={cn("p-2 rounded-lg", specialty.color)}>
-                    <IconComp className="h-5 w-5" />
-                  </div>
-                  <span className="text-sm font-medium text-center">{specialty.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search Results */}
-          {hasSubSearched && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">
-                  {selectedSpecialty 
-                    ? `${specialtyCategories.find(s => s.id === selectedSpecialty)?.name || 'Providers'}`
-                    : 'Search Results'
-                  } ({subSearchResults.length} providers)
-                </h3>
-                <Button variant="ghost" size="sm" onClick={clearSubSearch}>
-                  <X className="h-4 w-4 mr-1" />
-                  Clear Search
-                </Button>
-              </div>
-              <div className="grid gap-3">
-                {subSearchResults.map((provider) => {
-                  const isSelected = selectedSubscriptions.includes(provider.id);
-                  return (
-                    <Card
-                      key={provider.id}
-                      className={cn(
-                        "cursor-pointer transition-all hover:border-primary/50",
-                        isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
-                      )}
-                      onClick={() => toggleSubscription(provider.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-semibold text-foreground">{provider.name}</h4>
-                                  {provider.acceptingNew && (
-                                    <Badge variant="secondary" className="text-xs bg-accent/10 text-accent">Accepting New</Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">{provider.specialty}</p>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
-                                <p className="text-xs text-muted-foreground">/month</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                              <MapPin className="h-3.5 w-3.5" />
-                              <span>{provider.city}, {provider.state} {provider.zipCode}</span>
-                              <span className="text-muted-foreground">•</span>
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                                <span className="font-medium">{provider.rating}</span>
-                                <span>({provider.reviewCount} reviews)</span>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              {provider.certifications.slice(0, 2).map((cert, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs font-normal">
-                                  {cert}
-                                </Badge>
-                              ))}
-                              <Badge variant="outline" className="text-xs font-normal">
-                                {provider.languages.join(", ")}
-                              </Badge>
-                            </div>
-                          </div>
-                          {isSelected && (
-                            <div className="shrink-0">
-                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                <Check className="h-4 w-4 text-primary-foreground" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Pre-selected Recommended Providers */}
-          {!hasSubSearched && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Recommended for You</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Top-rated providers in your area. Select any to add to your plan.
-              </p>
-              <div className="grid gap-3">
-                {preSelectedProviders.map((provider) => {
-                  const isSelected = selectedSubscriptions.includes(provider.id);
-                  const specialty = specialtyCategories.find(s => s.id === provider.specialtyId);
-                  const IconComp = specialty?.icon || Stethoscope;
-                  
-                  return (
-                    <Card
-                      key={provider.id}
-                      className={cn(
-                        "cursor-pointer transition-all hover:border-primary/50",
-                        isSelected && "border-primary ring-2 ring-primary/20 bg-primary/5"
-                      )}
-                      onClick={() => toggleSubscription(provider.id)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className={cn(
-                            "p-3 rounded-xl shrink-0",
-                            isSelected ? "bg-primary text-primary-foreground" : specialty?.color || "bg-muted"
-                          )}>
-                            <IconComp className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-semibold text-foreground">{provider.name}</h4>
-                                  {provider.acceptingNew && (
-                                    <Badge variant="secondary" className="text-xs bg-accent/10 text-accent">Accepting New</Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">{provider.specialty}</p>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <p className="text-lg font-bold text-primary">${provider.monthlyPrice}</p>
-                                <p className="text-xs text-muted-foreground">/month</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                              <MapPin className="h-3.5 w-3.5" />
-                              <span>{provider.city}, {provider.state}</span>
-                              <span className="text-muted-foreground">•</span>
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                                <span className="font-medium">{provider.rating}</span>
-                                <span>({provider.reviewCount} reviews)</span>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              {provider.certifications.slice(0, 2).map((cert, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs font-normal">
-                                  {cert}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                          {isSelected && (
-                            <div className="shrink-0">
-                              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
-                                <Check className="h-4 w-4 text-primary-foreground" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {selectedSubscriptions.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground py-4">
-              Subscriptions are optional. Click "Continue" to skip or select any that interest you.
-            </p>
-          )}
-
-          {selectedSubscriptions.length > 0 && (
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <span className="font-medium">{selectedSubscriptions.length} subscription{selectedSubscriptions.length > 1 ? 's' : ''} selected</span>
-                  </div>
-                  <p className="font-bold text-primary">${subscriptionTotal.toFixed(2)}/mo</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        {/* Voluntary Tab - Using Accordions for each category */}
+        {/* Voluntary Tab */}
         <TabsContent value="voluntary" className="mt-0">
           <div className="rounded-lg border bg-card p-4 mb-6">
             <div className="flex items-start gap-3">
@@ -1148,7 +742,7 @@ export default function EnrollPlans() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    {/* Plans Grid - 3 rows of 3 by carrier */}
+                    {/* Plans Grid by carrier */}
                     <div className="space-y-6 pt-4">
                       {carriers.map((carrier, carrierIndex) => {
                         const carrierPlans = benefitData.plans.filter(p => p.carrier === carrier);

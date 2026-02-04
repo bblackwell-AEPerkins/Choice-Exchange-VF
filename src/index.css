@@ -184,6 +184,20 @@
   }
 }
 
+/* Rolling banner animation */
+@keyframes banner-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-banner-scroll {
+  animation: banner-scroll 30s linear infinite;
+}
+
 /* Custom scrollbar */
 @layer utilities {
   .scrollbar-thin {

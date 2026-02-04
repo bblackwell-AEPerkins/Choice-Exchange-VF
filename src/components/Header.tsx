@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Menu, X, Users, Building2, User, Shield, CreditCard, Stethoscope, Network, BarChart3, FileCode, UserCheck, Briefcase, Search } from "lucide-react";
+import { Menu, X, Users, Building2, User, Shield, Stethoscope, Network, BarChart3, FileCode, Briefcase, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -26,12 +26,6 @@ const memberSolutions = [
     href: "/ichra",
     icon: Shield,
     description: "Enroll in employer-sponsored ICHRA benefits"
-  },
-  { 
-    title: "Subscription Care", 
-    href: "/providers",
-    icon: CreditCard,
-    description: "Access flat-rate, direct-to-provider care"
   },
   { 
     title: "Member Profile", 
@@ -64,26 +58,20 @@ const employerSolutions = [
 
 const providerSolutions = [
   { 
-    title: "Join the Network", 
-    href: "/providers",
+    title: "Partner with Us", 
+    href: "/support",
     icon: Stethoscope,
-    description: "Become a participating provider"
+    description: "Learn about partnership opportunities"
   },
   { 
     title: "Utilization Analytics", 
-    href: "/providers",
+    href: "/support",
     icon: BarChart3,
     description: "Visualize patient utilization data"
   },
   { 
-    title: "Patient Profiles", 
-    href: "/providers",
-    icon: UserCheck,
-    description: "Access patient health records"
-  },
-  { 
     title: "API Integrations", 
-    href: "/providers",
+    href: "/support",
     icon: FileCode,
     description: "Connect your systems via API"
   },
@@ -216,13 +204,13 @@ export const Header = () => {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               
-              {/* Provider Network */}
+              {/* Support */}
               <NavigationMenuItem>
                 <Link 
-                  to="/providers" 
+                  to="/support" 
                   className="group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground focus:bg-muted focus:outline-none"
                 >
-                  Provider Network
+                  Support
                 </Link>
               </NavigationMenuItem>
 
@@ -278,18 +266,18 @@ export const Header = () => {
               {/* Quick Links */}
               <div className="flex gap-2 px-3 mb-2">
                 <Link
-                  to="/providers"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2 px-3 rounded-lg bg-muted text-sm font-medium"
-                >
-                  Provider Network
-                </Link>
-                <Link
                   to="/plans"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex-1 text-center py-2 px-3 rounded-lg bg-muted text-sm font-medium"
                 >
                   Compare Plans
+                </Link>
+                <Link
+                  to="/support"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 px-3 rounded-lg bg-muted text-sm font-medium"
+                >
+                  Support
                 </Link>
               </div>
 

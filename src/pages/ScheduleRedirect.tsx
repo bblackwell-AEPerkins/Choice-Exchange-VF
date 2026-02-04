@@ -11,7 +11,7 @@ const ScheduleRedirect = () => {
   const [countdown, setCountdown] = useState(3);
   
   const providerName = searchParams.get("provider") || "your provider";
-  const returnUrl = searchParams.get("return") || "/providers";
+  const returnUrl = searchParams.get("return") || "/plans";
 
   useEffect(() => {
     const timer = setInterval(() => {

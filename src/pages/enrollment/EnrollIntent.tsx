@@ -70,7 +70,7 @@ export default function EnrollIntent() {
     <EnrollmentLayout
       currentStep={1}
       totalSteps={8}
-      title="Let's Get Started"
+      title="Coverage Intent"
       description="Tell us a bit about what you're looking for so we can guide you through the right enrollment path."
     >
       {/* Saving indicator */}

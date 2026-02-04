@@ -14,22 +14,32 @@ export const SystemProgressionSpine = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center gap-2 md:gap-3">
+    <div className="flex items-center justify-center gap-3 md:gap-4">
       {steps.map((step, index) => (
-        <div key={step} className="flex items-center gap-2 md:gap-3">
-          <span 
-            className={`text-xs font-medium tracking-wide transition-all duration-500 ${
-              index === activeIndex 
-                ? "text-foreground scale-105" 
-                : "text-muted-foreground/50"
-            }`}
-          >
-            {step}
-          </span>
+        <div key={step} className="flex items-center gap-3 md:gap-4">
+          <div className="relative">
+            {/* Background square that pops */}
+            <div 
+              className={`absolute inset-0 -inset-x-2 -inset-y-1 rounded transition-all duration-300 ${
+                index === activeIndex 
+                  ? "bg-primary/15 scale-100 opacity-100" 
+                  : "bg-transparent scale-90 opacity-0"
+              }`}
+            />
+            <span 
+              className={`relative text-xs font-medium tracking-wide transition-all duration-300 ${
+                index === activeIndex 
+                  ? "text-primary" 
+                  : "text-muted-foreground/50"
+              }`}
+            >
+              {step}
+            </span>
+          </div>
           {index < steps.length - 1 && (
             <div 
-              className={`w-4 md:w-6 h-px transition-colors duration-500 ${
-                index < activeIndex ? "bg-primary/40" : "bg-border/50"
+              className={`w-4 md:w-6 h-px transition-colors duration-300 ${
+                index < activeIndex ? "bg-primary/40" : "bg-border/40"
               }`} 
             />
           )}

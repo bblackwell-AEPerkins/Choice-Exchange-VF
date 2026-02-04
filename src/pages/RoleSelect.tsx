@@ -3,9 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { Briefcase, Building2, User, ArrowRight, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useRoleStore, UserRole } from "@/stores/roleStore";
-import { RollingBanner } from "@/components/RollingBanner";
+import { SystemProgressionSpine } from "@/components/SystemProgressionSpine";
+import { RotatingMicrocopy } from "@/components/RotatingMicrocopy";
 
 const roles = [
   {
@@ -53,16 +53,15 @@ export default function RoleSelect() {
     setIsSubmitting(true);
     setRole("individual");
     
-    // Simulate validation
     await new Promise((resolve) => setTimeout(resolve, 500));
     
     navigate("/individual/intake", { state: { inviteCode } });
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background bg-grid-pattern flex flex-col">
       {/* Header */}
-      <header className="border-b border-border/40 bg-card/50 backdrop-blur-sm">
+      <header className="border-b border-border/40 bg-card/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
@@ -76,34 +75,47 @@ export default function RoleSelect() {
         </div>
       </header>
 
-      {/* Hero text - above banner */}
-      <div className="text-center px-4 pt-10 pb-6 md:pt-12 md:pb-8">
+      {/* Hero section */}
+      <div className="text-center px-4 pt-12 pb-4 md:pt-16 md:pb-6">
         <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-2">
           ICHRA enrollment + voluntary benefits
         </h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          Enroll faster, manage contributions, activate your benefits card.
+        <p className="text-sm text-muted-foreground/70 mb-1">
+          Secure platform entry
         </p>
       </div>
 
-      {/* Main content with banner behind */}
-      <main className="flex-1 flex items-center justify-center px-4 pb-10 md:pb-14 relative">
-        {/* Banner positioned behind content */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
-          <RollingBanner />
-        </div>
-        
-        <div className="w-full max-w-xl relative z-10">
-          {/* Role tiles */}
-          <div className="space-y-2.5 mb-8">
-            {roles.map((role) => (
-              <div key={role.id}>
+      {/* Progression spine */}
+      <div className="px-4 pb-8 md:pb-10">
+        <SystemProgressionSpine />
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 flex items-start justify-center px-4 pb-10 md:pb-14">
+        <div className="w-full max-w-md">
+          {/* Role tiles with staggered reveal */}
+          <div className="space-y-2.5 mb-6">
+            {roles.map((role, index) => (
+              <div 
+                key={role.id}
+                className={`animate-card-reveal animate-card-reveal-${index + 1}`}
+              >
                 <button
                   onClick={() => handleRoleSelect(role.id, role.href)}
-                  className="group w-full rounded-lg border border-border/60 bg-card/95 backdrop-blur-sm shadow-sm hover:border-primary/40 hover:shadow-md transition-all duration-200 text-left flex items-center gap-3.5 p-4"
+                  className={`group w-full rounded-lg border bg-card text-left flex items-center gap-3.5 p-4 transition-all duration-200 ${
+                    role.primary
+                      ? "border-border shadow-md hover:shadow-lg hover:border-primary/30"
+                      : "border-border/50 shadow-sm hover:shadow-md hover:border-border"
+                  }`}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/15 transition-colors">
-                    <role.icon className="h-5 w-5 text-primary" />
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                    role.primary
+                      ? "bg-primary/10 group-hover:bg-primary/15"
+                      : "bg-muted group-hover:bg-muted/80"
+                  }`}>
+                    <role.icon className={`h-5 w-5 ${
+                      role.primary ? "text-primary" : "text-muted-foreground"
+                    }`} />
                   </div>
                   
                   <div className="flex-1 min-w-0">
@@ -115,7 +127,11 @@ export default function RoleSelect() {
                     </p>
                   </div>
                   
-                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <ArrowRight className={`h-4 w-4 transition-all shrink-0 ${
+                    role.primary
+                      ? "text-primary/60 group-hover:text-primary group-hover:translate-x-0.5"
+                      : "text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5"
+                  }`} />
                 </button>
 
                 {/* Invite code fast lane for Individual */}
@@ -124,7 +140,7 @@ export default function RoleSelect() {
                     {!showInviteInput ? (
                       <button
                         onClick={() => setShowInviteInput(true)}
-                        className="text-xs text-primary/80 hover:text-primary hover:underline transition-colors"
+                        className="text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                       >
                         Have an invite code?
                       </button>
@@ -158,16 +174,14 @@ export default function RoleSelect() {
             ))}
           </div>
 
-          {/* Trust line */}
-          <p className="text-center text-xs text-muted-foreground/80">
-            ACA compliant · Secure payments · Audit-ready
-          </p>
+          {/* Rotating microcopy */}
+          <RotatingMicrocopy />
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/30 py-4 bg-card/40">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+      <footer className="border-t border-border/30 py-4 bg-card/60">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/70">
           <p>© 2024 Choice Exchange</p>
           <div className="flex items-center gap-5">
             <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>

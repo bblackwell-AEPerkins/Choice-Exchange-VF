@@ -7,6 +7,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PreviewDashboard } from "@/components/broker/PreviewDashboard";
 
 const featureModules = [
   {
@@ -124,6 +125,13 @@ export default function BrokerLanding() {
                 </Button>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Dashboard Preview Section */}
+        <section className="py-20 bg-muted/30 border-t border-border/50 px-4">
+          <div className="max-w-5xl mx-auto">
+            <PreviewDashboard />
           </div>
         </section>
 

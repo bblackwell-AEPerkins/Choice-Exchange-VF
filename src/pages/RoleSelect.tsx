@@ -88,12 +88,15 @@ export default function RoleSelect() {
         </div>
       </header>
 
-      {/* Cinematic rolling banner */}
-      <RollingBanner />
 
-      {/* Main content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-16">
-        <div className="w-full max-w-2xl">
+      {/* Main content with banner behind */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-16 relative">
+        {/* Banner positioned behind content */}
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+          <RollingBanner />
+        </div>
+        
+        <div className="w-full max-w-2xl relative z-10">
           {/* Hero text */}
           <div className="text-center mb-10">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 tracking-tight">
@@ -104,16 +107,16 @@ export default function RoleSelect() {
             </p>
           </div>
 
-          {/* Role tiles */}
+          {/* Role tiles - stronger backgrounds to float above banner */}
           <div className="space-y-3 mb-6">
             {roles.map((role) => (
               <div key={role.id}>
                 <button
                   onClick={() => handleRoleSelect(role.id, role.href)}
-                  className={`group w-full rounded-xl border bg-card hover:bg-card/80 hover:border-primary/50 hover:shadow-md transition-all duration-200 text-left flex items-center gap-4 ${
+                  className={`group w-full rounded-xl border bg-card/95 backdrop-blur-sm shadow-lg hover:bg-card hover:border-primary/50 hover:shadow-xl transition-all duration-200 text-left flex items-center gap-4 ${
                     role.primary 
                       ? "p-5 md:p-6 border-primary/30" 
-                      : "p-4 md:p-5 border-border"
+                      : "p-4 md:p-5 border-border/80"
                   }`}
                 >
                   <div className={`rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center shrink-0 group-hover:from-primary/20 group-hover:to-accent/20 transition-colors ${

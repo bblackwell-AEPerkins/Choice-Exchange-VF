@@ -31,11 +31,8 @@ export const RollingBanner = () => {
           }}
         />
         
-        {/* Blue tint overlay */}
-        <div 
-          className="absolute inset-0 z-20 pointer-events-none"
-          style={{ backgroundColor: "hsl(217 91% 60% / 0.2)" }}
-        />
+        {/* Blue tint overlay (theme token) */}
+        <div className="absolute inset-0 z-20 pointer-events-none bg-primary/20" />
         
         {/* Vignette edges */}
         <div className="absolute left-0 top-0 bottom-0 w-24 md:w-40 bg-gradient-to-r from-black/50 to-transparent z-20" />

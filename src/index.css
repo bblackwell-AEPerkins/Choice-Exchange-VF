@@ -184,18 +184,41 @@
   }
 }
 
-/* Rolling banner animation */
-@keyframes banner-scroll {
+/* Staggered card reveal animations */
+@keyframes card-reveal {
   0% {
-    transform: translateX(0);
+    opacity: 0;
+    transform: translateY(12px);
   }
   100% {
-    transform: translateX(-50%);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.animate-banner-scroll {
-  animation: banner-scroll 30s linear infinite;
+.animate-card-reveal {
+  animation: card-reveal 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-card-reveal-1 {
+  animation-delay: 200ms;
+}
+
+.animate-card-reveal-2 {
+  animation-delay: 350ms;
+}
+
+.animate-card-reveal-3 {
+  animation-delay: 500ms;
+}
+
+/* Subtle grid background */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, hsl(var(--grid-line) / 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--grid-line) / 0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 /* Custom scrollbar */

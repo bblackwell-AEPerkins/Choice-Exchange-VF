@@ -7,14 +7,12 @@ import { BenefitTypesExplainer } from "@/components/BenefitTypesExplainer";
 import { PlanExplorer } from "@/components/PlanExplorer";
 import { TrustIndicators } from "@/components/TrustIndicators";
 import { MobileEnrollmentSteps } from "@/components/MobileEnrollmentSteps";
-import { RollingBanner } from "@/components/RollingBanner";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <RollingBanner />
         <HeroSplitPaths />
         <MobileEnrollmentSteps />
         <BenefitTypesExplainer />

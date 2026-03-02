@@ -40,14 +40,18 @@ import EmployerHome from "./pages/employer/EmployerHome";
 import IndividualHome from "./pages/individual/IndividualHome";
 
 // New Enrollment Flow Pages
+import EnrollEntry from "./pages/enrollment/EnrollEntry";
 import EnrollIntent from "./pages/enrollment/EnrollIntent";
 import EnrollAccount from "./pages/enrollment/EnrollAccount";
 import EnrollAbout from "./pages/enrollment/EnrollAbout";
 import EnrollHousehold from "./pages/enrollment/EnrollHousehold";
 import EnrollCoverage from "./pages/enrollment/EnrollCoverage";
+import EnrollOffering from "./pages/enrollment/EnrollOffering";
+import EnrollCrossSell from "./pages/enrollment/EnrollCrossSell";
 import EnrollPlans from "./pages/enrollment/EnrollPlans";
 import EnrollReview from "./pages/enrollment/EnrollReview";
 import EnrollSubmit from "./pages/enrollment/EnrollSubmit";
+import EnrollConfig from "./pages/enrollment/EnrollConfig";
 
 const queryClient = new QueryClient();
 
@@ -105,14 +109,19 @@ const App = () => (
           <Route path="/schedule-redirect" element={<ScheduleRedirect />} />
           
           {/* Unified Enrollment Flow */}
+          <Route path="/enroll/entry" element={<EnrollEntry />} />
           <Route path="/enroll" element={<EnrollIntent />} />
+          <Route path="/enroll/intent" element={<EnrollIntent />} />
           <Route path="/enroll/account" element={<EnrollAccount />} />
           <Route path="/enroll/about" element={<EnrollAbout />} />
           <Route path="/enroll/household" element={<EnrollHousehold />} />
           <Route path="/enroll/coverage" element={<EnrollCoverage />} />
+          <Route path="/enroll/offering" element={<EnrollOffering />} />
+          <Route path="/enroll/crosssell" element={<EnrollCrossSell />} />
           <Route path="/enroll/plans" element={<EnrollPlans />} />
           <Route path="/enroll/review" element={<EnrollReview />} />
           <Route path="/enroll/submit" element={<EnrollSubmit />} />
+          <Route path="/enroll/config" element={<EnrollConfig />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

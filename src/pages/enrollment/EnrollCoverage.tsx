@@ -95,8 +95,7 @@ export default function EnrollCoverage() {
 
   const handleNext = () => {
     if (validateForm()) {
-      setStep("plans");
-      navigate("/enroll/plans");
+      navigate("/enroll/offering");
     }
   };
 

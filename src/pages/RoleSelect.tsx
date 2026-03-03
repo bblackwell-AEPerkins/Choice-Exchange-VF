@@ -55,12 +55,7 @@ export default function RoleSelect() {
     
     await new Promise((resolve) => setTimeout(resolve, 500));
     
-    const code = inviteCode.trim().toUpperCase();
-    if (code === "UNIVISION") {
-      navigate("/enroll/entry?source=univision");
-    } else {
-      navigate("/individual/intake", { state: { inviteCode } });
-    }
+    navigate("/individual/intake", { state: { inviteCode } });
   };
 
   return (

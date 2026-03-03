@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useRoleStore } from "@/stores/roleStore";
-import { LogOut, LucideIcon } from "lucide-react";
+import { LogOut, LucideIcon, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -34,7 +34,10 @@ export function AppShell({ children, label, homeHref, navItems }: AppShellProps)
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to={homeHref} className="flex items-center gap-2">
-              <span className="text-xl font-bold text-gradient-primary font-display">Choice Exchange</span>
+              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-lg font-bold font-display text-gradient-primary">Choice Exchange</span>
               <span className="text-xs font-medium bg-steel text-steel-foreground border border-border px-2 py-0.5 rounded-md">
                 {label}
               </span>

@@ -113,7 +113,10 @@ export default function EnrollSubmit() {
       <header className="bg-white/95 dark:bg-card/[0.98] backdrop-blur-md border-b border-border shadow-card sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xl font-bold text-gradient-primary" style={{ fontFamily: "Outfit, sans-serif" }}>
+            <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+              <Shield className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-xl font-bold font-display text-gradient-primary">
               Choice Exchange
             </span>
             <Badge variant="outline" className="text-xs border-border text-muted-foreground">

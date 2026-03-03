@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, Save } from "lucide-react";
+import { HelpCircle, Save, Shield } from "lucide-react";
 import { EnrollmentProgress } from "./EnrollmentProgress";
 
 interface EnrollmentLayoutProps {
@@ -50,8 +50,11 @@ export function EnrollmentLayout({
       {/* Header */}
       <header className="bg-white/95 dark:bg-card/98 backdrop-blur-md border-b border-border shadow-card sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-gradient-primary font-display">
-            Choice Exchange
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg gradient-primary flex items-center justify-center">
+              <Shield className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="text-sm font-bold font-display text-gradient-primary">Choice Exchange</span>
           </Link>
           
           <div className="flex items-center gap-3">

@@ -68,15 +68,11 @@ export default function BrokerLanding() {
       {/* Header */}
       <header className="border-b border-border/50 bg-background sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <Shield className="h-5 w-5 text-primary-foreground" />
-              </div>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
+              <Shield className="h-4 w-4 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold tracking-tight">Choice Exchange</span>
-            </div>
+            <span className="text-base font-bold font-display text-gradient-primary">Choice Exchange</span>
           </Link>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>

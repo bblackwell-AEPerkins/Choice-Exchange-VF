@@ -66,18 +66,11 @@ export default function IndividualLanding() {
       {/* Header */}
       <header className="border-b border-border/50 bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="relative group">
-              <div className="absolute inset-0 w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-accent to-primary opacity-75 blur-md group-hover:opacity-100 transition-all duration-500" />
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25">
-                <Shield className="h-5 w-5 text-primary-foreground" />
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-white rounded-full opacity-80 animate-pulse" />
-              </div>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
+              <Shield className="h-4 w-4 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight">Choice Exchange</span>
-              <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 -mt-0.5">Powered Benefits</span>
-            </div>
+            <span className="text-base font-bold font-display text-gradient-primary">Choice Exchange</span>
           </Link>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/auth">Sign in</Link>

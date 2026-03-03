@@ -230,7 +230,7 @@ export const Header = () => {
           <div className="hidden lg:flex items-center gap-3">
             {user ? (
               <Button variant="ghost" asChild className="flex items-center gap-2">
-                <Link to="/dashboard">
+                <Link to="/individual/home">
                   <User className="h-4 w-4" />
                   My Profile
                 </Link>
@@ -333,7 +333,7 @@ export const Header = () => {
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                 {user ? (
                   <Button variant="outline" asChild className="w-full flex items-center gap-2">
-                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    <Link to="/individual/home" onClick={() => setMobileMenuOpen(false)}>
                       <User className="h-4 w-4" />
                       My Profile
                     </Link>

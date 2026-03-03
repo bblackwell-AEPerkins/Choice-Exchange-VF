@@ -42,7 +42,7 @@ export function EnrollmentLayout({
     if (onSave) {
       await onSave();
     }
-    navigate("/dashboard");
+    navigate("/");
   };
 
   return (

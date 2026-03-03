@@ -97,13 +97,13 @@ export default function EnrollCrossSell() {
       {/* ── SECTION 1 — Live Balance Tracker ── */}
       <Card className="glow-accent border-accent/30">
         <CardContent className="py-6">
-          <div className="flex items-start justify-between gap-8">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8">
             {/* Left: animated balance */}
             <div className="flex-1">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
                 ICHRA Surplus Remaining
               </p>
-              <p className={`text-6xl font-bold tabular-nums ${amountColor}`}>
+              <p className={`text-5xl md:text-6xl font-bold tabular-nums font-display ${amountColor}`}>
                 ${displayRemaining}
               </p>
               <p className="text-sm text-muted-foreground mt-1">/month available</p>

@@ -88,6 +88,13 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        "card": "0 1px 3px hsl(220 40% 10% / 0.06), 0 1px 2px hsl(220 40% 10% / 0.04)",
+        "card-md": "0 4px 12px hsl(220 40% 10% / 0.08), 0 2px 4px hsl(220 40% 10% / 0.04)",
+        "card-lg": "0 8px 24px hsl(220 40% 10% / 0.10), 0 2px 6px hsl(220 40% 10% / 0.04)",
+        "glow-sm": "0 0 20px -4px hsl(213 80% 42% / 0.25)",
+        "glow-md": "0 0 40px -8px hsl(213 80% 42% / 0.30)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

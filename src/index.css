@@ -139,7 +139,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3 {
+    font-family: 'Outfit', system-ui, sans-serif;
   }
 }
 
@@ -181,6 +185,18 @@
   
   .glow-accent {
     box-shadow: 0 0 60px -15px hsl(var(--accent) / 0.4);
+  }
+
+  .card-raised {
+    @apply bg-card border border-border shadow-sm;
+  }
+
+  .card-elevated {
+    @apply bg-card border border-border shadow-md;
+  }
+
+  .card-floating {
+    @apply bg-card border border-border shadow-lg;
   }
 }
 

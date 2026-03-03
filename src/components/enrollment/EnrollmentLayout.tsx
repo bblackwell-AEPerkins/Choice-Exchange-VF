@@ -93,7 +93,7 @@ export function EnrollmentLayout({
       )}
 
       {/* Main Content */}
-      <main className="flex-1 py-8 md:py-12">
+      <main className="flex-1 py-8 md:py-12 pb-24">
         <div className={wide ? "max-w-6xl mx-auto px-4" : "max-w-2xl mx-auto px-4"}>
           {/* Page Header */}
           <div className="mb-8 text-center">

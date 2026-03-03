@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { coverageSchema, qualifyingEventSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { Calendar, FileCheck, AlertCircle, Loader2 } from "lucide-react";
 
@@ -43,7 +43,7 @@ export default function EnrollCoverage() {
     isSaving,
     canAccessStep,
     saveToDatabase
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   
   const [errors, setErrors] = useState<Record<string, string>>({});
 

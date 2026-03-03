@@ -5,7 +5,7 @@ import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigati
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Eye, EyeOff, Mail, Phone, User, Lock, Loader2 } from "lucide-react";
@@ -14,7 +14,7 @@ import { accountSchema, formatPhoneNumber, formatZodErrors } from "@/lib/validat
 
 export default function EnrollAccount() {
   const navigate = useNavigate();
-  const { account, updateAccount, setStep, userId, isLoading: dbLoading, canAccessStep } = useEnrollmentDB();
+  const { account, updateAccount, setStep, userId, isLoading: dbLoading, canAccessStep } = useEnrollmentStore();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

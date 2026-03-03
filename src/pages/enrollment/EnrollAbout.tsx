@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { Shield, Loader2 } from "lucide-react";
 import { formatSSN } from "@/lib/validations/enrollment";
 
@@ -21,7 +21,7 @@ const US_STATES = [
 
 export default function EnrollAbout() {
   const navigate = useNavigate();
-  const { about, updateAbout, setStep, isLoading, canAccessStep, isSaving } = useEnrollmentDB();
+  const { about, updateAbout, setStep, isLoading, canAccessStep, isSaving } = useEnrollmentStore();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Check step access

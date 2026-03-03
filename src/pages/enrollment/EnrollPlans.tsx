@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { DEMO_MODE, MOCK_ICHRA_PLANS, filterPlansByZip, simulateDelay } from "@/lib/mockData";
 import { 
   Check, 
@@ -183,7 +183,7 @@ export default function EnrollPlans() {
     isSaving,
     canAccessStep,
     saveToDatabase
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   
   const [activeTab, setActiveTab] = useState<PlanCategory>("ichra");
   const [zipCode, setZipCode] = useState(coverage.stateOfResidence ? "" : about.zipCode || "");

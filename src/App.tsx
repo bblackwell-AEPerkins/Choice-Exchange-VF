@@ -3,20 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import MemberDashboard from "./pages/MemberDashboard";
-import EmployerAdmin from "./pages/EmployerAdmin";
-import EmployerSignup from "./pages/EmployerSignup";
-import Auth from "./pages/Auth";
-import ICHRACompare from "./pages/ICHRACompare";
-import ICHRA from "./pages/ICHRA";
-import ICHRAEnroll from "./pages/ICHRAEnroll";
-import ICHRAPlans from "./pages/ICHRAPlans";
-import ComparePlans from "./pages/ComparePlans";
-import EventDetail from "./pages/EventDetail";
-import BenefitPlans from "./pages/BenefitPlans";
-import Support from "./pages/Support";
-import ScheduleRedirect from "./pages/ScheduleRedirect";
 import NotFound from "./pages/NotFound";
 import { ChatWidget } from "./components/ChatWidget";
 
@@ -91,22 +77,6 @@ const App = () => (
           <Route path="/individual/home" element={<IndividualHome />} />
           <Route path="/individual/wallet" element={<IndividualHome />} />
           <Route path="/individual/benefits" element={<IndividualHome />} />
-          
-          {/* Legacy Routes (marketplace) */}
-          <Route path="/marketplace" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<MemberDashboard />} />
-          <Route path="/employer/admin" element={<EmployerAdmin />} />
-          <Route path="/employer/signup" element={<EmployerSignup />} />
-          <Route path="/compare-ichra" element={<ICHRACompare />} />
-          <Route path="/ichra" element={<ICHRA />} />
-          <Route path="/ichra/enroll" element={<ICHRAEnroll />} />
-          <Route path="/plans" element={<ICHRAPlans />} />
-          <Route path="/compare-plans" element={<ComparePlans />} />
-          <Route path="/event/:eventId" element={<EventDetail />} />
-          <Route path="/benefits/:benefitType" element={<BenefitPlans />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/schedule-redirect" element={<ScheduleRedirect />} />
           
           {/* Unified Enrollment Flow */}
           <Route path="/enroll/entry" element={<EnrollEntry />} />

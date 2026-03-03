@@ -196,8 +196,8 @@ export default function EnrollPlans() {
   const [planTypeFilter, setPlanTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("premium-low");
   
-  // Selected plans for voluntary
-  const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>({});
+  // Selected plans for voluntary — initialize from store
+  const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>(plan.voluntarySelections || {});
 
   // Step access protection
   useEffect(() => {
@@ -284,10 +284,12 @@ export default function EnrollPlans() {
   };
 
   const selectVoluntaryPlan = (categoryId: string, planId: string) => {
-    setSelectedVoluntary(prev => ({
-      ...prev,
-      [categoryId]: prev[categoryId] === planId ? "" : planId,
-    }));
+    const newSelections = {
+      ...selectedVoluntary,
+      [categoryId]: selectedVoluntary[categoryId] === planId ? "" : planId,
+    };
+    setSelectedVoluntary(newSelections);
+    updatePlan({ voluntarySelections: newSelections });
   };
 
   const handleNext = () => {
@@ -356,16 +358,39 @@ export default function EnrollPlans() {
       {/* Monthly Cost Summary */}
       {(plan.medicalPlanId || Object.values(selectedVoluntary).some(v => v)) && (
         <Card className="border-primary/30 bg-primary/5 mb-6">
-          <CardContent className="py-4">
+          <CardContent className="py-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Estimated Monthly Total</p>
                 <p className="text-2xl font-bold text-primary">${totalMonthly.toFixed(2)}/mo</p>
               </div>
-              <div className="text-right text-sm space-y-0.5">
-                {plan.medicalPlanId && <p className="text-muted-foreground">ICHRA Plan: <span className="text-foreground font-medium">${plan.monthlyPremium?.toFixed(2)}</span></p>}
-                {voluntaryTotal > 0 && <p className="text-muted-foreground">Voluntary: <span className="text-foreground font-medium">${voluntaryTotal.toFixed(2)}</span></p>}
-              </div>
+            </div>
+            <div className="border-t border-primary/20 pt-3 space-y-2 text-sm">
+              {selectedPlanDetails && (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">{selectedPlanDetails.plan_name}</p>
+                    <p className="text-xs text-muted-foreground">{selectedPlanDetails.carrier_name} • ICHRA Medical</p>
+                  </div>
+                  <span className="font-semibold text-foreground">${selectedPlanDetails.monthly_premium.toFixed(2)}</span>
+                </div>
+              )}
+              {Object.entries(selectedVoluntary).map(([categoryId, planId]) => {
+                if (!planId) return null;
+                const benefitData = VOLUNTARY_BENEFITS_DATA[categoryId];
+                if (!benefitData) return null;
+                const benefitPlan = benefitData.plans.find(p => p.id === planId);
+                if (!benefitPlan) return null;
+                return (
+                  <div key={categoryId} className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-foreground">{benefitPlan.name}</p>
+                      <p className="text-xs text-muted-foreground">{benefitPlan.carrier} • {benefitData.name}</p>
+                    </div>
+                    <span className="font-semibold text-foreground">${benefitPlan.monthlyPremium.toFixed(2)}</span>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

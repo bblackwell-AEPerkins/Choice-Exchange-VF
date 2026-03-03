@@ -76,6 +76,7 @@ export interface EnrollmentPlan {
   visionPlanId: string | null;
   monthlyPremium: number;
   employerContribution: number;
+  voluntarySelections: Record<string, string>; // categoryId -> planId
 }
 
 export interface EnrollmentReview {
@@ -176,6 +177,7 @@ const initialState = {
     visionPlanId: null,
     monthlyPremium: 0,
     employerContribution: 0,
+    voluntarySelections: {},
   },
   review: {
     informationAccurate: false,

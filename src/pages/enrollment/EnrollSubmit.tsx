@@ -19,6 +19,46 @@ interface PlanDetails {
   monthly_premium: number;
 }
 
+// Voluntary benefit summary data (mirrors EnrollPlans definitions)
+const VOLUNTARY_PLAN_LOOKUP: Record<string, { name: string; carrier: string; category: string; monthlyPremium: number }> = {
+  "dental-basic": { name: "Dental Basic", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 25 },
+  "dental-standard": { name: "Dental Plus", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 45 },
+  "dental-premium": { name: "Dental Premium", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 75 },
+  "delta-dental-basic": { name: "Delta Care Basic", carrier: "Delta Dental", category: "Dental", monthlyPremium: 28 },
+  "delta-dental-standard": { name: "Delta PPO Plus", carrier: "Delta Dental", category: "Dental", monthlyPremium: 52 },
+  "delta-dental-premium": { name: "Delta Premier", carrier: "Delta Dental", category: "Dental", monthlyPremium: 82 },
+  "metlife-dental-basic": { name: "MetLife Dental Essential", carrier: "MetLife", category: "Dental", monthlyPremium: 22 },
+  "metlife-dental-standard": { name: "MetLife Dental Preferred", carrier: "MetLife", category: "Dental", monthlyPremium: 48 },
+  "metlife-dental-premium": { name: "MetLife Dental Elite", carrier: "MetLife", category: "Dental", monthlyPremium: 78 },
+  "vision-basic": { name: "Vision Basic", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 10 },
+  "vision-standard": { name: "Vision Plus", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 15 },
+  "vision-premium": { name: "Vision Premium", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 25 },
+  "vsp-vision-basic": { name: "VSP Basic", carrier: "VSP", category: "Vision", monthlyPremium: 12 },
+  "vsp-vision-standard": { name: "VSP Choice", carrier: "VSP", category: "Vision", monthlyPremium: 18 },
+  "vsp-vision-premium": { name: "VSP Premier", carrier: "VSP", category: "Vision", monthlyPremium: 28 },
+  "eyemed-vision-basic": { name: "EyeMed Access", carrier: "EyeMed", category: "Vision", monthlyPremium: 9 },
+  "eyemed-vision-standard": { name: "EyeMed Select", carrier: "EyeMed", category: "Vision", monthlyPremium: 16 },
+  "eyemed-vision-premium": { name: "EyeMed Complete", carrier: "EyeMed", category: "Vision", monthlyPremium: 26 },
+  "life-basic": { name: "Term Life Basic", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 15 },
+  "life-standard": { name: "Term Life Plus", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 25 },
+  "life-premium": { name: "Term Life Premium", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 45 },
+  "metlife-life-basic": { name: "MetLife Term Essential", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 14 },
+  "metlife-life-standard": { name: "MetLife Term Plus", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 28 },
+  "metlife-life-premium": { name: "MetLife Term Premier", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 52 },
+  "prudential-life-basic": { name: "Prudential Simple Term", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 16 },
+  "prudential-life-standard": { name: "Prudential Term Flex", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 30 },
+  "prudential-life-premium": { name: "Prudential Term Max", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 55 },
+  "disability-basic": { name: "STD Basic", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 20 },
+  "disability-standard": { name: "STD Plus", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 35 },
+  "disability-premium": { name: "STD Premium", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 55 },
+  "unum-disability-basic": { name: "Unum STD Core", carrier: "Unum", category: "Disability", monthlyPremium: 22 },
+  "unum-disability-standard": { name: "Unum STD Plus", carrier: "Unum", category: "Disability", monthlyPremium: 38 },
+  "unum-disability-premium": { name: "Unum STD Premier", carrier: "Unum", category: "Disability", monthlyPremium: 60 },
+  "lincoln-disability-basic": { name: "Lincoln STD Essential", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 18 },
+  "lincoln-disability-standard": { name: "Lincoln STD Select", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 32 },
+  "lincoln-disability-premium": { name: "Lincoln STD Complete", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 50 },
+};
+
 interface PaymentForm {
   cardNumber: string;
   expirationDate: string;
@@ -306,13 +346,30 @@ export default function EnrollSubmit() {
         <CardContent>
           {planDetails ? (
             <div className="space-y-3">
+              {/* Medical plan */}
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-medium">{planDetails.plan_name}</p>
-                  <p className="text-sm text-muted-foreground">{planDetails.carrier_name}</p>
+                  <p className="text-sm text-muted-foreground">{planDetails.carrier_name} • ICHRA Medical</p>
                 </div>
                 <p className="font-semibold">${planDetails.monthly_premium.toFixed(2)}</p>
               </div>
+
+              {/* Voluntary selections */}
+              {plan.voluntarySelections && Object.entries(plan.voluntarySelections).map(([categoryId, planId]) => {
+                if (!planId) return null;
+                const volPlan = VOLUNTARY_PLAN_LOOKUP[planId];
+                if (!volPlan) return null;
+                return (
+                  <div key={categoryId} className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{volPlan.name}</p>
+                      <p className="text-sm text-muted-foreground">{volPlan.carrier} • {volPlan.category}</p>
+                    </div>
+                    <p className="font-semibold">${volPlan.monthlyPremium.toFixed(2)}</p>
+                  </div>
+                );
+              })}
               
               {plan.employerContribution > 0 && (
                 <div className="flex justify-between items-center text-accent">
@@ -325,7 +382,16 @@ export default function EnrollSubmit() {
                 <div className="flex justify-between items-center">
                   <span className="font-semibold">Your Monthly Premium</span>
                   <span className="text-2xl font-bold text-primary">
-                    ${(planDetails.monthly_premium - plan.employerContribution).toFixed(2)}
+                    ${(() => {
+                      const volTotal = plan.voluntarySelections
+                        ? Object.values(plan.voluntarySelections).reduce((sum, pid) => {
+                            if (!pid) return sum;
+                            const v = VOLUNTARY_PLAN_LOOKUP[pid];
+                            return v ? sum + v.monthlyPremium : sum;
+                          }, 0)
+                        : 0;
+                      return (planDetails.monthly_premium + volTotal - plan.employerContribution).toFixed(2);
+                    })()}
                   </span>
                 </div>
               </div>

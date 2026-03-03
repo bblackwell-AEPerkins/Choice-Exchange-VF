@@ -39,7 +39,7 @@ export function EnrollmentNavigation({
         type="button"
         onClick={onNext}
         disabled={disabled || isLoading}
-        className="flex-1 sm:ml-auto"
+        className="flex-1 sm:ml-auto btn-glow"
       >
         {isLoading ? (
           <>

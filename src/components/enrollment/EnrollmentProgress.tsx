@@ -12,9 +12,6 @@ export function EnrollmentProgress({
   totalSteps,
   labels,
 }: EnrollmentProgressProps) {
-  // Show condensed view on mobile (just current step indicator)
-  // Show full steps on desktop
-  
   return (
     <div className="w-full">
       {/* Desktop: Full step indicator */}
@@ -32,8 +29,8 @@ export function EnrollmentProgress({
                 <div
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
-                    isCompleted && "bg-accent text-accent-foreground",
-                    isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/20",
+                    isCompleted && "bg-primary text-primary-foreground",
+                    isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/15",
                     isFuture && "bg-muted text-muted-foreground"
                   )}
                 >
@@ -59,7 +56,7 @@ export function EnrollmentProgress({
                 <div
                   className={cn(
                     "w-8 h-0.5 mx-1 mt-[-1rem]",
-                    stepNumber < currentStep ? "bg-accent" : "bg-muted"
+                    stepNumber < currentStep ? "bg-primary" : "bg-muted"
                   )}
                 />
               )}

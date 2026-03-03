@@ -59,15 +59,15 @@ export default function RoleSelect() {
   };
 
   return (
-    <div className="min-h-screen bg-background bg-grid-pattern flex flex-col">
+    <div className="min-h-screen gradient-hero bg-grid-pattern flex flex-col">
       {/* Header */}
-      <header className="border-b border-border/40 bg-card/80 backdrop-blur-sm">
+      <header className="border-b border-border/40 bg-white/80 backdrop-blur-md shadow-card">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Shield className="h-4.5 w-4.5 text-primary-foreground" />
+            <div className="w-9 h-9 rounded-lg gradient-steel flex items-center justify-center">
+              <Shield className="h-4.5 w-4.5 text-white" />
             </div>
-            <span className="text-base font-semibold text-foreground">Choice Exchange</span>
+            <span className="text-base font-semibold text-foreground font-display">Choice Exchange</span>
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/auth">Sign in</Link>
@@ -80,7 +80,7 @@ export default function RoleSelect() {
         <p className="text-xs uppercase tracking-widest text-muted-foreground/60 mb-3">
           Secure platform entry
         </p>
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-3">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gradient-steel font-display mb-3">
           ICHRA enrollment + voluntary benefits
         </h1>
         <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
@@ -105,21 +105,17 @@ export default function RoleSelect() {
               >
                 <button
                   onClick={() => handleRoleSelect(role.id, role.href)}
-                  className={`group w-full rounded-lg border bg-card text-left flex items-center gap-3.5 p-4 transition-all duration-200 hover:scale-105 ${
-                    role.primary
-                      ? "border-border shadow-md hover:shadow-lg hover:border-primary/30"
-                      : "border-border/50 shadow-sm hover:shadow-md hover:border-border"
-                  }`}
+                  className="group w-full rounded-lg border border-border bg-card text-left flex items-center gap-3.5 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-md hover:border-primary btn-glow"
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                     index === 0
-                      ? "gradient-primary text-white"
+                      ? "gradient-steel text-white"
                       : index === 1
-                        ? "bg-accent/10 text-accent"
-                        : "bg-violet/10"
+                        ? "surface-accent"
+                        : "bg-violet/10 border border-violet/20"
                   }`}>
                     <role.icon className={`h-5 w-5 ${
-                      index === 2 ? "" : ""
+                      index === 1 ? "text-accent" : index === 2 ? "" : ""
                     }`} style={index === 2 ? { color: "hsl(var(--violet))" } : undefined} />
                   </div>
                   
@@ -132,11 +128,7 @@ export default function RoleSelect() {
                     </p>
                   </div>
                   
-                  <ArrowRight className={`h-4 w-4 transition-all shrink-0 ${
-                    role.primary
-                      ? "text-primary/60 group-hover:text-primary group-hover:translate-x-0.5"
-                      : "text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5"
-                  }`} />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all shrink-0" />
                 </button>
 
                 {/* Invite code fast lane for Individual */}
@@ -185,7 +177,7 @@ export default function RoleSelect() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/30 py-4 bg-card/60">
+      <footer className="border-t border-border/30 py-4 bg-white/60">
         <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground/70">
           <p>© 2024 Choice Exchange</p>
           <div className="flex items-center gap-5">

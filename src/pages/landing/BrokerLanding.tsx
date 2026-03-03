@@ -116,7 +116,7 @@ export default function BrokerLanding() {
                 from one broker dashboard.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="h-12 px-6" onClick={() => navigate("/broker/intake")}>
+                <Button size="lg" className="h-12 px-6 btn-glow" onClick={() => navigate("/broker/intake")}>
                   Start a Broker Account
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

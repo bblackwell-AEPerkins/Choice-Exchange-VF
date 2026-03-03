@@ -249,10 +249,32 @@ export default function EnrollSubmit() {
               </Button>
             </div>
           </div>
-          <div className="hidden md:flex items-center animate-fade-in">
-            <div className="w-24 h-24 rounded-2xl gradient-primary opacity-15" />
-            <div className="w-24 h-24 rounded-2xl bg-accent opacity-15 -ml-8" />
-            <div className="w-24 h-24 rounded-2xl opacity-15 -ml-8" style={{ background: "hsl(var(--violet))" }} />
+          <div className="hidden md:flex items-center animate-fade-in relative w-48 h-48">
+            {/* Central shield */}
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            {/* Orbiting benefit icons */}
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-xl bg-accent/15 border border-accent/25 flex items-center justify-center">
+              <Heart className="h-5 w-5 text-accent" />
+            </div>
+            <div className="absolute top-1/4 right-2 w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+              <Leaf className="h-5 w-5 text-primary" />
+            </div>
+            <div className="absolute bottom-1/4 right-4 w-10 h-10 rounded-xl border flex items-center justify-center" style={{ background: "hsl(var(--violet) / 0.12)", borderColor: "hsl(var(--violet) / 0.25)" }}>
+              <HeartPulse className="h-5 w-5" style={{ color: "hsl(var(--violet))" }} />
+            </div>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-xl border flex items-center justify-center" style={{ background: "hsl(var(--coral) / 0.12)", borderColor: "hsl(var(--coral) / 0.25)" }}>
+              <ShieldAlert className="h-5 w-5" style={{ color: "hsl(var(--coral))" }} />
+            </div>
+            <div className="absolute bottom-1/4 left-4 w-10 h-10 rounded-xl bg-amber-500/12 border border-amber-500/25 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-amber-500" />
+            </div>
+            <div className="absolute top-1/4 left-2 w-10 h-10 rounded-xl bg-accent/15 border border-accent/25 flex items-center justify-center">
+              <Wallet className="h-5 w-5 text-accent" />
+            </div>
           </div>
         </div>
       </div>

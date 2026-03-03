@@ -211,7 +211,12 @@ export default function EnrollPlans() {
   const [metalFilter, setMetalFilter] = useState<string>("all");
   const [planTypeFilter, setPlanTypeFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("premium-low");
-  const [newEdgeEnrolled, setNewEdgeEnrolled] = useState(false);
+  const [newEdgeEnrolled, setNewEdgeEnrolledLocal] = useState(plan.newEdgeEnrolled || false);
+  
+  const setNewEdgeEnrolled = (value: boolean) => {
+    setNewEdgeEnrolledLocal(value);
+    updatePlan({ newEdgeEnrolled: value });
+  };
   
   // Selected plans for voluntary — initialize from store
   const [selectedVoluntary, setSelectedVoluntary] = useState<Record<string, string>>(plan.voluntarySelections || {});

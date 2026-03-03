@@ -289,8 +289,7 @@ const useEnrollmentStoreInternal = create<EnrollmentStoreState>()(
           const confirmationNumber = generateConfirmationNumber();
           get().resetEnrollment();
           return { success: true, confirmationNumber };
-        } catch (error) {
-          console.error("Error submitting enrollment:", error);
+         } catch {
           return { success: false, error: "Failed to submit enrollment. Please try again." };
         } finally {
           set({ isSaving: false });

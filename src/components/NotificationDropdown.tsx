@@ -123,8 +123,7 @@ export const NotificationDropdown = () => {
 
           setNotifications(mappedNotifications);
         }
-      } catch (err) {
-        console.error("Error in fetchNotifications:", err);
+      } catch {
       } finally {
         setLoading(false);
       }

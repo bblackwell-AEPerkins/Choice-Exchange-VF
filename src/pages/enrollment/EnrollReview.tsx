@@ -11,6 +11,7 @@ import { reviewSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface PlanDetails {
   plan_name: string;
@@ -97,8 +98,8 @@ export default function EnrollReview() {
   };
 
   const handleBack = () => {
-    setStep("plans");
-    navigate("/enroll/plans");
+    setStep("coverage");
+    navigate("/enroll/crosssell");
   };
 
   const SectionHeader = ({ icon: Icon, title, onEdit }: { icon: React.ElementType; title: string; onEdit: () => void }) => (
@@ -352,8 +353,4 @@ export default function EnrollReview() {
       />
     </EnrollmentLayout>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }

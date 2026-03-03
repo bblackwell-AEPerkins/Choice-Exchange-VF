@@ -147,7 +147,7 @@ export function ICHRAComplete({ enrollment, employer }: ICHRACompleteProps) {
             </Button>
             <Button 
               className="flex-1"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/individual/home")}
             >
               <Home className="mr-2 h-4 w-4" />
               Go to Dashboard

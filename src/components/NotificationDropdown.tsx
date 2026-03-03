@@ -248,7 +248,7 @@ export const NotificationDropdown = () => {
               size="sm"
               onClick={() => {
                 setOpen(false);
-                navigate("/dashboard?tab=claims");
+                navigate("/individual/home");
               }}
             >
               View All Activity

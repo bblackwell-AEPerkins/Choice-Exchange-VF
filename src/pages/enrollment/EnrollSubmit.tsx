@@ -96,9 +96,13 @@ const OPPORTUNITIES = [
 export default function EnrollSubmit() {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(MEMBER.confirmation);
-    toast("Copied to clipboard");
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(MEMBER.confirmation);
+      toast("Copied to clipboard");
+    } catch {
+      toast("Unable to copy");
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -134,15 +138,15 @@ export default function EnrollSubmit() {
           <div className="flex-1">
             <CircleCheck className="h-8 w-8 text-accent animate-scale-in" />
             <h1
-              className="text-4xl font-bold mt-3 animate-fade-in"
+              className="text-4xl font-bold mt-3 animate-fade-in-up"
               style={{ fontFamily: "Outfit, sans-serif" }}
             >
               You're covered, {MEMBER.firstName}.
             </h1>
-            <p className="text-muted-foreground mt-2 text-lg animate-fade-in">
+            <p className="text-muted-foreground mt-2 text-lg animate-fade-in-up" style={{ animationDelay: "100ms" }}>
               Your benefits are active starting {MEMBER.effectiveDate}. Here is everything in one place.
             </p>
-            <div className="flex items-center gap-2 mt-4 animate-fade-in">
+            <div className="flex items-center gap-2 mt-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
               <FileText className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">Confirmation #{MEMBER.confirmation}</span>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>

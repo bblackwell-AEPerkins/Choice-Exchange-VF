@@ -115,8 +115,8 @@ export default function EnrollOffering() {
                   <p className="text-sm text-muted-foreground">Yours to allocate</p>
                 </div>
               </div>
-              <div className="text-right animate-fade-in">
-                <span className="text-5xl font-bold text-accent">$130</span>
+              <div className="text-right animate-fade-in-up">
+                <span className="text-5xl font-bold text-accent font-display">$130</span>
                 <p className="text-sm text-muted-foreground">/month</p>
               </div>
             </div>

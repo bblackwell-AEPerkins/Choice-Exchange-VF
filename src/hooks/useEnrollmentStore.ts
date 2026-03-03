@@ -16,7 +16,7 @@ export type EnrollmentStep =
   | "complete";
 
 export interface EnrollmentIntent {
-  coverageType: "health" | null;
+  coverageType: "health" | "voluntary_only" | null;
   coverageFor: "individual" | "family" | null;
   enrollmentReason: "open_enrollment" | "qualifying_event" | null;
 }
@@ -298,8 +298,19 @@ const useEnrollmentStoreInternal = create<EnrollmentStoreState>()(
 
       canAccessStep: (step: EnrollmentStep): boolean => {
         const { intent, account, about, household, userId } = get();
+        const isVoluntaryOnly = intent.coverageType === "voluntary_only";
 
         if (step === "intent") return true;
+
+        // Voluntary-only path: intent → household → plans (skip account/about/coverage)
+        if (isVoluntaryOnly) {
+          if (step === "household") return !!(intent.coverageType && intent.coverageFor && intent.enrollmentReason);
+          if (step === "plans") return !!(household.maritalStatus && household.employmentStatus);
+          if (step === "review") return true;
+          if (step === "submit") return true;
+          if (step === "account" || step === "about" || step === "coverage") return false;
+          return true;
+        }
 
         if (step === "account") {
           return !!(intent.coverageType && intent.coverageFor && intent.enrollmentReason);

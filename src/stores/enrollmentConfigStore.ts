@@ -12,12 +12,10 @@ export interface EnrollmentStepConfig {
 
 export interface EnrollmentConfigState {
   steps: EnrollmentStepConfig[];
-  entryChannel: "barcode" | "hyperlink" | "call_center" | "univision" | null;
-  employerCode: string | null;
+  entryChannel: "barcode" | "hyperlink" | "call_center" | null;
   
   // Actions
   setEntryChannel: (channel: EnrollmentConfigState["entryChannel"]) => void;
-  setEmployerCode: (code: string | null) => void;
   toggleStep: (stepId: string) => void;
   setStepEnabled: (stepId: string, enabled: boolean) => void;
   getEnabledSteps: () => EnrollmentStepConfig[];
@@ -81,10 +79,8 @@ export const useEnrollmentConfig = create<EnrollmentConfigState>()(
     (set, get) => ({
       steps: DEFAULT_STEPS,
       entryChannel: null,
-      employerCode: null,
 
       setEntryChannel: (channel) => set({ entryChannel: channel }),
-      setEmployerCode: (code) => set({ employerCode: code }),
 
       toggleStep: (stepId) =>
         set((state) => ({

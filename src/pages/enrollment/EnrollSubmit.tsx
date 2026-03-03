@@ -27,14 +27,6 @@ import {
   Leaf,
 } from "lucide-react";
 
-/* ── NEW EDGE constant (same as Plans/Review) ── */
-const NEW_EDGE_HEALTH = {
-  id: "new-edge-health",
-  name: "Get Fit PHMP Now Program",
-  carrier: "New Edge Health",
-  monthlyPremium: 249,
-};
-
 /* ── Voluntary benefits lookup ── */
 const VOLUNTARY_BENEFITS_DATA: Record<string, {
   name: string;
@@ -134,11 +126,10 @@ interface MedicalPlan {
 }
 
 export default function EnrollSubmit() {
-  const { account, plan, intent, household } = useEnrollmentStore();
+  const { account, plan, household } = useEnrollmentStore();
   const [copied, setCopied] = useState(false);
   const [medicalPlan, setMedicalPlan] = useState<MedicalPlan | null>(null);
 
-  const isVoluntaryOnly = intent.coverageType === "voluntary_only";
   const firstName = account.firstName || "there";
   const employer = household.employerName || "your employer";
   const confirmation = "CE-" + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -169,17 +160,13 @@ export default function EnrollSubmit() {
     })
     .filter(Boolean) as { categoryName: string; name: string; carrier: string; monthlyPremium: number }[];
 
-  const newEdgeTotal = plan.newEdgeEnrolled ? NEW_EDGE_HEALTH.monthlyPremium : 0;
   const voluntaryTotal = resolvedVoluntary.reduce((s, v) => s + v.monthlyPremium, 0);
   const medicalTotal = medicalPlan?.monthly_premium || 0;
-  const totalMonthly = (isVoluntaryOnly ? 0 : medicalTotal) + voluntaryTotal + newEdgeTotal;
+  const totalMonthly = medicalTotal + voluntaryTotal;
 
   // Build enrolled benefits list
   const enrolledBenefits: { name: string; cost: number; detail: string; status: string }[] = [];
   
-  if (plan.newEdgeEnrolled) {
-    enrolledBenefits.push({ name: NEW_EDGE_HEALTH.name, cost: NEW_EDGE_HEALTH.monthlyPremium, detail: "Wellness program active", status: "active" });
-  }
   resolvedVoluntary.forEach(v => {
     enrolledBenefits.push({ name: v.name, cost: v.monthlyPremium, detail: `${v.categoryName} • ${v.carrier}`, status: "active" });
   });
@@ -285,20 +272,14 @@ export default function EnrollSubmit() {
         <Card className="card-elevated animate-card-reveal animate-card-reveal-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div className="flex items-center gap-2">
-              {plan.newEdgeEnrolled && !medicalPlan ? (
-                <Leaf className="h-5 w-5 text-accent" />
-              ) : (
-                <Shield className="h-5 w-5 text-primary" />
-              )}
-              <CardTitle className="text-base">
-                {plan.newEdgeEnrolled && !medicalPlan ? "Wellness Program" : "Health Coverage"}
-              </CardTitle>
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Health Coverage</CardTitle>
             </div>
             <Badge className="bg-accent/10 text-accent border-accent/25 text-xs">Active</Badge>
           </CardHeader>
           <CardContent>
             {/* Show Medical Plan if selected */}
-            {medicalPlan && !isVoluntaryOnly && (
+            {medicalPlan && (
               <>
                 <div className="rounded-lg px-3 py-1.5 surface-primary inline-flex items-center gap-2">
                   <Shield className="h-3 w-3 text-primary" />
@@ -317,24 +298,7 @@ export default function EnrollSubmit() {
               </>
             )}
 
-            {/* Show New Edge if enrolled (voluntary-only or alongside medical) */}
-            {plan.newEdgeEnrolled && (
-              <div className={medicalPlan && !isVoluntaryOnly ? "mt-5 pt-5 border-t border-border" : ""}>
-                <div className="rounded-lg px-3 py-1.5 bg-accent/10 inline-flex items-center gap-2">
-                  <Leaf className="h-3 w-3 text-accent" />
-                  <span className="text-sm font-bold text-accent">New Edge</span>
-                </div>
-                <h3 className="text-xl font-semibold mt-3 text-foreground" style={{ fontFamily: "Outfit, sans-serif" }}>
-                  {NEW_EDGE_HEALTH.name}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-0.5">{NEW_EDGE_HEALTH.carrier}</p>
-                <div className="mt-3">
-                  <StatCell label="Monthly Cost" value={`$${NEW_EDGE_HEALTH.monthlyPremium}/mo`} />
-                </div>
-              </div>
-            )}
-
-            {!medicalPlan && !plan.newEdgeEnrolled && (
+            {!medicalPlan && (
               <p className="text-muted-foreground text-sm py-4">No primary coverage selected</p>
             )}
 
@@ -353,9 +317,7 @@ export default function EnrollSubmit() {
               <Wallet className="h-5 w-5 text-accent" />
               <CardTitle className="text-base">Monthly Summary</CardTitle>
             </div>
-            {!isVoluntaryOnly && (
-              <span className="text-xs text-muted-foreground">Powered by {employer}</span>
-            )}
+            <span className="text-xs text-muted-foreground">Powered by {employer}</span>
           </CardHeader>
           <CardContent>
             <div>
@@ -364,12 +326,6 @@ export default function EnrollSubmit() {
               </span>
               <span className="text-base text-muted-foreground ml-1">/month</span>
             </div>
-            {isVoluntaryOnly && (
-              <div className="flex items-center gap-2 mt-1">
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
-                <span className="text-xs text-accent font-medium">Employee-paid benefits</span>
-              </div>
-            )}
 
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6 mb-3">
               Breakdown
@@ -378,10 +334,7 @@ export default function EnrollSubmit() {
             {/* Segmented bar */}
             {totalMonthly > 0 && (
               <div className="w-full h-3 rounded-full overflow-hidden flex mb-4">
-                {plan.newEdgeEnrolled && (
-                  <div className="h-full bg-accent" style={{ width: `${(newEdgeTotal / totalMonthly) * 100}%` }} />
-                )}
-                {medicalPlan && !isVoluntaryOnly && (
+                {medicalPlan && (
                   <div className="h-full bg-primary" style={{ width: `${(medicalTotal / totalMonthly) * 100}%` }} />
                 )}
                 {voluntaryTotal > 0 && (
@@ -391,10 +344,7 @@ export default function EnrollSubmit() {
             )}
 
             <div className="flex flex-col gap-2">
-              {plan.newEdgeEnrolled && (
-                <LegendRow color="bg-accent" label={NEW_EDGE_HEALTH.name} amount={`$${newEdgeTotal}/mo`} />
-              )}
-              {medicalPlan && !isVoluntaryOnly && (
+              {medicalPlan && (
                 <LegendRow color="bg-primary" label="Medical Premium" amount={`$${medicalTotal}/mo`} />
               )}
               {voluntaryTotal > 0 && (

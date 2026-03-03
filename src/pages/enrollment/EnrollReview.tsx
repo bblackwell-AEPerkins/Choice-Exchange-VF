@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { reviewSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2, Leaf, CheckCircle2, Heart } from "lucide-react";
+import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2, Heart, CheckCircle2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -20,19 +20,6 @@ interface PlanDetails {
   monthly_premium: number;
   metal_tier: string;
 }
-
-const NEW_EDGE_HEALTH = {
-  id: "new-edge-health",
-  name: "Get Fit PHMP Now Program",
-  carrier: "New Edge Health",
-  monthlyPremium: 249,
-  features: [
-    "Monthly telehealth visits with dedicated medical professional",
-    "Semaglutide prescription delivered to your home",
-    "Dedicated wellness coach for your journey",
-    "Pre-tax through payroll available",
-  ],
-};
 
 // Mirror the voluntary data from EnrollPlans so we can resolve names
 const VOLUNTARY_BENEFITS_DATA: Record<string, {
@@ -112,8 +99,6 @@ export default function EnrollReview() {
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const isVoluntaryOnly = intent.coverageType === "voluntary_only";
-
   // Step access protection
   useEffect(() => {
     if (!isLoading && !canAccessStep("review")) {
@@ -152,9 +137,8 @@ export default function EnrollReview() {
     .filter(Boolean) as { categoryName: string; id: string; name: string; carrier: string; monthlyPremium: number }[];
 
   const voluntaryTotal = resolvedVoluntary.reduce((s, v) => s + v.monthlyPremium, 0);
-  const newEdgeTotal = plan.newEdgeEnrolled ? NEW_EDGE_HEALTH.monthlyPremium : 0;
   const medicalTotal = planDetails?.monthly_premium || 0;
-  const grandTotal = (isVoluntaryOnly ? 0 : medicalTotal) + voluntaryTotal + newEdgeTotal;
+  const grandTotal = medicalTotal + voluntaryTotal;
 
   const validateForm = (): boolean => {
     const result = reviewSchema.safeParse({
@@ -185,13 +169,8 @@ export default function EnrollReview() {
   };
 
   const handleBack = () => {
-    if (isVoluntaryOnly) {
-      setStep("plans");
-      navigate("/enroll/plans");
-    } else {
-      setStep("coverage");
-      navigate("/enroll/crosssell");
-    }
+    setStep("coverage");
+    navigate("/enroll/crosssell");
   };
 
   const SectionHeader = ({ icon: Icon, title, onEdit }: { icon: React.ElementType; title: string; onEdit: () => void }) => (
@@ -210,8 +189,8 @@ export default function EnrollReview() {
   if (isLoading) {
     return (
       <EnrollmentLayout
-        currentStep={isVoluntaryOnly ? 4 : 7}
-        totalSteps={isVoluntaryOnly ? 5 : 8}
+        currentStep={7}
+        totalSteps={8}
         title="Review Your Information"
         description="Loading your information..."
       >
@@ -222,12 +201,12 @@ export default function EnrollReview() {
     );
   }
 
-  const hasAnySelection = plan.newEdgeEnrolled || planDetails || resolvedVoluntary.length > 0;
+  const hasAnySelection = planDetails || resolvedVoluntary.length > 0;
 
   return (
     <EnrollmentLayout
-      currentStep={isVoluntaryOnly ? 4 : 7}
-      totalSteps={isVoluntaryOnly ? 5 : 8}
+      currentStep={7}
+      totalSteps={8}
       title="Review Your Information"
       description="Please review all information carefully before submitting your enrollment."
       onSave={saveToDatabase}
@@ -241,13 +220,7 @@ export default function EnrollReview() {
               <p className="text-2xl font-bold text-primary">${grandTotal.toFixed(2)}/mo</p>
             </div>
             <div className="border-t border-border pt-3 space-y-2 text-sm">
-              {plan.newEdgeEnrolled && (
-                <div className="flex justify-between">
-                  <span className="text-foreground">{NEW_EDGE_HEALTH.name}</span>
-                  <span className="font-semibold">${NEW_EDGE_HEALTH.monthlyPremium.toFixed(2)}</span>
-                </div>
-              )}
-              {planDetails && !isVoluntaryOnly && (
+              {planDetails && (
                 <div className="flex justify-between">
                   <span className="text-foreground">{planDetails.plan_name}</span>
                   <span className="font-semibold">${planDetails.monthly_premium.toFixed(2)}</span>
@@ -265,40 +238,38 @@ export default function EnrollReview() {
       )}
 
       {/* ── Personal Information ── */}
-      {!isVoluntaryOnly && (
-        <Card>
-          <CardContent className="pt-6">
-            <SectionHeader icon={User} title="Personal Information" onEdit={() => navigate("/enroll/about")} />
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Name</p>
-                <p className="font-medium">{account.firstName} {account.lastName}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Date of Birth</p>
-                <p className="font-medium">{about.dateOfBirth || "Not provided"}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Email</p>
-                <p className="font-medium">{account.email}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Phone</p>
-                <p className="font-medium">{account.phone}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-muted-foreground">Address</p>
-                <p className="font-medium">
-                  {about.address1}
-                  {about.address2 && `, ${about.address2}`}
-                  <br />
-                  {about.city}, {about.state} {about.zipCode}
-                </p>
-              </div>
+      <Card>
+        <CardContent className="pt-6">
+          <SectionHeader icon={User} title="Personal Information" onEdit={() => navigate("/enroll/about")} />
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Name</p>
+              <p className="font-medium">{account.firstName} {account.lastName}</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <p className="text-muted-foreground">Date of Birth</p>
+              <p className="font-medium">{about.dateOfBirth || "Not provided"}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Email</p>
+              <p className="font-medium">{account.email}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Phone</p>
+              <p className="font-medium">{account.phone}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-muted-foreground">Address</p>
+              <p className="font-medium">
+                {about.address1}
+                {about.address2 && `, ${about.address2}`}
+                <br />
+                {about.city}, {about.state} {about.zipCode}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Household ── */}
       {household.dependents.length > 0 && (
@@ -320,30 +291,28 @@ export default function EnrollReview() {
         </Card>
       )}
 
-      {/* ── Coverage Details (non-voluntary path) ── */}
-      {!isVoluntaryOnly && (
-        <Card>
-          <CardContent className="pt-6">
-            <SectionHeader icon={FileText} title="Coverage Details" onEdit={() => navigate("/enroll/coverage")} />
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Coverage Start Date</p>
-                <p className="font-medium">{coverage.desiredStartDate || "Not selected"}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">State</p>
-                <p className="font-medium">{coverage.stateOfResidence}</p>
-              </div>
-              {intent.enrollmentReason === "qualifying_event" && (
-                <div className="col-span-2">
-                  <p className="text-muted-foreground">Qualifying Event</p>
-                  <p className="font-medium capitalize">{coverage.qualifyingEventType?.replace(/_/g, " ")}</p>
-                </div>
-              )}
+      {/* ── Coverage Details ── */}
+      <Card>
+        <CardContent className="pt-6">
+          <SectionHeader icon={FileText} title="Coverage Details" onEdit={() => navigate("/enroll/coverage")} />
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Coverage Start Date</p>
+              <p className="font-medium">{coverage.desiredStartDate || "Not selected"}</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <p className="text-muted-foreground">State</p>
+              <p className="font-medium">{coverage.stateOfResidence}</p>
+            </div>
+            {intent.enrollmentReason === "qualifying_event" && (
+              <div className="col-span-2">
+                <p className="text-muted-foreground">Qualifying Event</p>
+                <p className="font-medium capitalize">{coverage.qualifyingEventType?.replace(/_/g, " ")}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Selected Plans (highlighted) ── */}
       <Card className="border-accent/30">
@@ -351,37 +320,8 @@ export default function EnrollReview() {
           <SectionHeader icon={CreditCard} title="Selected Plans" onEdit={() => navigate("/enroll/plans")} />
           
           <div className="space-y-4">
-            {/* New Edge Health */}
-            {plan.newEdgeEnrolled && (
-              <div className="p-4 rounded-lg border-2 border-accent bg-accent/5">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <Leaf className="h-5 w-5 text-accent" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-lg">{NEW_EDGE_HEALTH.name}</p>
-                      <p className="text-sm text-muted-foreground">{NEW_EDGE_HEALTH.carrier} • Wellness Program</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-accent">${NEW_EDGE_HEALTH.monthlyPremium}<span className="text-sm font-medium text-muted-foreground">/mo</span></p>
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-2 mt-3">
-                  {NEW_EDGE_HEALTH.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-accent flex-shrink-0" />
-                      {f}
-                    </div>
-                  ))}
-                </div>
-                <Badge className="mt-3 bg-accent/10 text-accent border-accent/25">Enrolled</Badge>
-              </div>
-            )}
-
             {/* ICHRA Medical Plan */}
-            {planDetails && !isVoluntaryOnly && (
+            {planDetails && (
               <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">

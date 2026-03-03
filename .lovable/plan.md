@@ -1,118 +1,71 @@
-# Backend Simplification: Demo Mode ✅ COMPLETED
 
-## Status: Implemented on 2025-01-27
 
-### Overview
-Convert the app to run in "demo mode" where authentication still works, but all data operations use rich mock data instead of real database queries. This gives you a fully functional demo experience without database complexity.
+## Plan: Univision Employer Code → New Edge + Voluntary Benefits Path
 
----
+### Summary
 
-### Phase 1: Create Mock Data Layer
+When "UNIVISION" is typed on RoleSelect, the user enters a streamlined enrollment: Intent (voluntary-only) → Household → Plans page. The Plans page shows a featured New Edge Health card ($249/mo) at the top, ICHRA at $0, no ICHRA tab — just New Edge + voluntary benefits accordion below it.
 
-**New file: `src/lib/mockData.ts`**
-- Define comprehensive mock datasets for:
-  - **Member profile** (Banks Blackwell with full demographics)
-  - **Member events** (~20 events: claims, prescriptions, appointments)
-  - **ICHRA plans** (5-8 diverse plans with different metal tiers)
-  - **Employers and offers** (1-2 sample employers with ICHRA offers)
-  - **Coverage enrollments** (active PPO coverage)
-- All data will be typed and realistic for demos
+### Changes by File
 
----
+**1. `src/pages/RoleSelect.tsx`** (~line 49-58)
+- In `handleInviteSubmit`: check if `inviteCode.toUpperCase() === "UNIVISION"` → navigate to `/enroll/entry?source=univision` instead of `/individual/intake`
 
-### Phase 2: Create Demo Data Hook
+**2. `src/stores/enrollmentConfigStore.ts`**
+- Add `employerCode: string | null` to state and `setEmployerCode` action
+- Add `"univision"` to `entryChannel` union type
 
-**New file: `src/hooks/useDemoMode.ts`**
-- Central hook that provides all mock data
-- Simulates loading delays (200-500ms) for realistic UX
-- Tracks enrollment progress in localStorage
-- Provides methods like:
-  - `getMemberProfile()`
-  - `getMemberEvents()`
-  - `getPlans(zipCode)` - filters mock plans
-  - `saveEnrollmentStep(data)` - persists to localStorage
-  - `submitEnrollment()` - generates confirmation number
+**3. `src/pages/enrollment/EnrollEntry.tsx`**
+- Add `"univision"` channel detection in the `useEffect`: if `source === "univision"`, set channel to `"univision"` and store employer code
+- Add `CHANNEL_INFO.univision` with Univision-branded welcome copy
+- On continue, navigate to `/enroll/intent` (same as current)
 
----
+**4. `src/hooks/useEnrollmentStore.ts`**
+- Extend `EnrollmentIntent.coverageType` to `"health" | "voluntary_only" | null`
+- In `canAccessStep`: when `coverageType === "voluntary_only"`, allow direct access to `household` and `plans` (skip account/about/coverage validation)
 
-### Phase 3: Simplify Existing Hooks
+**5. `src/pages/enrollment/EnrollIntent.tsx`**
+- Add a new radio option: `"voluntary_only"` — "Voluntary Benefits Enrollment" with description "I want to enroll in wellness programs and voluntary benefits"
+- Update the type cast to accept `"voluntary_only"`
+- In `handleNext`: if `coverageType === "voluntary_only"`, navigate to `/enroll/household` (skip account/about)
 
-**Modify: `src/hooks/useEnrollmentDB.ts`**
-- Remove all Supabase queries
-- Replace with demo mode hook integration
-- Keep the same interface so pages don't need changes
-- Enrollment state saved to localStorage instead of database
+**6. `src/pages/enrollment/EnrollHousehold.tsx`**
+- In `handleNext` (~line 88-92): if `intent.coverageType === "voluntary_only"`, navigate to `/enroll/plans` instead of `/enroll/coverage`
 
-**Modify: `src/hooks/useICHRAEnrollment.ts`**
-- Return mock employer, offer, and enrollment data
-- Plan selection still works with mock plans
-- Attestation/waiver simulated with local state
+**7. `src/pages/enrollment/EnrollPlans.tsx`** (the main work)
+- Read `intent.coverageType` from the store
+- Define `NEW_EDGE_HEALTH` constant at top of file:
+  ```
+  id: "new-edge-health", name: "Get Fit PHMP Now Program",
+  carrier: "New Edge Health", monthlyPremium: 249,
+  features: ["Monthly telehealth visits", "Semaglutide prescription delivered home",
+             "Dedicated wellness coach", "Pre-tax through payroll"]
+  ```
+- Add `newEdgeEnrolled` boolean state
+- When `coverageType === "voluntary_only"`:
+  - Hide the ICHRA/Voluntary tabs entirely
+  - Show a single-page layout: New Edge featured card at top, then voluntary benefits accordion below
+  - New Edge card: prominent styling with Leaf icon, $249/mo, feature list, "Enroll" / "Enrolled ✓" toggle button
+  - Voluntary accordion renders exactly as current voluntary tab content (reuse existing code)
+  - Cost summary at top shows New Edge ($249 if enrolled) + voluntary selections, labeled "Employee-paid"
+  - Back button goes to `/enroll/household`
+  - Next button labeled "Review & Submit" → navigates to `/enroll/review`
+- When `coverageType === "health"`: everything works exactly as today (no changes to ICHRA path)
 
-**Modify: `src/hooks/useMemberEvents.ts`**
-- Return mock events directly
-- Keep filtering capabilities working on mock data
+### Flow
 
----
+```text
+RoleSelect ("UNIVISION")
+  → EnrollEntry (Univision welcome)
+    → EnrollIntent (selects "Voluntary Only")
+      → EnrollHousehold
+        → EnrollPlans (New Edge card + voluntary benefits below, $0 ICHRA)
+          → EnrollReview → EnrollSubmit
+```
 
-### Phase 4: Update Dashboard & Plan Pages
-
-**Modify: `src/pages/MemberDashboard.tsx`**
-- Remove direct Supabase queries
-- Use demo hook for member data and events
-- Everything else stays the same
-
-**Modify: `src/pages/enrollment/EnrollPlans.tsx`**
-- Plan search uses mock data filtered by ZIP
-- Subscription and voluntary plan tabs work with mock data
-
-**Modify: `src/pages/ICHRAPlans.tsx`**
-- Same approach - mock plan data filtered by ZIP
-
----
-
-### Phase 5: Optional Database Toggle
-
-**Add: Demo mode toggle (optional)**
-- Environment variable or localStorage flag
-- `const DEMO_MODE = true` at the top of each hook
-- Allows easy switch back to real database later
-
----
-
-### What Stays the Same
-- Authentication (Supabase Auth) - keeps login/logout working
-- All UI components and pages
-- Navigation and routing
-- Form validation and step progression
-- User experience and animations
-
-### What Gets Simplified
-- No database writes for enrollment
-- No RLS policy complexity
-- No individual/household/address table joins
-- Events and plans are predictable mock data
-
----
-
-### Benefits
-- Demos work reliably every time
-- No data corruption or missing records
-- Fast loading (no network latency)
-- Easy to customize mock data for specific demos
-- Can switch back to real database when ready for production
-
----
-
-### Files to Create
-1. `src/lib/mockData.ts` - All mock data definitions
-2. `src/hooks/useDemoMode.ts` - Demo mode orchestration
-
-### Files to Modify
-1. `src/hooks/useEnrollmentDB.ts` - Use demo data
-2. `src/hooks/useICHRAEnrollment.ts` - Use demo data
-3. `src/hooks/useMemberEvents.ts` - Use demo data
-4. `src/pages/MemberDashboard.tsx` - Remove Supabase queries
-5. `src/pages/enrollment/EnrollPlans.tsx` - Use demo plans
-6. `src/pages/ICHRAPlans.tsx` - Use demo plans
-7. `src/components/NotificationDropdown.tsx` - Use demo events
+### What stays the same
+- Existing ICHRA enrollment path is completely untouched
+- Voluntary benefits accordion UI is reused as-is
+- No new files created
+- No database changes
 

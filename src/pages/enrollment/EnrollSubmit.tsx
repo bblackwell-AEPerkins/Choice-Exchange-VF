@@ -1,591 +1,411 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
-import { cardPaymentSchema, bankPaymentSchema, formatZodErrors, formatCardNumber, formatExpirationDate } from "@/lib/validations/enrollment";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { CreditCard, Building2, CheckCircle2, Loader2, PartyPopper, Download, ArrowRight, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  CircleCheck,
+  FileText,
+  Copy,
+  Shield,
+  Calendar,
+  ExternalLink,
+  Wallet,
+  Sparkles,
+  Heart,
+  CheckCircle2,
+  Plus,
+  HeartPulse,
+  ShieldAlert,
+  Building2,
+  Phone,
+  Download,
+  Printer,
+} from "lucide-react";
 
-interface PlanDetails {
-  plan_name: string;
-  carrier_name: string;
-  monthly_premium: number;
-}
+/* ── Hardcoded Demo Data ── */
 
-// Voluntary benefit summary data (mirrors EnrollPlans definitions)
-const VOLUNTARY_PLAN_LOOKUP: Record<string, { name: string; carrier: string; category: string; monthlyPremium: number }> = {
-  "dental-basic": { name: "Dental Basic", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 25 },
-  "dental-standard": { name: "Dental Plus", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 45 },
-  "dental-premium": { name: "Dental Premium", carrier: "Choice Exchange", category: "Dental", monthlyPremium: 75 },
-  "delta-dental-basic": { name: "Delta Care Basic", carrier: "Delta Dental", category: "Dental", monthlyPremium: 28 },
-  "delta-dental-standard": { name: "Delta PPO Plus", carrier: "Delta Dental", category: "Dental", monthlyPremium: 52 },
-  "delta-dental-premium": { name: "Delta Premier", carrier: "Delta Dental", category: "Dental", monthlyPremium: 82 },
-  "metlife-dental-basic": { name: "MetLife Dental Essential", carrier: "MetLife", category: "Dental", monthlyPremium: 22 },
-  "metlife-dental-standard": { name: "MetLife Dental Preferred", carrier: "MetLife", category: "Dental", monthlyPremium: 48 },
-  "metlife-dental-premium": { name: "MetLife Dental Elite", carrier: "MetLife", category: "Dental", monthlyPremium: 78 },
-  "vision-basic": { name: "Vision Basic", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 10 },
-  "vision-standard": { name: "Vision Plus", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 15 },
-  "vision-premium": { name: "Vision Premium", carrier: "Choice Exchange", category: "Vision", monthlyPremium: 25 },
-  "vsp-vision-basic": { name: "VSP Basic", carrier: "VSP", category: "Vision", monthlyPremium: 12 },
-  "vsp-vision-standard": { name: "VSP Choice", carrier: "VSP", category: "Vision", monthlyPremium: 18 },
-  "vsp-vision-premium": { name: "VSP Premier", carrier: "VSP", category: "Vision", monthlyPremium: 28 },
-  "eyemed-vision-basic": { name: "EyeMed Access", carrier: "EyeMed", category: "Vision", monthlyPremium: 9 },
-  "eyemed-vision-standard": { name: "EyeMed Select", carrier: "EyeMed", category: "Vision", monthlyPremium: 16 },
-  "eyemed-vision-premium": { name: "EyeMed Complete", carrier: "EyeMed", category: "Vision", monthlyPremium: 26 },
-  "life-basic": { name: "Term Life Basic", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 15 },
-  "life-standard": { name: "Term Life Plus", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 25 },
-  "life-premium": { name: "Term Life Premium", carrier: "Choice Exchange", category: "Life Insurance", monthlyPremium: 45 },
-  "metlife-life-basic": { name: "MetLife Term Essential", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 14 },
-  "metlife-life-standard": { name: "MetLife Term Plus", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 28 },
-  "metlife-life-premium": { name: "MetLife Term Premier", carrier: "MetLife", category: "Life Insurance", monthlyPremium: 52 },
-  "prudential-life-basic": { name: "Prudential Simple Term", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 16 },
-  "prudential-life-standard": { name: "Prudential Term Flex", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 30 },
-  "prudential-life-premium": { name: "Prudential Term Max", carrier: "Prudential", category: "Life Insurance", monthlyPremium: 55 },
-  "disability-basic": { name: "STD Basic", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 20 },
-  "disability-standard": { name: "STD Plus", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 35 },
-  "disability-premium": { name: "STD Premium", carrier: "Choice Exchange", category: "Disability", monthlyPremium: 55 },
-  "unum-disability-basic": { name: "Unum STD Core", carrier: "Unum", category: "Disability", monthlyPremium: 22 },
-  "unum-disability-standard": { name: "Unum STD Plus", carrier: "Unum", category: "Disability", monthlyPremium: 38 },
-  "unum-disability-premium": { name: "Unum STD Premier", carrier: "Unum", category: "Disability", monthlyPremium: 60 },
-  "lincoln-disability-basic": { name: "Lincoln STD Essential", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 18 },
-  "lincoln-disability-standard": { name: "Lincoln STD Select", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 32 },
-  "lincoln-disability-premium": { name: "Lincoln STD Complete", carrier: "Lincoln Financial", category: "Disability", monthlyPremium: 50 },
+const MEMBER = {
+  name: "John Doe",
+  firstName: "John",
+  initials: "JD",
+  employer: "Ameriflex",
+  confirmation: "AMF-2026-8847",
+  effectiveDate: "April 1, 2026",
 };
 
-interface PaymentForm {
-  cardNumber: string;
-  expirationDate: string;
-  cvv: string;
-  nameOnCard: string;
-  accountHolderName: string;
-  routingNumber: string;
-  accountNumber: string;
-}
+const PLAN = {
+  carrier: "Blue Cross Blue Shield",
+  name: "Silver Standard PPO",
+  premium: 320,
+  deductible: 4500,
+  oopMax: 8700,
+  pcpCopay: 30,
+  type: "PPO",
+};
+
+const ICHRA = {
+  monthly: 450,
+  annual: 5400,
+  medical: 320,
+  hsa: 70,
+  voluntary: 60,
+};
+
+const ENROLLED_BENEFITS = [
+  { name: "Dental Plus", cost: 45, detail: "Coverage active Apr 1", status: "active" },
+  { name: "Vision Care", cost: 15, detail: "Coverage active Apr 1", status: "active" },
+  { name: "HSA Account", cost: 70, detail: "$70/mo contribution", status: "establishing" },
+];
+
+const UPSELL_BENEFITS = [
+  { name: "Term Life Insurance" },
+  { name: "Short-Term Disability" },
+];
+
+const OPPORTUNITIES = [
+  {
+    icon: HeartPulse,
+    name: "Critical Illness Insurance",
+    description: "Lump-sum cash benefit if diagnosed with a serious illness",
+    price: "Starting at $18/mo",
+    colorClass: "bg-[hsl(var(--coral))]/10 border-[hsl(var(--coral))]/20",
+    iconStyle: { color: "hsl(var(--coral))" },
+  },
+  {
+    icon: ShieldAlert,
+    name: "Accident Insurance",
+    description: "Cash benefits for ER visits, fractures, and unexpected injuries",
+    price: "Starting at $12/mo",
+    colorClass: "bg-amber-500/10 border-amber-500/20",
+    iconStyle: { color: "hsl(45, 93%, 47%)" },
+  },
+  {
+    icon: Building2,
+    name: "Hospital Indemnity",
+    description: "Daily cash benefit for each day you are hospitalized",
+    price: "Starting at $22/mo",
+    colorClass: "bg-[hsl(var(--violet))]/10 border-[hsl(var(--violet))]/20",
+    iconStyle: { color: "hsl(var(--violet))" },
+  },
+];
+
+/* ── Page Component ── */
 
 export default function EnrollSubmit() {
-  const navigate = useNavigate();
-  const { 
-    plan, 
-    account, 
-    setStep, 
-    resetEnrollment, 
-    submitEnrollment,
-    isLoading,
-    canAccessStep,
-    saveToDatabase
-  } = useEnrollmentStore();
-  
-  const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank">("card");
-  const [paymentForm, setPaymentForm] = useState<PaymentForm>({
-    cardNumber: "",
-    expirationDate: "",
-    cvv: "",
-    nameOnCard: `${account.firstName} ${account.lastName}`,
-    accountHolderName: `${account.firstName} ${account.lastName}`,
-    routingNumber: "",
-    accountNumber: "",
-  });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [confirmationNumber, setConfirmationNumber] = useState("");
-  const submitAttemptRef = useRef(false);
+  const [copied, setCopied] = useState(false);
 
-  // Step access protection
-  useEffect(() => {
-    if (!isLoading && !canAccessStep("submit")) {
-      navigate("/enroll");
-    }
-  }, [isLoading, canAccessStep, navigate]);
-
-  useEffect(() => {
-    const fetchPlanDetails = async () => {
-      if (!plan.medicalPlanId) return;
-      
-      const { data } = await supabase
-        .from("ichra_plans")
-        .select("plan_name, carrier_name, monthly_premium")
-        .eq("id", plan.medicalPlanId)
-        .single();
-      
-      if (data) {
-        setPlanDetails(data);
-      }
-    };
-    
-    fetchPlanDetails();
-  }, [plan.medicalPlanId]);
-
-  const validatePayment = (): boolean => {
-    if (paymentMethod === "card") {
-      const result = cardPaymentSchema.safeParse({
-        cardNumber: paymentForm.cardNumber,
-        expirationDate: paymentForm.expirationDate,
-        cvv: paymentForm.cvv,
-        nameOnCard: paymentForm.nameOnCard,
-      });
-
-      if (!result.success) {
-        setErrors(formatZodErrors(result.error));
-        return false;
-      }
-    } else {
-      const result = bankPaymentSchema.safeParse({
-        accountHolderName: paymentForm.accountHolderName,
-        routingNumber: paymentForm.routingNumber,
-        accountNumber: paymentForm.accountNumber,
-      });
-
-      if (!result.success) {
-        setErrors(formatZodErrors(result.error));
-        return false;
-      }
-    }
-
-    setErrors({});
-    return true;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(MEMBER.confirmation);
+    toast("Copied to clipboard");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  const handleSubmit = async () => {
-    // Prevent double submission
-    if (submitAttemptRef.current || isSubmitting) {
-      return;
-    }
-
-    if (!validatePayment()) {
-      return;
-    }
-
-    submitAttemptRef.current = true;
-    setIsSubmitting(true);
-    
-    try {
-      const result = await submitEnrollment();
-      
-      if (result.success && result.confirmationNumber) {
-        setConfirmationNumber(result.confirmationNumber);
-        setStep("complete");
-        setIsComplete(true);
-        toast.success("Enrollment submitted successfully!");
-      } else {
-        toast.error(result.error || "Failed to submit enrollment. Please try again.");
-        submitAttemptRef.current = false;
-      }
-    } catch (error) {
-      toast.error("Failed to submit enrollment. Please try again.");
-      submitAttemptRef.current = false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoToDashboard = () => {
-    resetEnrollment();
-    navigate("/dashboard");
-  };
-
-  const updatePaymentField = (field: keyof PaymentForm, value: string) => {
-    let formattedValue = value;
-    
-    if (field === "cardNumber") {
-      formattedValue = formatCardNumber(value);
-    } else if (field === "expirationDate") {
-      formattedValue = formatExpirationDate(value);
-    } else if (field === "cvv") {
-      formattedValue = value.replace(/\D/g, "").slice(0, 4);
-    } else if (field === "routingNumber") {
-      formattedValue = value.replace(/\D/g, "").slice(0, 9);
-    } else if (field === "accountNumber") {
-      formattedValue = value.replace(/\D/g, "").slice(0, 17);
-    }
-    
-    setPaymentForm(prev => ({ ...prev, [field]: formattedValue }));
-    
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <EnrollmentLayout
-        currentStep={8}
-        totalSteps={8}
-        title="Payment & Submit"
-        description="Loading..."
-      >
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </EnrollmentLayout>
-    );
-  }
-
-  // Show completion screen
-  if (isComplete) {
-    return (
-      <EnrollmentLayout
-        currentStep={8}
-        totalSteps={8}
-        title="Enrollment Complete!"
-        description="Your enrollment has been submitted successfully."
-        showProgress={false}
-      >
-        <Card className="border-accent bg-accent/5">
-          <CardContent className="pt-8 pb-8 text-center">
-            <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-6">
-              <PartyPopper className="h-10 w-10 text-accent" />
-            </div>
-            
-            <h2 className="text-2xl font-bold mb-2">Congratulations, {account.firstName}!</h2>
-            <p className="text-muted-foreground mb-6">
-              Your health insurance enrollment has been successfully submitted.
-            </p>
-            
-            <div className="p-4 rounded-lg bg-card border border-border mb-6">
-              <p className="text-sm text-muted-foreground mb-1">Confirmation Number</p>
-              <p className="text-2xl font-mono font-bold text-primary">{confirmationNumber}</p>
-            </div>
-
-            {planDetails && (
-              <div className="p-4 rounded-lg bg-muted/50 mb-6 text-left">
-                <p className="text-sm text-muted-foreground mb-2">Enrolled Plan</p>
-                <p className="font-semibold">{planDetails.plan_name}</p>
-                <p className="text-sm text-muted-foreground">{planDetails.carrier_name}</p>
-                <p className="text-lg font-bold text-primary mt-2">
-                  ${planDetails.monthly_premium.toFixed(2)}/month
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* What's Next */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">What Happens Next?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0 mt-0.5">
-                1
-              </div>
-              <div>
-                <p className="font-medium">Confirmation Email</p>
-                <p className="text-sm text-muted-foreground">
-                  You'll receive a confirmation email at {account.email} within 24 hours.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0 mt-0.5">
-                2
-              </div>
-              <div>
-                <p className="font-medium">ID Cards</p>
-                <p className="text-sm text-muted-foreground">
-                  Your insurance ID cards will be mailed within 7-10 business days.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0 mt-0.5">
-                3
-              </div>
-              <div>
-                <p className="font-medium">Coverage Begins</p>
-                <p className="text-sm text-muted-foreground">
-                  Your coverage will be effective on your selected start date.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button variant="outline" className="flex-1">
-            <Download className="h-4 w-4 mr-2" />
-            Download Confirmation
-          </Button>
-          <Button onClick={handleGoToDashboard} className="flex-1">
-            Go to Dashboard
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
-      </EnrollmentLayout>
-    );
-  }
 
   return (
-    <EnrollmentLayout
-      currentStep={8}
-      totalSteps={8}
-      title="Payment & Submit"
-      description="Complete your enrollment by setting up your payment method."
-      onSave={saveToDatabase}
-    >
-      {/* Cost Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Monthly Cost Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {planDetails ? (
-            <div className="space-y-3">
-              {/* Medical plan */}
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{planDetails.plan_name}</p>
-                  <p className="text-sm text-muted-foreground">{planDetails.carrier_name} • ICHRA Medical</p>
-                </div>
-                <p className="font-semibold">${planDetails.monthly_premium.toFixed(2)}</p>
-              </div>
-
-              {/* Voluntary selections */}
-              {plan.voluntarySelections && Object.entries(plan.voluntarySelections).map(([categoryId, planId]) => {
-                if (!planId) return null;
-                const volPlan = VOLUNTARY_PLAN_LOOKUP[planId];
-                if (!volPlan) return null;
-                return (
-                  <div key={categoryId} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{volPlan.name}</p>
-                      <p className="text-sm text-muted-foreground">{volPlan.carrier} • {volPlan.category}</p>
-                    </div>
-                    <p className="font-semibold">${volPlan.monthlyPremium.toFixed(2)}</p>
-                  </div>
-                );
-              })}
-              
-              {plan.employerContribution > 0 && (
-                <div className="flex justify-between items-center text-accent">
-                  <span>Employer ICHRA Contribution</span>
-                  <span>-${plan.employerContribution.toFixed(2)}</span>
-                </div>
-              )}
-              
-              <div className="pt-3 border-t border-border">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">Your Monthly Premium</span>
-                  <span className="text-2xl font-bold text-primary">
-                    ${(() => {
-                      const volTotal = plan.voluntarySelections
-                        ? Object.values(plan.voluntarySelections).reduce((sum, pid) => {
-                            if (!pid) return sum;
-                            const v = VOLUNTARY_PLAN_LOOKUP[pid];
-                            return v ? sum + v.monthlyPremium : sum;
-                          }, 0)
-                        : 0;
-                      return (planDetails.monthly_premium + volTotal - plan.employerContribution).toFixed(2);
-                    })()}
-                  </span>
-                </div>
-              </div>
+    <div className="min-h-screen bg-background bg-grid-pattern flex flex-col">
+      {/* ── Header ── */}
+      <header className="bg-white/95 dark:bg-card/[0.98] backdrop-blur-md border-b border-border shadow-card sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold text-gradient-primary" style={{ fontFamily: "Outfit, sans-serif" }}>
+              Choice Exchange
+            </span>
+            <Badge variant="outline" className="text-xs border-border text-muted-foreground">
+              Member Portal
+            </Badge>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
+              <span className="text-sm font-bold text-white">{MEMBER.initials}</span>
             </div>
-          ) : (
-            <p className="text-muted-foreground">Loading plan details...</p>
-          )}
-        </CardContent>
-      </Card>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-semibold text-foreground">{MEMBER.name}</span>
+              <span className="text-xs text-muted-foreground">{MEMBER.employer}</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      {/* Payment Method */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Payment Method</CardTitle>
-          <CardDescription>
-            Your first payment will be processed when your coverage begins.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <RadioGroup
-            value={paymentMethod}
-            onValueChange={(value) => {
-              setPaymentMethod(value as "card" | "bank");
-              setErrors({});
-            }}
-            className="space-y-3"
-          >
-            <label
-              className={cn(
-                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors",
-                paymentMethod === "card"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              )}
+      {/* ── Hero Banner ── */}
+      <div className="bg-gradient-to-r from-primary/[0.06] via-transparent to-accent/[0.06] border-b border-border py-12 px-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-8">
+          <div className="flex-1">
+            <CircleCheck className="h-8 w-8 text-accent animate-scale-in" />
+            <h1
+              className="text-4xl font-bold mt-3 animate-fade-in"
+              style={{ fontFamily: "Outfit, sans-serif" }}
             >
-              <RadioGroupItem value="card" />
-              <CreditCard className="h-5 w-5 text-primary" />
-              <div>
-                <span className="font-medium">Credit or Debit Card</span>
-                <p className="text-sm text-muted-foreground">Visa, Mastercard, American Express</p>
-              </div>
-            </label>
-            
-            <label
-              className={cn(
-                "flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-colors",
-                paymentMethod === "bank"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              )}
-            >
-              <RadioGroupItem value="bank" />
-              <Building2 className="h-5 w-5 text-primary" />
-              <div>
-                <span className="font-medium">Bank Account (ACH)</span>
-                <p className="text-sm text-muted-foreground">Direct debit from checking or savings</p>
-              </div>
-            </label>
-          </RadioGroup>
-
-          {Object.keys(errors).length > 0 && (
-            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">Please correct the errors below.</p>
+              You're covered, {MEMBER.firstName}.
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg animate-fade-in">
+              Your benefits are active starting {MEMBER.effectiveDate}. Here is everything in one place.
+            </p>
+            <div className="flex items-center gap-2 mt-4 animate-fade-in">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Confirmation #{MEMBER.confirmation}</span>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
+                <Copy className="h-3 w-3" />
+              </Button>
             </div>
-          )}
-
-          {/* Card Details Form */}
-          {paymentMethod === "card" && (
-            <div className="space-y-4 pt-4 border-t border-border">
-              <div className="space-y-2">
-                <Label>Card Number</Label>
-                <Input 
-                  placeholder="1234 5678 9012 3456" 
-                  value={paymentForm.cardNumber}
-                  onChange={(e) => updatePaymentField("cardNumber", e.target.value)}
-                  className={errors.cardNumber ? "border-destructive" : ""}
-                />
-                {errors.cardNumber && (
-                  <p className="text-sm text-destructive">{errors.cardNumber}</p>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Expiration Date</Label>
-                  <Input 
-                    placeholder="MM/YY" 
-                    value={paymentForm.expirationDate}
-                    onChange={(e) => updatePaymentField("expirationDate", e.target.value)}
-                    className={errors.expirationDate ? "border-destructive" : ""}
-                  />
-                  {errors.expirationDate && (
-                    <p className="text-sm text-destructive">{errors.expirationDate}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>CVV</Label>
-                  <Input 
-                    placeholder="123" 
-                    type="password"
-                    value={paymentForm.cvv}
-                    onChange={(e) => updatePaymentField("cvv", e.target.value)}
-                    className={errors.cvv ? "border-destructive" : ""}
-                  />
-                  {errors.cvv && (
-                    <p className="text-sm text-destructive">{errors.cvv}</p>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Name on Card</Label>
-                <Input 
-                  placeholder="John Smith" 
-                  value={paymentForm.nameOnCard}
-                  onChange={(e) => updatePaymentField("nameOnCard", e.target.value)}
-                  className={errors.nameOnCard ? "border-destructive" : ""}
-                />
-                {errors.nameOnCard && (
-                  <p className="text-sm text-destructive">{errors.nameOnCard}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Bank Details Form */}
-          {paymentMethod === "bank" && (
-            <div className="space-y-4 pt-4 border-t border-border">
-              <div className="space-y-2">
-                <Label>Account Holder Name</Label>
-                <Input 
-                  placeholder="John Smith" 
-                  value={paymentForm.accountHolderName}
-                  onChange={(e) => updatePaymentField("accountHolderName", e.target.value)}
-                  className={errors.accountHolderName ? "border-destructive" : ""}
-                />
-                {errors.accountHolderName && (
-                  <p className="text-sm text-destructive">{errors.accountHolderName}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>Routing Number</Label>
-                <Input 
-                  placeholder="123456789" 
-                  value={paymentForm.routingNumber}
-                  onChange={(e) => updatePaymentField("routingNumber", e.target.value)}
-                  className={errors.routingNumber ? "border-destructive" : ""}
-                />
-                {errors.routingNumber && (
-                  <p className="text-sm text-destructive">{errors.routingNumber}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label>Account Number</Label>
-                <Input 
-                  placeholder="1234567890" 
-                  type="password"
-                  value={paymentForm.accountNumber}
-                  onChange={(e) => updatePaymentField("accountNumber", e.target.value)}
-                  className={errors.accountNumber ? "border-destructive" : ""}
-                />
-                {errors.accountNumber && (
-                  <p className="text-sm text-destructive">{errors.accountNumber}</p>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Submit Button */}
-      <div className="space-y-4">
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="w-full h-12 text-lg"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Submitting Enrollment...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="h-5 w-5 mr-2" />
-              Submit Enrollment
-            </>
-          )}
-        </Button>
-        
-        <p className="text-xs text-center text-muted-foreground">
-          By clicking "Submit Enrollment", you authorize the first premium payment and agree to
-          the terms and conditions of your selected health plan.
-        </p>
+          </div>
+          <div className="hidden md:flex items-center animate-fade-in">
+            <div className="w-24 h-24 rounded-2xl gradient-primary opacity-15" />
+            <div className="w-24 h-24 rounded-2xl bg-accent opacity-15 -ml-8" />
+            <div
+              className="w-24 h-24 rounded-2xl opacity-15 -ml-8"
+              style={{ background: "hsl(var(--violet))" }}
+            />
+          </div>
+        </div>
       </div>
-    </EnrollmentLayout>
+
+      {/* ── 3-Column Grid ── */}
+      <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        {/* Column 1 — Health Coverage */}
+        <Card className="card-elevated animate-card-reveal animate-card-reveal-1">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <CardTitle className="text-base">Health Coverage</CardTitle>
+            </div>
+            <Badge className="bg-accent/10 text-accent border-accent/25 text-xs">Active</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg px-3 py-1.5 surface-primary inline-flex items-center gap-2">
+              <Shield className="h-3 w-3 text-primary" />
+              <span className="text-sm font-bold text-primary">BCBS</span>
+            </div>
+            <h3 className="text-xl font-semibold mt-3 text-foreground" style={{ fontFamily: "Outfit, sans-serif" }}>
+              {PLAN.name}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">{PLAN.carrier}</p>
+
+            <div className="grid grid-cols-2 gap-3 mt-5">
+              <StatCell label="Monthly Premium" value={`$${PLAN.premium}`} />
+              <StatCell label="Deductible" value={`$${PLAN.deductible.toLocaleString()}`} />
+              <StatCell label="OOP Maximum" value={`$${PLAN.oopMax.toLocaleString()}`} />
+              <StatCell label="PCP Copay" value={`$${PLAN.pcpCopay}`} />
+            </div>
+
+            <Separator className="mt-5 mb-4" />
+
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-accent" />
+              <span className="text-sm text-accent font-medium">Effective {MEMBER.effectiveDate}</span>
+            </div>
+            <Button variant="ghost" size="sm" className="mt-3 -ml-3 text-muted-foreground hover:text-foreground">
+              View full plan details
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Column 2 — ICHRA Balance */}
+        <Card className="card-elevated glow-accent animate-card-reveal animate-card-reveal-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-accent" />
+              <CardTitle className="text-base">ICHRA Balance</CardTitle>
+            </div>
+            <span className="text-xs text-muted-foreground">Powered by {MEMBER.employer}</span>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <span className="text-5xl font-bold text-foreground" style={{ fontFamily: "Outfit, sans-serif" }}>
+                ${ICHRA.monthly}
+              </span>
+              <span className="text-base text-muted-foreground ml-1">/month</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span className="text-xs text-accent font-medium">Employer funded · Tax-free</span>
+            </div>
+
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-6 mb-3">
+              Monthly allocation
+            </p>
+
+            {/* Segmented bar */}
+            <div className="w-full h-3 rounded-full overflow-hidden flex">
+              <div className="h-full bg-primary rounded-l-full" style={{ width: "71%" }} />
+              <div className="h-full bg-accent" style={{ width: "16%" }} />
+              <div className="h-full rounded-r-full" style={{ width: "13%", background: "hsl(var(--violet))" }} />
+            </div>
+
+            <div className="flex flex-col gap-2 mt-4">
+              <LegendRow color="bg-primary" label="Medical Premium" amount={`$${ICHRA.medical}/mo`} />
+              <LegendRow color="bg-accent" label="HSA Contribution" amount={`$${ICHRA.hsa}/mo`} />
+              <LegendRow colorStyle={{ background: "hsl(var(--violet))" }} label="Dental + Vision" amount={`$${ICHRA.voluntary}/mo`} />
+            </div>
+
+            <Separator className="mt-5 mb-4" />
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Annual ICHRA value</span>
+              <span className="text-sm font-semibold text-foreground">${ICHRA.annual.toLocaleString()}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Column 3 — Your Benefits */}
+        <Card className="card-elevated animate-card-reveal animate-card-reveal-3">
+          <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-4">
+            <Heart className="h-5 w-5 text-accent" />
+            <CardTitle className="text-base">Your Benefits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {ENROLLED_BENEFITS.map((b) => (
+                <div key={b.name} className="flex items-center gap-3 py-2">
+                  <CheckCircle2 className="h-5 w-5 text-accent flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">{b.name}</p>
+                    <p className="text-xs text-muted-foreground">{b.detail}</p>
+                  </div>
+                  {b.status === "establishing" ? (
+                    <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">
+                      Establishing
+                    </Badge>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">${b.cost}/mo</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Divider with label */}
+            <div className="relative my-4">
+              <hr className="border-border" />
+              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground whitespace-nowrap">
+                Not enrolled
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {UPSELL_BENEFITS.map((b) => (
+                <div
+                  key={b.name}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-border hover:border-primary/30 hover:bg-primary/[0.03] transition-colors group cursor-pointer"
+                >
+                  <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/25 flex-shrink-0" />
+                  <span className="text-sm text-muted-foreground flex-1">{b.name}</span>
+                  <span className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    Add coverage
+                  </span>
+                  <Plus className="h-3.5 w-3.5 text-primary" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Opportunities Section ── */}
+      <div className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground" style={{ fontFamily: "Outfit, sans-serif" }}>
+                More Ways to Protect Your Health
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Available through {MEMBER.employer} — add coverage any time.
+              </p>
+            </div>
+            <Button variant="ghost" size="sm">View all</Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {OPPORTUNITIES.map((opp) => {
+              const Icon = opp.icon;
+              return (
+                <Card
+                  key={opp.name}
+                  className="card-raised hover:card-elevated hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                >
+                  <CardContent className="pt-6">
+                    <div
+                      className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-4 ${opp.colorClass}`}
+                    >
+                      <Icon className="h-6 w-6" style={opp.iconStyle} />
+                    </div>
+                    <h3 className="text-base font-semibold" style={{ fontFamily: "Outfit, sans-serif" }}>
+                      {opp.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1 mb-3">{opp.description}</p>
+                    <p className="text-xs text-muted-foreground font-medium">{opp.price}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4 w-full group-hover:border-primary/40 group-hover:text-primary transition-colors"
+                    >
+                      Learn More
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Footer Bar ── */}
+      <footer className="border-t border-border bg-card/80 backdrop-blur-sm py-5 px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Questions about your benefits?</span>
+            <span className="text-sm text-primary font-medium hover:underline cursor-pointer">
+              Contact your advisor
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Download className="h-4 w-4" />
+              Download Summary
+            </Button>
+            <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+              <Printer className="h-4 w-4" />
+              Print
+            </Button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ── Helper Components ── */
+
+function StatCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg surface-steel p-3">
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      <p className="text-sm font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function LegendRow({
+  color,
+  colorStyle,
+  label,
+  amount,
+}: {
+  color?: string;
+  colorStyle?: React.CSSProperties;
+  label: string;
+  amount: string;
+}) {
+  return (
+    <div className="flex items-center justify-between text-xs">
+      <div className="flex items-center gap-2">
+        <div className={`w-2.5 h-2.5 rounded-full ${color || ""}`} style={colorStyle} />
+        <span className="text-muted-foreground">{label}</span>
+      </div>
+      <span className="font-medium text-foreground">{amount}</span>
+    </div>
   );
 }

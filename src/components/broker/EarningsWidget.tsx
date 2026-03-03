@@ -9,7 +9,7 @@ export function EarningsWidget() {
   const earnings = MOCK_BROKER_EARNINGS;
   
   return (
-    <Card className="bg-gradient-to-br from-primary/5 via-background to-accent/5 border-primary/20">
+    <Card className="surface-primary">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-primary" />
@@ -20,7 +20,7 @@ export function EarningsWidget() {
         {/* Primary Number */}
         <div className="mb-6">
           <p className="text-sm text-muted-foreground mb-1">Total Earnings This Month</p>
-          <p className="text-4xl font-bold text-foreground">
+          <p className="text-3xl font-bold text-gradient-primary font-display">
             ${earnings.totalThisMonth.toLocaleString()}
           </p>
         </div>
@@ -55,8 +55,8 @@ export function EarningsWidget() {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                  <Percent className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                <div className="w-9 h-9 rounded-lg bg-violet/10 flex items-center justify-center">
+                  <Percent className="h-4 w-4 text-violet" />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Voluntary Attach Rate</p>

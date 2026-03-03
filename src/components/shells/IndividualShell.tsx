@@ -28,12 +28,12 @@ export function IndividualShell({ children }: IndividualShellProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border shadow-sm bg-white/95 dark:bg-card/95 backdrop-blur-md sticky top-0 z-50">
+      <header className="bg-white/95 dark:bg-card/98 backdrop-blur-md sticky top-0 z-50 border-b border-border shadow-card">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/individual/home" className="flex items-center gap-2">
-              <span className="text-xl font-bold text-primary font-display">Choice Exchange</span>
-              <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
+              <span className="text-xl font-bold text-gradient-primary font-display">Choice Exchange</span>
+              <span className="text-xs font-medium bg-steel text-steel-foreground border border-border px-2 py-0.5 rounded-md">
                 Your Coverage
               </span>
             </Link>
@@ -47,10 +47,10 @@ export function IndividualShell({ children }: IndividualShellProps) {
                     key={item.href}
                     to={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "bg-primary/[0.08] text-primary font-semibold"
+                        : "text-muted-foreground font-medium hover:text-foreground hover:bg-muted"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -76,10 +76,10 @@ export function IndividualShell({ children }: IndividualShellProps) {
                 key={item.href}
                 to={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors whitespace-nowrap",
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-primary/[0.08] text-primary font-semibold"
+                    : "text-muted-foreground font-medium hover:text-foreground hover:bg-muted"
                 )}
               >
                 <item.icon className="h-4 w-4" />

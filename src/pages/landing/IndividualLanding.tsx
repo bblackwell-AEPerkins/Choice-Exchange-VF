@@ -133,7 +133,7 @@ export default function IndividualLanding() {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full h-12"
+                      className="w-full h-12 btn-glow"
                       disabled={!inviteCode.trim() || isSubmitting}
                     >
                       {isSubmitting ? (

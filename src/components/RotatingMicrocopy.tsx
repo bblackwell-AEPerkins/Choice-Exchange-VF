@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 
 const messages = [
   "Broker retains agent of record",
+  "Surplus dollars allocated to voluntary benefits",
+  "ICHRA balance activated at enrollment",
   "Carrier payments automated",
   "Renewals handled without rebuilds",
-  "Audit-ready reporting included",
+  "Every dollar accounted for",
 ];
 
 export const RotatingMicrocopy = () => {

@@ -11,7 +11,7 @@ const roles = [
   {
     id: "broker" as UserRole,
     title: "Broker",
-    description: "Start enrollments, set contributions, attach voluntary benefits, track earnings.",
+    description: "Run ICHRA enrollments, configure defined contributions, stack voluntary benefits, and retain your client relationship.",
     icon: Briefcase,
     href: "/broker",
     primary: true,
@@ -19,7 +19,7 @@ const roles = [
   {
     id: "employer" as UserRole,
     title: "Employer",
-    description: "Control offerings, set contributions, launch enrollment, view spend reporting.",
+    description: "Set your monthly contribution, define eligibility, and let employees choose coverage that fits their life.",
     icon: Building2,
     href: "/employer",
     primary: false,
@@ -27,7 +27,7 @@ const roles = [
   {
     id: "individual" as UserRole,
     title: "Individual",
-    description: "Enter your invite code, pick coverage, activate your wallet and card.",
+    description: "See your employer's contribution, pick a health plan, add voluntary benefits, and activate your ICHRA account.",
     icon: User,
     href: "/individual",
     primary: false,
@@ -64,10 +64,10 @@ export default function RoleSelect() {
       <header className="border-b border-border/40 bg-white/80 backdrop-blur-md shadow-card">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg gradient-steel flex items-center justify-center">
-              <Shield className="h-4.5 w-4.5 text-white" />
+            <div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center">
+              <Shield className="h-4 w-4 text-white" />
             </div>
-            <span className="text-base font-semibold text-foreground font-display">Choice Exchange</span>
+            <span className="text-base font-bold font-display text-gradient-primary">Choice Exchange</span>
           </div>
           <Button variant="ghost" size="sm" asChild>
             <Link to="/auth">Sign in</Link>
@@ -78,13 +78,13 @@ export default function RoleSelect() {
       {/* Hero section */}
       <div className="text-center px-4 pt-12 pb-4 md:pt-16 md:pb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground/60 mb-3">
-          Secure platform entry
+          DEFINED CONTRIBUTION BENEFITS PLATFORM
         </p>
         <h1 className="text-xl md:text-2xl lg:text-3xl font-semibold text-gradient-steel font-display mb-3">
-          ICHRA enrollment + voluntary benefits
+          Your employer's health dollars, fully orchestrated.
         </h1>
         <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-          Defined contribution health coverage, voluntary benefit attachments, and benefits card activation—managed through a single enrollment system.
+          Choice Exchange connects employer ICHRA contributions to individual plan selection, voluntary benefit stacking, and account activation — all in one enrollment moment.
         </p>
       </div>
 

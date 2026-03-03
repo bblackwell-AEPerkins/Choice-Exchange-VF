@@ -22,7 +22,7 @@ export const SystemProgressionSpine = () => {
             <div 
               className={`absolute inset-0 -inset-x-2 -inset-y-1 rounded transition-all duration-300 ${
                 index === activeIndex 
-                  ? "bg-primary/15 scale-100 opacity-100" 
+                  ? "bg-primary/[0.12] scale-100 opacity-100" 
                   : "bg-transparent scale-90 opacity-0"
               }`}
             />
@@ -39,8 +39,8 @@ export const SystemProgressionSpine = () => {
           {index < steps.length - 1 && (
             <div 
               className={`w-4 md:w-6 h-px transition-colors duration-300 ${
-                index < activeIndex ? "bg-primary/40" : "bg-border/40"
-              }`} 
+                index < activeIndex ? "bg-primary/[0.35]" : "bg-border/40"
+              }`}
             />
           )}
         </div>

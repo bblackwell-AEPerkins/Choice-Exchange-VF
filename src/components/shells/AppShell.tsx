@@ -30,11 +30,11 @@ export function AppShell({ children, label, homeHref, navItems }: AppShellProps)
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border bg-card sticky top-0 z-50">
+      <header className="border-b border-border shadow-sm bg-white/95 dark:bg-card/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to={homeHref} className="flex items-center gap-2">
-              <span className="text-lg font-bold text-primary">Choice Exchange</span>
+              <span className="text-xl font-bold text-primary font-display">Choice Exchange</span>
               <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
                 {label}
               </span>

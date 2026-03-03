@@ -105,20 +105,22 @@ export default function RoleSelect() {
               >
                 <button
                   onClick={() => handleRoleSelect(role.id, role.href)}
-                  className={`group w-full rounded-lg border bg-card text-left flex items-center gap-3.5 p-4 transition-all duration-200 ${
+                  className={`group w-full rounded-lg border bg-card text-left flex items-center gap-3.5 p-4 transition-all duration-200 hover:scale-105 ${
                     role.primary
                       ? "border-border shadow-md hover:shadow-lg hover:border-primary/30"
                       : "border-border/50 shadow-sm hover:shadow-md hover:border-border"
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
-                    role.primary
-                      ? "bg-primary/10 group-hover:bg-primary/15"
-                      : "bg-muted group-hover:bg-muted/80"
+                    index === 0
+                      ? "gradient-primary text-white"
+                      : index === 1
+                        ? "bg-accent/10 text-accent"
+                        : "bg-violet/10"
                   }`}>
                     <role.icon className={`h-5 w-5 ${
-                      role.primary ? "text-primary" : "text-muted-foreground"
-                    }`} />
+                      index === 2 ? "" : ""
+                    }`} style={index === 2 ? { color: "hsl(var(--violet))" } : undefined} />
                   </div>
                   
                   <div className="flex-1 min-w-0">

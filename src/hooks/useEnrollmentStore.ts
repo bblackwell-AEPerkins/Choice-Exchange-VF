@@ -77,6 +77,7 @@ export interface EnrollmentPlan {
   monthlyPremium: number;
   employerContribution: number;
   voluntarySelections: Record<string, string>; // categoryId -> planId
+  newEdgeEnrolled: boolean;
 }
 
 export interface EnrollmentReview {
@@ -178,6 +179,7 @@ const initialState = {
     monthlyPremium: 0,
     employerContribution: 0,
     voluntarySelections: {},
+    newEdgeEnrolled: false,
   },
   review: {
     informationAccurate: false,

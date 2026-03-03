@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { reviewSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2 } from "lucide-react";
+import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2, Leaf, CheckCircle2, Heart } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,76 @@ interface PlanDetails {
   monthly_premium: number;
   metal_tier: string;
 }
+
+const NEW_EDGE_HEALTH = {
+  id: "new-edge-health",
+  name: "Get Fit PHMP Now Program",
+  carrier: "New Edge Health",
+  monthlyPremium: 249,
+  features: [
+    "Monthly telehealth visits with dedicated medical professional",
+    "Semaglutide prescription delivered to your home",
+    "Dedicated wellness coach for your journey",
+    "Pre-tax through payroll available",
+  ],
+};
+
+// Mirror the voluntary data from EnrollPlans so we can resolve names
+const VOLUNTARY_BENEFITS_DATA: Record<string, {
+  name: string;
+  plans: { id: string; name: string; carrier: string; monthlyPremium: number }[];
+}> = {
+  dental: {
+    name: "Dental Coverage",
+    plans: [
+      { id: "delta-dental-basic", name: "Delta Dental Basic", carrier: "Delta Dental", monthlyPremium: 22 },
+      { id: "delta-dental-standard", name: "Delta Dental Plus", carrier: "Delta Dental", monthlyPremium: 38 },
+      { id: "delta-dental-premium", name: "Delta Dental Premier", carrier: "Delta Dental", monthlyPremium: 55 },
+      { id: "cigna-dental-basic", name: "Cigna Dental Essential", carrier: "Cigna", monthlyPremium: 20 },
+      { id: "cigna-dental-standard", name: "Cigna Dental Preferred", carrier: "Cigna", monthlyPremium: 35 },
+      { id: "cigna-dental-premium", name: "Cigna Dental Elite", carrier: "Cigna", monthlyPremium: 52 },
+      { id: "guardian-dental-basic", name: "Guardian DentalGuard Basic", carrier: "Guardian", monthlyPremium: 24 },
+      { id: "guardian-dental-standard", name: "Guardian DentalGuard Plus", carrier: "Guardian", monthlyPremium: 40 },
+      { id: "guardian-dental-premium", name: "Guardian DentalGuard Premium", carrier: "Guardian", monthlyPremium: 58 },
+    ],
+  },
+  vision: {
+    name: "Vision Coverage",
+    plans: [
+      { id: "vsp-basic", name: "VSP Basic", carrier: "VSP", monthlyPremium: 12 },
+      { id: "vsp-standard", name: "VSP Preferred", carrier: "VSP", monthlyPremium: 22 },
+      { id: "vsp-premium", name: "VSP Premier", carrier: "VSP", monthlyPremium: 35 },
+      { id: "eyemed-basic", name: "EyeMed Access", carrier: "EyeMed", monthlyPremium: 10 },
+      { id: "eyemed-standard", name: "EyeMed Select", carrier: "EyeMed", monthlyPremium: 20 },
+      { id: "eyemed-premium", name: "EyeMed Premium", carrier: "EyeMed", monthlyPremium: 32 },
+    ],
+  },
+  life: {
+    name: "Term Life Insurance",
+    plans: [
+      { id: "metlife-life-basic", name: "MetLife Term Essential", carrier: "MetLife", monthlyPremium: 14 },
+      { id: "metlife-life-standard", name: "MetLife Term Plus", carrier: "MetLife", monthlyPremium: 28 },
+      { id: "metlife-life-premium", name: "MetLife Term Premier", carrier: "MetLife", monthlyPremium: 52 },
+      { id: "prudential-life-basic", name: "Prudential Simple Term", carrier: "Prudential", monthlyPremium: 16 },
+      { id: "prudential-life-standard", name: "Prudential Term Flex", carrier: "Prudential", monthlyPremium: 30 },
+      { id: "prudential-life-premium", name: "Prudential Term Max", carrier: "Prudential", monthlyPremium: 55 },
+    ],
+  },
+  disability: {
+    name: "Short-Term Disability",
+    plans: [
+      { id: "disability-basic", name: "STD Basic", carrier: "Choice Exchange", monthlyPremium: 20 },
+      { id: "disability-standard", name: "STD Plus", carrier: "Choice Exchange", monthlyPremium: 35 },
+      { id: "disability-premium", name: "STD Premium", carrier: "Choice Exchange", monthlyPremium: 55 },
+      { id: "unum-disability-basic", name: "Unum STD Core", carrier: "Unum", monthlyPremium: 22 },
+      { id: "unum-disability-standard", name: "Unum STD Plus", carrier: "Unum", monthlyPremium: 38 },
+      { id: "unum-disability-premium", name: "Unum STD Premier", carrier: "Unum", monthlyPremium: 60 },
+      { id: "lincoln-disability-basic", name: "Lincoln STD Essential", carrier: "Lincoln Financial", monthlyPremium: 18 },
+      { id: "lincoln-disability-standard", name: "Lincoln STD Select", carrier: "Lincoln Financial", monthlyPremium: 32 },
+      { id: "lincoln-disability-premium", name: "Lincoln STD Complete", carrier: "Lincoln Financial", monthlyPremium: 50 },
+    ],
+  },
+};
 
 export default function EnrollReview() {
   const navigate = useNavigate();
@@ -40,6 +111,8 @@ export default function EnrollReview() {
   
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isVoluntaryOnly = intent.coverageType === "voluntary_only";
 
   // Step access protection
   useEffect(() => {
@@ -66,6 +139,23 @@ export default function EnrollReview() {
     fetchPlanDetails();
   }, [plan.medicalPlanId]);
 
+  // Resolve voluntary selections
+  const resolvedVoluntary = Object.entries(plan.voluntarySelections || {})
+    .map(([categoryId, planId]) => {
+      if (!planId) return null;
+      const cat = VOLUNTARY_BENEFITS_DATA[categoryId];
+      if (!cat) return null;
+      const p = cat.plans.find(pl => pl.id === planId);
+      if (!p) return null;
+      return { categoryName: cat.name, ...p };
+    })
+    .filter(Boolean) as { categoryName: string; id: string; name: string; carrier: string; monthlyPremium: number }[];
+
+  const voluntaryTotal = resolvedVoluntary.reduce((s, v) => s + v.monthlyPremium, 0);
+  const newEdgeTotal = plan.newEdgeEnrolled ? NEW_EDGE_HEALTH.monthlyPremium : 0;
+  const medicalTotal = planDetails?.monthly_premium || 0;
+  const grandTotal = (isVoluntaryOnly ? 0 : medicalTotal) + voluntaryTotal + newEdgeTotal;
+
   const validateForm = (): boolean => {
     const result = reviewSchema.safeParse({
       informationAccurate: review.informationAccurate,
@@ -83,14 +173,11 @@ export default function EnrollReview() {
   };
 
   const handleNext = () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     
-    // Capture attestation timestamp
     updateReview({
       attestedAt: new Date().toISOString(),
-      ipAddress: "captured-server-side", // Will be captured on submit
+      ipAddress: "captured-server-side",
     });
     
     setStep("submit");
@@ -98,8 +185,13 @@ export default function EnrollReview() {
   };
 
   const handleBack = () => {
-    setStep("coverage");
-    navigate("/enroll/crosssell");
+    if (isVoluntaryOnly) {
+      setStep("plans");
+      navigate("/enroll/plans");
+    } else {
+      setStep("coverage");
+      navigate("/enroll/crosssell");
+    }
   };
 
   const SectionHeader = ({ icon: Icon, title, onEdit }: { icon: React.ElementType; title: string; onEdit: () => void }) => (
@@ -118,8 +210,8 @@ export default function EnrollReview() {
   if (isLoading) {
     return (
       <EnrollmentLayout
-        currentStep={7}
-        totalSteps={8}
+        currentStep={isVoluntaryOnly ? 4 : 7}
+        totalSteps={isVoluntaryOnly ? 5 : 8}
         title="Review Your Information"
         description="Loading your information..."
       >
@@ -130,61 +222,89 @@ export default function EnrollReview() {
     );
   }
 
+  const hasAnySelection = plan.newEdgeEnrolled || planDetails || resolvedVoluntary.length > 0;
+
   return (
     <EnrollmentLayout
-      currentStep={7}
-      totalSteps={8}
+      currentStep={isVoluntaryOnly ? 4 : 7}
+      totalSteps={isVoluntaryOnly ? 5 : 8}
       title="Review Your Information"
       description="Please review all information carefully before submitting your enrollment."
       onSave={saveToDatabase}
     >
-      {/* Personal Information */}
-      <Card>
-        <CardContent className="pt-6">
-          <SectionHeader
-            icon={User}
-            title="Personal Information"
-            onEdit={() => navigate("/enroll/about")}
-          />
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Name</p>
-              <p className="font-medium">{account.firstName} {account.lastName}</p>
+      {/* ── Monthly Cost Summary ── */}
+      {hasAnySelection && (
+        <Card className="border-primary/30 bg-card shadow-sm">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-muted-foreground">Estimated Monthly Total</p>
+              <p className="text-2xl font-bold text-primary">${grandTotal.toFixed(2)}/mo</p>
             </div>
-            <div>
-              <p className="text-muted-foreground">Date of Birth</p>
-              <p className="font-medium">{about.dateOfBirth || "Not provided"}</p>
+            <div className="border-t border-border pt-3 space-y-2 text-sm">
+              {plan.newEdgeEnrolled && (
+                <div className="flex justify-between">
+                  <span className="text-foreground">{NEW_EDGE_HEALTH.name}</span>
+                  <span className="font-semibold">${NEW_EDGE_HEALTH.monthlyPremium.toFixed(2)}</span>
+                </div>
+              )}
+              {planDetails && !isVoluntaryOnly && (
+                <div className="flex justify-between">
+                  <span className="text-foreground">{planDetails.plan_name}</span>
+                  <span className="font-semibold">${planDetails.monthly_premium.toFixed(2)}</span>
+                </div>
+              )}
+              {resolvedVoluntary.map(v => (
+                <div key={v.id} className="flex justify-between">
+                  <span className="text-foreground">{v.name}</span>
+                  <span className="font-semibold">${v.monthlyPremium.toFixed(2)}</span>
+                </div>
+              ))}
             </div>
-            <div>
-              <p className="text-muted-foreground">Email</p>
-              <p className="font-medium">{account.email}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Phone</p>
-              <p className="font-medium">{account.phone}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-muted-foreground">Address</p>
-              <p className="font-medium">
-                {about.address1}
-                {about.address2 && `, ${about.address2}`}
-                <br />
-                {about.city}, {about.state} {about.zipCode}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Household */}
-      {intent.coverageFor === "family" && household.dependents.length > 0 && (
+      {/* ── Personal Information ── */}
+      {!isVoluntaryOnly && (
         <Card>
           <CardContent className="pt-6">
-            <SectionHeader
-              icon={Users}
-              title="Household Members"
-              onEdit={() => navigate("/enroll/household")}
-            />
+            <SectionHeader icon={User} title="Personal Information" onEdit={() => navigate("/enroll/about")} />
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Name</p>
+                <p className="font-medium">{account.firstName} {account.lastName}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Date of Birth</p>
+                <p className="font-medium">{about.dateOfBirth || "Not provided"}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Email</p>
+                <p className="font-medium">{account.email}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Phone</p>
+                <p className="font-medium">{account.phone}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-muted-foreground">Address</p>
+                <p className="font-medium">
+                  {about.address1}
+                  {about.address2 && `, ${about.address2}`}
+                  <br />
+                  {about.city}, {about.state} {about.zipCode}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Household ── */}
+      {household.dependents.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <SectionHeader icon={Users} title="Household Members" onEdit={() => navigate("/enroll/household")} />
             <div className="space-y-3">
               {household.dependents.map((dep) => (
                 <div key={dep.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
@@ -200,68 +320,117 @@ export default function EnrollReview() {
         </Card>
       )}
 
-      {/* Coverage Details */}
-      <Card>
-        <CardContent className="pt-6">
-          <SectionHeader
-            icon={FileText}
-            title="Coverage Details"
-            onEdit={() => navigate("/enroll/coverage")}
-          />
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Coverage Start Date</p>
-              <p className="font-medium">{coverage.desiredStartDate || "Not selected"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">State</p>
-              <p className="font-medium">{coverage.stateOfResidence}</p>
-            </div>
-            {intent.enrollmentReason === "qualifying_event" && (
-              <div className="col-span-2">
-                <p className="text-muted-foreground">Qualifying Event</p>
-                <p className="font-medium capitalize">{coverage.qualifyingEventType?.replace(/_/g, " ")}</p>
+      {/* ── Coverage Details (non-voluntary path) ── */}
+      {!isVoluntaryOnly && (
+        <Card>
+          <CardContent className="pt-6">
+            <SectionHeader icon={FileText} title="Coverage Details" onEdit={() => navigate("/enroll/coverage")} />
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Coverage Start Date</p>
+                <p className="font-medium">{coverage.desiredStartDate || "Not selected"}</p>
               </div>
+              <div>
+                <p className="text-muted-foreground">State</p>
+                <p className="font-medium">{coverage.stateOfResidence}</p>
+              </div>
+              {intent.enrollmentReason === "qualifying_event" && (
+                <div className="col-span-2">
+                  <p className="text-muted-foreground">Qualifying Event</p>
+                  <p className="font-medium capitalize">{coverage.qualifyingEventType?.replace(/_/g, " ")}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Selected Plans (highlighted) ── */}
+      <Card className="border-accent/30">
+        <CardContent className="pt-6">
+          <SectionHeader icon={CreditCard} title="Selected Plans" onEdit={() => navigate("/enroll/plans")} />
+          
+          <div className="space-y-4">
+            {/* New Edge Health */}
+            {plan.newEdgeEnrolled && (
+              <div className="p-4 rounded-lg border-2 border-accent bg-accent/5">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <Leaf className="h-5 w-5 text-accent" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-lg">{NEW_EDGE_HEALTH.name}</p>
+                      <p className="text-sm text-muted-foreground">{NEW_EDGE_HEALTH.carrier} • Wellness Program</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-accent">${NEW_EDGE_HEALTH.monthlyPremium}<span className="text-sm font-medium text-muted-foreground">/mo</span></p>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-2 mt-3">
+                  {NEW_EDGE_HEALTH.features.map((f, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-accent flex-shrink-0" />
+                      {f}
+                    </div>
+                  ))}
+                </div>
+                <Badge className="mt-3 bg-accent/10 text-accent border-accent/25">Enrolled</Badge>
+              </div>
+            )}
+
+            {/* ICHRA Medical Plan */}
+            {planDetails && !isVoluntaryOnly && (
+              <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Shield className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-lg">{planDetails.plan_name}</p>
+                      <p className="text-sm text-muted-foreground">{planDetails.carrier_name} • {planDetails.metal_tier} tier</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">
+                      ${planDetails.monthly_premium.toFixed(2)}<span className="text-sm font-medium text-muted-foreground">/mo</span>
+                    </p>
+                  </div>
+                </div>
+                <Badge className="mt-3 bg-primary/10 text-primary border-primary/25">ICHRA Medical</Badge>
+              </div>
+            )}
+
+            {/* Voluntary Benefit Selections */}
+            {resolvedVoluntary.map(v => (
+              <div key={v.id} className="p-4 rounded-lg border border-border bg-card shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Heart className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">{v.name}</p>
+                      <p className="text-sm text-muted-foreground">{v.carrier} • {v.categoryName}</p>
+                    </div>
+                  </div>
+                  <p className="text-lg font-bold text-foreground">${v.monthlyPremium.toFixed(2)}<span className="text-sm font-medium text-muted-foreground">/mo</span></p>
+                </div>
+              </div>
+            ))}
+
+            {!hasAnySelection && (
+              <p className="text-muted-foreground py-4 text-center">No plans selected</p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Selected Plan */}
-      <Card>
-        <CardContent className="pt-6">
-          <SectionHeader
-            icon={CreditCard}
-            title="Selected Plan"
-            onEdit={() => navigate("/enroll/plans")}
-          />
-          {planDetails ? (
-            <div className="p-4 rounded-lg border border-border bg-muted/30">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold text-lg">{planDetails.plan_name}</p>
-                  <p className="text-muted-foreground">{planDetails.carrier_name}</p>
-                  <p className="text-sm text-muted-foreground capitalize mt-1">
-                    {planDetails.metal_tier} tier
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">
-                    ${planDetails.monthly_premium.toFixed(2)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">per month</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No plan selected</p>
-          )}
-        </CardContent>
-      </Card>
-
       <Separator className="my-2" />
 
-      {/* Attestations */}
+      {/* ── Attestations ── */}
       <Card className="border-primary/30">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -287,14 +456,10 @@ export default function EnrollReview() {
             <Checkbox
               id="accuracy"
               checked={review.informationAccurate}
-              onCheckedChange={(checked) =>
-                updateReview({ informationAccurate: checked === true })
-              }
+              onCheckedChange={(checked) => updateReview({ informationAccurate: checked === true })}
             />
             <div className="space-y-1">
-              <Label htmlFor="accuracy" className="cursor-pointer font-medium">
-                Information Accuracy
-              </Label>
+              <Label htmlFor="accuracy" className="cursor-pointer font-medium">Information Accuracy</Label>
               <p className="text-sm text-muted-foreground">
                 I certify that all information provided is accurate and complete to the best of my knowledge. I understand that providing false information may result in denial of coverage or cancellation of my enrollment.
               </p>
@@ -308,14 +473,10 @@ export default function EnrollReview() {
             <Checkbox
               id="electronic"
               checked={review.electronicConsent}
-              onCheckedChange={(checked) =>
-                updateReview({ electronicConsent: checked === true })
-              }
+              onCheckedChange={(checked) => updateReview({ electronicConsent: checked === true })}
             />
             <div className="space-y-1">
-              <Label htmlFor="electronic" className="cursor-pointer font-medium">
-                Electronic Communications
-              </Label>
+              <Label htmlFor="electronic" className="cursor-pointer font-medium">Electronic Communications</Label>
               <p className="text-sm text-muted-foreground">
                 I consent to receive enrollment documents, notices, and other communications electronically. I understand I may withdraw this consent at any time.
               </p>
@@ -329,14 +490,10 @@ export default function EnrollReview() {
             <Checkbox
               id="hipaa"
               checked={review.hipaaAuthorization}
-              onCheckedChange={(checked) =>
-                updateReview({ hipaaAuthorization: checked === true })
-              }
+              onCheckedChange={(checked) => updateReview({ hipaaAuthorization: checked === true })}
             />
             <div className="space-y-1">
-              <Label htmlFor="hipaa" className="cursor-pointer font-medium">
-                HIPAA Authorization
-              </Label>
+              <Label htmlFor="hipaa" className="cursor-pointer font-medium">HIPAA Authorization</Label>
               <p className="text-sm text-muted-foreground">
                 I authorize the release of my health information as necessary for enrollment, claims processing, and coordination of benefits in accordance with HIPAA regulations.
               </p>
@@ -348,7 +505,7 @@ export default function EnrollReview() {
       <EnrollmentNavigation
         onBack={handleBack}
         onNext={handleNext}
-        nextLabel="Continue to Payment"
+        nextLabel="Submit Enrollment"
         isLoading={isSaving}
       />
     </EnrollmentLayout>

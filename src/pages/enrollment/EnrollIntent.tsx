@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
-import { Heart, Users, Calendar, AlertCircle, Loader2 } from "lucide-react";
+import { useEnrollmentConfig } from "@/stores/enrollmentConfigStore";
+import { Heart, Users, Calendar, AlertCircle, Loader2, Leaf } from "lucide-react";
 
 export default function EnrollIntent() {
   const navigate = useNavigate();
@@ -46,8 +47,13 @@ export default function EnrollIntent() {
 
   const handleNext = () => {
     if (canProceed) {
-      setStep("account");
-      navigate("/enroll/account");
+      if (intent.coverageType === "voluntary_only") {
+        setStep("household");
+        navigate("/enroll/household");
+      } else {
+        setStep("account");
+        navigate("/enroll/account");
+      }
     }
   };
 
@@ -90,7 +96,7 @@ export default function EnrollIntent() {
           <RadioGroup
             value={intent.coverageType || ""}
             onValueChange={(value) =>
-              updateIntent({ coverageType: value as "health" })
+              updateIntent({ coverageType: value as "health" | "voluntary_only" })
             }
           >
             <label className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 cursor-pointer transition-colors">
@@ -100,6 +106,16 @@ export default function EnrollIntent() {
                 <span className="font-medium">Health Insurance</span>
                 <p className="text-sm text-muted-foreground">
                   Medical, prescription, and preventive care coverage
+                </p>
+              </div>
+            </label>
+            <label className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 cursor-pointer transition-colors mt-3">
+              <RadioGroupItem value="voluntary_only" id="voluntary_only" />
+              <Leaf className="h-5 w-5 text-accent" />
+              <div>
+                <span className="font-medium">Voluntary Benefits Enrollment</span>
+                <p className="text-sm text-muted-foreground">
+                  Wellness programs and voluntary benefits — dental, vision, life, and more
                 </p>
               </div>
             </label>

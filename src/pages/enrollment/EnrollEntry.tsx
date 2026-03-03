@@ -25,24 +25,33 @@ const CHANNEL_INFO = {
     description: "You've been invited to enroll. Let's find the right coverage for you.",
     badge: "Direct Link",
   },
+  univision: {
+    icon: Shield,
+    title: "Welcome, Univision Team Member",
+    description: "Your employer has partnered with Choice Exchange to bring you wellness programs and voluntary benefits.",
+    badge: "Univision Benefits",
+  },
 };
 
 export default function EnrollEntry() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setEntryChannel, entryChannel } = useEnrollmentConfig();
+  const { setEntryChannel, setEmployerCode, entryChannel } = useEnrollmentConfig();
 
   // Detect entry channel from URL params
   useEffect(() => {
     const source = searchParams.get("source") || searchParams.get("channel");
-    if (source === "barcode" || source === "qr") {
+    if (source === "univision") {
+      setEntryChannel("univision");
+      setEmployerCode("univision");
+    } else if (source === "barcode" || source === "qr") {
       setEntryChannel("barcode");
     } else if (source === "call" || source === "callcenter" || source === "call_center") {
       setEntryChannel("call_center");
     } else {
       setEntryChannel("hyperlink");
     }
-  }, [searchParams, setEntryChannel]);
+  }, [searchParams, setEntryChannel, setEmployerCode]);
 
   const channel = entryChannel || "hyperlink";
   const info = CHANNEL_INFO[channel];

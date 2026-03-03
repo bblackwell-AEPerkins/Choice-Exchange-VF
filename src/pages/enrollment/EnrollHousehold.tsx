@@ -87,14 +87,24 @@ export default function EnrollHousehold() {
 
   const handleNext = () => {
     if (validateForm()) {
-      setStep("coverage");
-      navigate("/enroll/coverage");
+      if (intent.coverageType === "voluntary_only") {
+        setStep("plans");
+        navigate("/enroll/plans");
+      } else {
+        setStep("coverage");
+        navigate("/enroll/coverage");
+      }
     }
   };
 
   const handleBack = () => {
-    setStep("about");
-    navigate("/enroll/about");
+    if (intent.coverageType === "voluntary_only") {
+      setStep("intent");
+      navigate("/enroll/intent");
+    } else {
+      setStep("about");
+      navigate("/enroll/about");
+    }
   };
 
   if (isLoading) {

@@ -5,7 +5,7 @@ import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigati
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { CheckCircle2, Plus, X, Heart, Eye, Shield, Briefcase } from "lucide-react";
 
 interface SupplementalProduct {
@@ -64,7 +64,7 @@ const SUPPLEMENTAL_PRODUCTS: SupplementalProduct[] = [
 
 export default function EnrollCrossSell() {
   const navigate = useNavigate();
-  const { setStep, isLoading, canAccessStep, saveToDatabase, account } = useEnrollmentDB();
+  const { setStep, isLoading, canAccessStep, saveToDatabase, account } = useEnrollmentStore();
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
 
   useEffect(() => {

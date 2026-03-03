@@ -4,7 +4,7 @@ import { EnrollmentLayout } from "@/components/enrollment/EnrollmentLayout";
 import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { useEnrollmentConfig } from "@/stores/enrollmentConfigStore";
 import { 
   Shield, 
@@ -59,7 +59,7 @@ export default function EnrollOffering() {
     isLoading, 
     canAccessStep, 
     saveToDatabase 
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   const { isStepEnabled } = useEnrollmentConfig();
 
   useEffect(() => {

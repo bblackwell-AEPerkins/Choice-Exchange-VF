@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { cardPaymentSchema, bankPaymentSchema, formatZodErrors, formatCardNumber, formatExpirationDate } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function EnrollSubmit() {
     isLoading,
     canAccessStep,
     saveToDatabase
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank">("card");

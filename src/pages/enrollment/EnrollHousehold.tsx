@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
-import { EnrollmentDependent } from "@/hooks/useEnrollment";
+import { useEnrollmentStore, EnrollmentDependent } from "@/hooks/useEnrollmentStore";
 import { householdSchema, dependentSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { Plus, Trash2, Users, DollarSign, Loader2 } from "lucide-react";
 
@@ -26,7 +25,7 @@ export default function EnrollHousehold() {
     isSaving,
     canAccessStep,
     saveToDatabase
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   
   const [showDependentForm, setShowDependentForm] = useState(false);
   const [newDependent, setNewDependent] = useState<Partial<EnrollmentDependent>>({});

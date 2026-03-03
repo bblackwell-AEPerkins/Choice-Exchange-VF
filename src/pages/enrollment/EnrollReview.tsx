@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { reviewSchema, formatZodErrors } from "@/lib/validations/enrollment";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Users, FileText, CreditCard, Pencil, Shield, AlertCircle, Loader2 } from "lucide-react";
@@ -35,7 +35,7 @@ export default function EnrollReview() {
     isSaving,
     canAccessStep,
     saveToDatabase
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
   
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});

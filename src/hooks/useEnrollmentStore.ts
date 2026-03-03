@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { simulateDelay, generateConfirmationNumber } from "@/lib/mockData";
 
-export type EnrollmentStep = 
+// ── Types ──────────────────────────────────────────────
+
+export type EnrollmentStep =
   | "intent"
   | "account"
   | "about"
@@ -83,7 +86,8 @@ export interface EnrollmentReview {
   ipAddress: string | null;
 }
 
-export interface EnrollmentState {
+interface EnrollmentStoreState {
+  // Core state
   currentStep: EnrollmentStep;
   userId: string | null;
   intent: EnrollmentIntent;
@@ -95,7 +99,12 @@ export interface EnrollmentState {
   review: EnrollmentReview;
   sessionId: string | null;
   lastSaved: string | null;
-  
+
+  // DB-layer state (absorbed from useEnrollmentDB)
+  applicationId: string | null;
+  isLoading: boolean;
+  isSaving: boolean;
+
   // Actions
   setStep: (step: EnrollmentStep) => void;
   setUserId: (userId: string | null) => void;
@@ -110,6 +119,11 @@ export interface EnrollmentState {
   updateReview: (data: Partial<EnrollmentReview>) => void;
   resetEnrollment: () => void;
   saveProgress: () => void;
+
+  // Merged from useEnrollmentDB
+  submitEnrollment: () => Promise<{ success: boolean; confirmationNumber?: string; error?: string }>;
+  canAccessStep: (step: EnrollmentStep) => boolean;
+  saveToDatabase: () => void;
 }
 
 const initialState = {
@@ -119,7 +133,7 @@ const initialState = {
     coverageType: null,
     coverageFor: null,
     enrollmentReason: null,
-  },
+  } as EnrollmentIntent,
   account: {
     firstName: "",
     lastName: "",
@@ -137,7 +151,7 @@ const initialState = {
     state: "",
     zipCode: "",
     citizenship: "",
-  },
+  } as EnrollmentAbout,
   household: {
     maritalStatus: null,
     dependents: [],
@@ -145,7 +159,7 @@ const initialState = {
     employerName: "",
     estimatedIncome: 0,
     incomeSources: [],
-  },
+  } as EnrollmentHousehold,
   coverage: {
     stateOfResidence: "",
     desiredStartDate: "",
@@ -170,11 +184,14 @@ const initialState = {
     attestedAt: null,
     ipAddress: null,
   },
-  sessionId: null,
-  lastSaved: null,
+  sessionId: null as string | null,
+  lastSaved: null as string | null,
+  applicationId: null as string | null,
+  isLoading: false,
+  isSaving: false,
 };
 
-export const useEnrollment = create<EnrollmentState>()(
+const useEnrollmentStoreInternal = create<EnrollmentStoreState>()(
   persist(
     (set, get) => ({
       ...initialState,
@@ -183,7 +200,6 @@ export const useEnrollment = create<EnrollmentState>()(
 
       setUserId: (userId) => {
         const currentUserId = get().userId;
-        // If user changed, reset all enrollment data
         if (currentUserId && currentUserId !== userId) {
           set({ ...initialState, userId });
         } else {
@@ -253,8 +269,55 @@ export const useEnrollment = create<EnrollmentState>()(
 
       resetEnrollment: () => set(initialState),
 
-      saveProgress: () =>
-        set({ lastSaved: new Date().toISOString() }),
+      saveProgress: () => set({ lastSaved: new Date().toISOString() }),
+
+      saveToDatabase: () => {
+        set({ lastSaved: new Date().toISOString() });
+      },
+
+      submitEnrollment: async () => {
+        const state = get();
+        if (!state.userId) {
+          return { success: false, error: "No active application" };
+        }
+
+        set({ isSaving: true });
+        try {
+          await simulateDelay(800);
+          const confirmationNumber = generateConfirmationNumber();
+          get().resetEnrollment();
+          return { success: true, confirmationNumber };
+        } catch (error) {
+          console.error("Error submitting enrollment:", error);
+          return { success: false, error: "Failed to submit enrollment. Please try again." };
+        } finally {
+          set({ isSaving: false });
+        }
+      },
+
+      canAccessStep: (step: EnrollmentStep): boolean => {
+        const { intent, account, about, household, userId } = get();
+
+        if (step === "intent") return true;
+
+        if (step === "account") {
+          return !!(intent.coverageType && intent.coverageFor && intent.enrollmentReason);
+        }
+
+        if (step === "about") {
+          return !!(userId || account.isVerified);
+        }
+
+        if (step === "household") {
+          return !!(about.dateOfBirth && about.legalSex && about.address1 && about.city && about.state && about.zipCode);
+        }
+
+        if (step === "coverage") {
+          return !!(household.maritalStatus && household.employmentStatus);
+        }
+
+        return true;
+      },
     }),
     {
       name: "enrollment-storage",
@@ -262,17 +325,15 @@ export const useEnrollment = create<EnrollmentState>()(
   )
 );
 
+// Public hook
+export function useEnrollmentStore() {
+  return useEnrollmentStoreInternal();
+}
+
 // Helper to get step number from step name
 export const getStepNumber = (step: EnrollmentStep): number => {
   const steps: EnrollmentStep[] = [
-    "intent",
-    "account",
-    "about",
-    "household",
-    "coverage",
-    "plans",
-    "review",
-    "submit",
+    "intent", "account", "about", "household", "coverage", "plans", "review", "submit",
   ];
   return steps.indexOf(step) + 1;
 };
@@ -280,14 +341,7 @@ export const getStepNumber = (step: EnrollmentStep): number => {
 // Helper to get step name from number
 export const getStepFromNumber = (num: number): EnrollmentStep => {
   const steps: EnrollmentStep[] = [
-    "intent",
-    "account",
-    "about",
-    "household",
-    "coverage",
-    "plans",
-    "review",
-    "submit",
+    "intent", "account", "about", "household", "coverage", "plans", "review", "submit",
   ];
   return steps[num - 1] || "intent";
 };

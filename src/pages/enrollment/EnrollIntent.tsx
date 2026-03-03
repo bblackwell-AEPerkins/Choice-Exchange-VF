@@ -5,7 +5,7 @@ import { EnrollmentNavigation } from "@/components/enrollment/EnrollmentNavigati
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEnrollmentDB } from "@/hooks/useEnrollmentDB";
+import { useEnrollmentStore } from "@/hooks/useEnrollmentStore";
 import { Heart, Users, Calendar, AlertCircle, Loader2 } from "lucide-react";
 
 export default function EnrollIntent() {
@@ -18,7 +18,7 @@ export default function EnrollIntent() {
     isLoading,
     currentStep,
     isSaving,
-  } = useEnrollmentDB();
+  } = useEnrollmentStore();
 
   // Resume from saved step if coming back with resume flag
   useEffect(() => {

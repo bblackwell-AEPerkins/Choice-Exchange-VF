@@ -237,8 +237,7 @@ export default function EnrollPlans() {
       } else {
         setPlans([]);
       }
-    } catch (error) {
-      console.error("Error fetching plans:", error);
+    } catch {
       setPlans([]);
     } finally {
       setIsLoading(false);

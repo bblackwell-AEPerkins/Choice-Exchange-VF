@@ -52,7 +52,6 @@ export const useMemberEvents = (options: UseMemberEventsOptions = {}) => {
         }
       } catch (err) {
         setError(err as Error);
-        console.error("Error fetching member events:", err);
       } finally {
         setLoading(false);
       }
@@ -96,8 +95,7 @@ export const useEventsByType = () => {
         } else {
           setGroupedEvents({});
         }
-      } catch (err) {
-        console.error("Error fetching events:", err);
+      } catch {
       } finally {
         setLoading(false);
       }

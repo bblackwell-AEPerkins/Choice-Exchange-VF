@@ -102,7 +102,6 @@ export function useSupportChat() {
         }
       }
     } catch (e) {
-      console.error("Chat error:", e);
       setError(e instanceof Error ? e.message : "An error occurred");
       // Remove the user message on error
       setMessages(prev => prev.filter(m => m !== userMsg));

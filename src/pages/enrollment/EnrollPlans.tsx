@@ -382,7 +382,7 @@ export default function EnrollPlans() {
     >
       {/* Monthly Cost Summary */}
       {(newEdgeEnrolled || plan.medicalPlanId || Object.values(selectedVoluntary).some(v => v)) && (
-        <Card className="border-primary/30 bg-primary/5 mb-6">
+        <Card className="border-primary/30 bg-card mb-6 shadow-sm">
           <CardContent className="py-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
@@ -442,8 +442,8 @@ export default function EnrollPlans() {
         <div className="space-y-8">
           {/* New Edge Health Featured Card */}
           <Card className={cn(
-            "border-2 transition-all",
-            newEdgeEnrolled ? "border-accent ring-2 ring-accent/20 bg-accent/5" : "border-primary/30"
+            "border-2 transition-all shadow-sm",
+            newEdgeEnrolled ? "border-accent ring-2 ring-accent/20 bg-card" : "border-primary/30 bg-card"
           )}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -460,8 +460,7 @@ export default function EnrollPlans() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-foreground">${NEW_EDGE_HEALTH.monthlyPremium}</p>
-                  <p className="text-sm text-muted-foreground">/month</p>
+                  <p className="text-3xl font-bold text-foreground">${NEW_EDGE_HEALTH.monthlyPremium}<span className="text-base font-medium text-muted-foreground">/mo</span></p>
                 </div>
               </div>
             </CardHeader>
